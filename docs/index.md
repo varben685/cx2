@@ -6,6 +6,8 @@ Ez a könyvtár az `smc-ai-trading-assistant` működésének hiteles forrása.
 
 - [PLANS.md](PLANS.md): ExecPlan szabályok.
 - [Aktív ExecPlan](exec-plans/active/full-project.md): teljes projektterv.
+- [Fejlesztési napló](project/development-log.md): aktuális állapot és következő lépés.
+- [Eredeti projektbrief](project/original-project-brief.md): a teljes indító utasítás.
 - [Phase 00 learning](learning/phase-00-bootstrap.md): bootstrap magyarázat.
 
 ## Területek
@@ -17,4 +19,4 @@ Ez a könyvtár az `smc-ai-trading-assistant` működésének hiteles forrása.
 - `learning/`: fázisonkénti oktatási dokumentumok.
 - `decisions/`: ADR-ek.
 - `operations/`: lokális fejlesztés, paper trading, biztonság, hibakeresés.
-
+- `project/`: projektbrief és fejlesztési állapotnapló.

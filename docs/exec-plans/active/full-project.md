@@ -170,3 +170,7 @@ ezért a Docker image build ebben a munkamenetben nem volt futtatható.
 - 2026-08-06: Üres repositoryból Phase 0 bootstrap elindítva. Backend és
   frontend skeleton elkészült, dokumentációs struktúra létrejött. Phase 1 első
   mérföldköveként bekerült a risk-reward domain számítás és teszt.
+- 2026-08-07: Az eredeti projektindító brief elmentve a
+  `docs/project/original-project-brief.md` fájlba. Létrejött a rövid
+  fejlesztési napló: `docs/project/development-log.md`. A fő munkakönyvtár
+  innentől `/Users/bencevarga/Projects/cx2`.

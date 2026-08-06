@@ -55,7 +55,8 @@ npm run dev
 
 - [ARCHITECTURE.md](ARCHITECTURE.md)
 - [docs/index.md](docs/index.md)
+- [docs/project/development-log.md](docs/project/development-log.md)
+- [docs/project/original-project-brief.md](docs/project/original-project-brief.md)
 - [docs/PLANS.md](docs/PLANS.md)
 - [docs/exec-plans/active/full-project.md](docs/exec-plans/active/full-project.md)
 - [docs/learning/phase-00-bootstrap.md](docs/learning/phase-00-bootstrap.md)
-
