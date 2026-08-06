@@ -1,0 +1,79 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: #f4f6f8;
+  color: #17202a;
+}
+
+.app-shell {
+  min-height: 100vh;
+  background: #f4f6f8;
+}
+
+.app-header {
+  display: flex;
+  align-items: center;
+  height: 64px;
+  padding: 0 24px;
+  background: #ffffff;
+  border-bottom: 1px solid #d9dee6;
+}
+
+.app-header h1.ant-typography {
+  margin: 0;
+  font-size: 20px;
+  line-height: 1.2;
+}
+
+.app-content {
+  width: min(960px, 100%);
+  padding: 32px 24px;
+}
+
+.status-panel {
+  display: grid;
+  gap: 24px;
+  padding: 24px;
+  background: #ffffff;
+  border: 1px solid #d9dee6;
+  border-radius: 8px;
+}
+
+.status-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.status-heading h2.ant-typography {
+  margin: 4px 0 0;
+  font-size: 24px;
+  line-height: 1.25;
+}
+
+.status-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+}
+
+@media (max-width: 760px) {
+  .app-content {
+    padding: 20px 16px;
+  }
+
+  .status-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 480px) {
+  .status-grid {
+    grid-template-columns: 1fr;
+  }
+}
+

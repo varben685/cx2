@@ -1,0 +1,16 @@
+.DS_Store
+.idea/
+.env
+.venv/
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+dist/
+build/
+node_modules/
+coverage/
+htmlcov/
+.playwright/
+*.pyc
+*.log

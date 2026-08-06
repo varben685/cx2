@@ -1,0 +1,20 @@
+# Dokumentációs index
+
+Ez a könyvtár az `smc-ai-trading-assistant` működésének hiteles forrása.
+
+## Fő dokumentumok
+
+- [PLANS.md](PLANS.md): ExecPlan szabályok.
+- [Aktív ExecPlan](exec-plans/active/full-project.md): teljes projektterv.
+- [Phase 00 learning](learning/phase-00-bootstrap.md): bootstrap magyarázat.
+
+## Területek
+
+- `glossary/`: trading, AI/ML és szoftveres fogalomtár.
+- `strategy/`: SMC/ICT-inspired stratégiai formalizálás.
+- `architecture/`: rendszerkomponensek és adatáramlás.
+- `contracts/`: webhook és esemény JSON contractok.
+- `learning/`: fázisonkénti oktatási dokumentumok.
+- `decisions/`: ADR-ek.
+- `operations/`: lokális fejlesztés, paper trading, biztonság, hibakeresés.
+

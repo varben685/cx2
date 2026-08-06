@@ -1,0 +1,50 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: astral-sh/setup-uv@v5
+      - name: Install backend dependencies
+        working-directory: apps/api
+        run: uv sync --all-extras --dev
+      - name: Lint backend
+        working-directory: apps/api
+        run: uv run ruff check .
+      - name: Type check backend
+        working-directory: apps/api
+        run: uv run mypy src
+      - name: Test backend
+        working-directory: apps/api
+        run: uv run pytest
+
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: apps/web/package-lock.json
+      - name: Install frontend dependencies
+        working-directory: apps/web
+        run: npm ci
+      - name: Lint frontend
+        working-directory: apps/web
+        run: npm run lint
+      - name: Type check frontend
+        working-directory: apps/web
+        run: npm run typecheck
+      - name: Test frontend
+        working-directory: apps/web
+        run: npm run test
+

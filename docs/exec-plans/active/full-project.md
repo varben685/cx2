@@ -1,0 +1,172 @@
+# ExecPlan: teljes projekt
+
+## Cél
+
+Fokozatosan felépíteni egy működő, tesztelt és dokumentált SMC/ICT-inspired
+trading setup elemző és AI-támogatott kereskedési asszisztenst.
+
+## Hatókör
+
+Az MVP moduláris monolitként indul:
+
+- FastAPI backend;
+- React/Vite frontend;
+- PostgreSQL adatbázis;
+- TradingView webhook contract;
+- determinisztikus setup scoring;
+- journal, backtest, paper trading;
+- később auditálható ML és LLM magyarázati réteg.
+
+## Phase 0: Discovery és bootstrap
+
+- [x] Repository felmérése.
+- [x] Rövid projektösszefoglaló rögzítése.
+- [x] `AGENTS.md` létrehozása.
+- [x] Dokumentációs könyvtárstruktúra létrehozása.
+- [x] `docs/PLANS.md` létrehozása.
+- [x] Aktív teljes projekt ExecPlan létrehozása.
+- [x] Phase 0 részletes mérföldkövek rögzítése.
+- [x] Backend skeleton létrehozása.
+- [x] Frontend skeleton létrehozása.
+- [x] PostgreSQL Docker Compose konfiguráció.
+- [x] `.env.example` secret nélkül.
+- [x] Backend `/health` és `/ready` endpoint.
+- [x] Minimális frontend státuszoldal.
+- [x] Lint, type check és teszt konfiguráció.
+- [x] GitHub Actions workflow.
+- [x] Releváns ellenőrzések futtatása.
+- [x] `docs/learning/phase-00-bootstrap.md` létrehozása.
+
+### Phase 0 ellenőrzések
+
+Tervezett parancsok:
+
+```bash
+cd apps/api && uv sync --all-extras --dev
+cd apps/api && uv run pytest
+cd apps/api && uv run ruff check .
+cd apps/api && uv run mypy src
+cd apps/web && npm install
+cd apps/web && npm run test
+cd apps/web && npm run lint
+cd apps/web && npm run typecheck
+```
+
+Tényleges eredmény:
+
+- `uv sync --all-extras --dev`: sikeres, Python 3.12.13 környezetben.
+- `uv run pytest`: sikeres, 5 teszt átment.
+- `uv run ruff check .`: sikeres.
+- `uv run mypy src`: sikeres.
+- `npm install`: sikeres, lockfile létrejött.
+- `npm run test`: sikeres, 1 teszt átment.
+- `npm run lint`: sikeres.
+- `npm run typecheck`: sikeres.
+- `npm audit`: sikeres, 0 sérülékenység.
+
+Környezeti megjegyzés: a Docker CLI telepítve van, de a daemon nem futott,
+ezért a Docker image build ebben a munkamenetben nem volt futtatható.
+
+## Phase 1: Domain modell
+
+- [x] Első domain mérföldkő: alap trading enumok és risk-reward számítás.
+- [x] Risk-reward unit tesztek.
+- [x] Trading glossary első változata.
+- [x] Strategy specification első változata.
+- [ ] Swing high/low algoritmikus definíció és unit tesztek.
+- [ ] BOS algoritmikus definíció és unit tesztek.
+- [ ] CHoCH algoritmikus definíció és unit tesztek.
+- [ ] FVG algoritmikus definíció és unit tesztek.
+- [ ] Liquidity sweep algoritmikus definíció és unit tesztek.
+- [ ] Displacement komponensek és unit tesztek.
+- [ ] Szintetikus OHLCV példák.
+
+## Phase 2: Webhook ingestion
+
+- [ ] Verziózott TradingView webhook contract.
+- [ ] Pydantic validáció.
+- [ ] JSON Schema export.
+- [ ] Idempotens event feldolgozás.
+- [ ] PostgreSQL persistence.
+- [ ] Audit események.
+- [ ] Hibás payloadok biztonságos naplózása.
+
+## Phase 3: Pine Script prototípus
+
+- [ ] Swing jelölés.
+- [ ] BOS/CHoCH jelölés.
+- [ ] FVG zónák.
+- [ ] Liquidity sweep.
+- [ ] Displacement score.
+- [ ] JSON alert payload.
+- [ ] Repainting kockázatok dokumentálása.
+
+## Phase 4: Rule-based setup scoring
+
+- [ ] Pontozási komponensek.
+- [ ] 0-100 közötti score.
+- [ ] Elutasítási okok.
+- [ ] Strategy configuration versioning.
+- [ ] Determinisztikus magyarázat.
+
+## Phase 5: Outcome és backtest
+
+- [ ] OHLCV CSV import.
+- [ ] MarketDataProvider interfész.
+- [ ] Triple-barrier outcome engine.
+- [ ] Commission és slippage.
+- [ ] MFE/MAE számítás.
+- [ ] Backtest analytics.
+
+## Phase 6: Frontend és journal
+
+- [ ] Dashboard.
+- [ ] Setup lista.
+- [ ] Setup részletező.
+- [ ] Journal.
+- [ ] Analytics.
+- [ ] Frontend tesztek.
+
+## Phase 7: Paper trading workflow
+
+- [ ] Élő TradingView webhook flow.
+- [ ] Outcome frissítés.
+- [ ] Értesítési adapter.
+- [ ] Napi és heti összesítő.
+
+## Phase 8: ML dataset és baseline
+
+- [ ] Feature schema.
+- [ ] Dataset builder.
+- [ ] Leakage audit.
+- [ ] Időalapú split.
+- [ ] Dummy baseline.
+- [ ] Logisztikus regresszió.
+
+## Phase 9: ML setup filter
+
+- [ ] Rule score kontra ML összehasonlítás.
+- [ ] Kalibrált valószínűség.
+- [ ] Walk-forward evaluation.
+- [ ] Shadow mode inference.
+
+## Phase 10: AI explanation
+
+- [ ] ExplanationProvider interfész.
+- [ ] Template fallback.
+- [ ] Opcionális OpenAI adapter.
+- [ ] Setup és journal magyarázat.
+
+## Phase 11: Hardening
+
+- [ ] Security review.
+- [ ] Observability.
+- [ ] Backup és restore dokumentáció.
+- [ ] E2E teszt.
+- [ ] Deployment dokumentáció.
+
+## Állapotnapló
+
+- 2026-08-06: Üres repositoryból Phase 0 bootstrap elindítva. Backend és
+  frontend skeleton elkészült, dokumentációs struktúra létrejött. Phase 1 első
+  mérföldköveként bekerült a risk-reward domain számítás és teszt.
