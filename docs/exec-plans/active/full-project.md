@@ -79,7 +79,7 @@ ezért a Docker image build ebben a munkamenetben nem volt futtatható.
 - [x] FVG algoritmikus definíció és unit tesztek.
 - [x] Liquidity sweep algoritmikus definíció és unit tesztek.
 - [x] Displacement komponensek és unit tesztek.
-- [ ] Szintetikus OHLCV példák.
+- [x] Szintetikus OHLCV példák.
 
 ## Phase 2: Webhook ingestion
 
@@ -216,3 +216,11 @@ ezért a Docker image build ebben a munkamenetben nem volt futtatható.
   sikeres, célzott Ruff és mypy sikeres. Teljes backend ellenőrzés:
   `uv run pytest` 55 teszt sikeres, `uv run ruff check .` sikeres,
   `uv run mypy src` sikeres. Következő lépés: szintetikus OHLCV példák.
+- 2026-09-02: Elkészült a Phase 1 szintetikus OHLCV példaadatsor és az
+  integrált domain teszt. Ugyanazon nyolcgyertyás mini charton ellenőrzi a
+  swing, BOS, CHoCH, FVG, liquidity sweep és displacement eseményeket. Célzott
+  ellenőrzés: `uv run pytest tests/test_phase1_synthetic_examples.py` 1 teszt
+  sikeres, célzott Ruff és mypy sikeres. Teljes backend ellenőrzés:
+  `uv run pytest` 56 teszt sikeres, `uv run ruff check .` sikeres,
+  `uv run mypy src` sikeres. Phase 1 domain alapok lezárva. Következő lépés:
+  Phase 2 webhook ingestion contract.

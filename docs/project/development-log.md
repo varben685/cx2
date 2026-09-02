@@ -88,6 +88,9 @@ lett áthelyezve.
 - Unit tesztek készültek iránymeghatározásra, prior ATR-re, erős displacementre,
   hiányzó volumenre, consecutive gyertyákra, kevés ATR adatra és invalid
   beállításokra.
+- Létrejött a Phase 1 szintetikus OHLCV példaadatsor.
+- Létrejött egy integrált domain teszt, amely ugyanazon mini charton ellenőrzi a
+  swing, BOS, CHoCH, FVG, liquidity sweep és displacement eseményeket.
 
 ### Ellenőrzött kapuk
 
@@ -116,6 +119,11 @@ lett áthelyezve.
 - Célzott displacement Ruff és mypy ellenőrzés: sikeres.
 - Teljes backend ellenőrzés displacement után: `uv run pytest` 55 teszt
   sikeres, `uv run ruff check .` sikeres, `uv run mypy src` sikeres.
+- Célzott szintetikus példa ellenőrzés:
+  `uv run pytest tests/test_phase1_synthetic_examples.py` 1 teszt sikeres.
+- Célzott szintetikus példa Ruff és mypy ellenőrzés: sikeres.
+- Teljes backend ellenőrzés szintetikus példák után: `uv run pytest` 56 teszt
+  sikeres, `uv run ruff check .` sikeres, `uv run mypy src` sikeres.
 - Megjegyzés: a FastAPI TestClient egy upstream Starlette deprecation warningot
   jelez, de a tesztek sikeresek.
 
@@ -123,10 +131,10 @@ lett áthelyezve.
 
 Phase 1 következő mérföldkő:
 
-1. Szintetikus OHLCV példák létrehozása a Phase 1 domain fogalmakhoz.
-2. Integrált domain teszt, amely swing, BOS, CHoCH, FVG, sweep és displacement
-   eseményeket determinisztikusan mutat.
-3. Dokumentáció frissítése arról, hogyan olvasható a szintetikus adatsor.
+1. Phase 2 indítása: TradingView webhook contract Pydantic modelljei.
+2. Verziózott payload séma létrehozása.
+3. Webhook validációs tesztek.
+4. JSON Schema export előkészítése.
 
 ## Korábbi következő konkrét lépés
 

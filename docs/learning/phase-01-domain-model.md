@@ -10,7 +10,9 @@ aktuális `MarketBias` állapothoz viszonyítja. Elkészült az első háromgyer
 Fair Value Gap modell is. Elkészült az első liquidity sweep detektor confirmed
 pivotokra, wick átszúrásra és visszazárásra építve. Elkészült az első
 displacement assessment is, amely ATR-, body-, range-, consecutive candle- és
-volumenkomponensekből számol normalizált score-t.
+volumenkomponensekből számol normalizált score-t. Végül létrejött egy
+szintetikus OHLCV példaadatsor, amely egyetlen mini charton integráltan mutatja
+ezeket a fogalmakat.
 
 A `Candle` modell validálja az UTC időbélyegeket, az OHLC árkapcsolatokat és az
 opcionális volumen értékét.
@@ -51,6 +53,10 @@ gyertyákból számolt ATR-hez hasonlítja. Emellett méri, hogy a test mekkora 
 a teljes range-nek, hány azonos irányú gyertya jött egymás után, és van-e
 volumeneltérés.
 
+A szintetikus példaadatsor nyolc gyertyából áll. A teszt ugyanazokat a domain
+függvényeket futtatja rajta, mint amelyeket később a backtest és a webhook
+feldolgozás használni fog.
+
 ```mermaid
 sequenceDiagram
     participant Data as OHLCV gyertyák
@@ -67,6 +73,7 @@ sequenceDiagram
     Pivot->>Algo: sweep szint
     Algo->>Algo: wick átszúrás + visszazárás
     Data->>Algo: prior ATR + candle body/range
+    Data->>Algo: integrált szintetikus validáció
 ```
 
 ## 4. Milyen alternatívák léteznek?
@@ -82,6 +89,7 @@ sequenceDiagram
 - Sweep modell displacement vagy CHoCH kötelező megerősítéssel.
 - Sweep modell több gyertyás likviditási zónákkal, nem csak pivot szinttel.
 - Komplex displacement modell instrumentum- és session-specifikus küszöbökkel.
+- Nagyobb, CSV-ből betöltött szintetikus adatsor backtesthez.
 
 ## 5. Miért ezt választottuk?
 
@@ -90,7 +98,8 @@ modell, az egyszerű sweep modell és a komponensalapú displacement score
 reprodukálható és jól tesztelhető. Tanulási célra is jó, mert világosan látszik,
 mikor válik ismertté egy swing, mikor történik struktúratörés, mikor vált a
 struktúra karaktert, mikor alakul ki imbalance, mikor történik likviditási szint
-átszúrása, és mitől számít erősnek egy elmozdulás.
+átszúrása, és mitől számít erősnek egy elmozdulás. A szintetikus példa azért
+fontos, mert az összes fogalmat egyetlen reprodukálható mini charton ellenőrzi.
 
 ## 6. Milyen trading fogalmak kapcsolódnak hozzá?
 
@@ -125,6 +134,8 @@ struktúra karaktert, mikor alakul ki imbalance, mikor történik likviditási s
 - A displacement score nem jóslat és nem belépési döntés.
 - Az ATR-alapú komponensek csak múltbeli gyertyákból számolhatók.
 - Hiányzó volumen esetén a volumen komponens kimarad, nem kap hamis nullát.
+- A szintetikus példa nem profitábilis stratégia, hanem oktatási és regressziós
+  tesztadat.
 
 ## 8. Mely fájlokat érdemes elolvasni?
 
@@ -133,15 +144,18 @@ struktúra karaktert, mikor alakul ki imbalance, mikor történik likviditási s
 - `apps/api/src/smc_assistant/domain/fair_value_gaps.py`
 - `apps/api/src/smc_assistant/domain/liquidity.py`
 - `apps/api/src/smc_assistant/domain/displacement.py`
+- `apps/api/src/smc_assistant/domain/synthetic_examples.py`
 - `apps/api/tests/test_candles.py`
 - `apps/api/tests/test_market_structure.py`
 - `apps/api/tests/test_fair_value_gaps.py`
 - `apps/api/tests/test_liquidity.py`
 - `apps/api/tests/test_displacement.py`
+- `apps/api/tests/test_phase1_synthetic_examples.py`
 - `docs/strategy/market-structure.md`
 - `docs/strategy/fair-value-gaps.md`
 - `docs/strategy/liquidity.md`
 - `docs/strategy/displacement.md`
+- `docs/strategy/synthetic-examples.md`
 
 ## 9. Hogyan lehet manuálisan kipróbálni?
 
@@ -151,6 +165,7 @@ cd apps/api
 /Users/bencevarga/Library/Python/3.10/bin/uv run pytest tests/test_fair_value_gaps.py
 /Users/bencevarga/Library/Python/3.10/bin/uv run pytest tests/test_liquidity.py
 /Users/bencevarga/Library/Python/3.10/bin/uv run pytest tests/test_displacement.py
+/Users/bencevarga/Library/Python/3.10/bin/uv run pytest tests/test_phase1_synthetic_examples.py
 ```
 
 ## 10. Gyakorlófeladat
