@@ -8,7 +8,9 @@ ismert swing high vagy swing low szint záróáras, bufferrel szűrt áttörés�
 jelöli. Elkészült az első CHoCH klasszifikáció is, amely a BOS eseményeket az
 aktuális `MarketBias` állapothoz viszonyítja. Elkészült az első háromgyertyás
 Fair Value Gap modell is. Elkészült az első liquidity sweep detektor confirmed
-pivotokra, wick átszúrásra és visszazárásra építve.
+pivotokra, wick átszúrásra és visszazárásra építve. Elkészült az első
+displacement assessment is, amely ATR-, body-, range-, consecutive candle- és
+volumenkomponensekből számol normalizált score-t.
 
 A `Candle` modell validálja az UTC időbélyegeket, az OHLC árkapcsolatokat és az
 opcionális volumen értékét.
@@ -44,6 +46,11 @@ akkor jön létre, ha az ár egy ismert swing low alá szúr, majd visszazár f�
 Bearish sweep akkor jön létre, ha az ár egy ismert swing high fölé szúr, majd
 visszazár alá.
 
+A displacement assessment a vizsgált gyertya testét és range-ét az előző
+gyertyákból számolt ATR-hez hasonlítja. Emellett méri, hogy a test mekkora része
+a teljes range-nek, hány azonos irányú gyertya jött egymás után, és van-e
+volumeneltérés.
+
 ```mermaid
 sequenceDiagram
     participant Data as OHLCV gyertyák
@@ -59,6 +66,7 @@ sequenceDiagram
     Data->>Algo: háromgyertyás FVG ablak
     Pivot->>Algo: sweep szint
     Algo->>Algo: wick átszúrás + visszazárás
+    Data->>Algo: prior ATR + candle body/range
 ```
 
 ## 4. Milyen alternatívák léteznek?
@@ -73,14 +81,16 @@ sequenceDiagram
 - Bonyolultabb FVG modell ATR-szűréssel, mitigation állapottal és életkorral.
 - Sweep modell displacement vagy CHoCH kötelező megerősítéssel.
 - Sweep modell több gyertyás likviditási zónákkal, nem csak pivot szinttel.
+- Komplex displacement modell instrumentum- és session-specifikus küszöbökkel.
 
 ## 5. Miért ezt választottuk?
 
 Az induló szigorú pivot, záróáras BOS, bias-alapú CHoCH és háromgyertyás FVG
-modell, valamint az egyszerű sweep modell reprodukálható és jól tesztelhető.
-Tanulási célra is jó, mert világosan látszik, mikor válik ismertté egy swing,
-mikor történik struktúratörés, mikor vált a struktúra karaktert, mikor alakul ki
-imbalance, és mikor történik likviditási szint átszúrása.
+modell, az egyszerű sweep modell és a komponensalapú displacement score
+reprodukálható és jól tesztelhető. Tanulási célra is jó, mert világosan látszik,
+mikor válik ismertté egy swing, mikor történik struktúratörés, mikor vált a
+struktúra karaktert, mikor alakul ki imbalance, mikor történik likviditási szint
+átszúrása, és mitől számít erősnek egy elmozdulás.
 
 ## 6. Milyen trading fogalmak kapcsolódnak hozzá?
 
@@ -92,6 +102,8 @@ imbalance, és mikor történik likviditási szint átszúrása.
   árzóna marad.
 - Liquidity sweep: ismert swing szint kanócos átszúrása és visszazárás a szint
   mögé.
+- Displacement: erős, irányított gyertya vagy gyertyasorozat, amelyet ATR,
+  body/range és opcionális volumen alapján mérünk.
 - Future leakage: jövőbeli információ használata a döntési pillanat előtt.
 - Repainting: amikor egy indikátor utólag úgy rajzol jelet, mintha az korábban
   is ismert lett volna.
@@ -110,6 +122,9 @@ imbalance, és mikor történik likviditási szint átszúrása.
 - A sweep csak akkor érvényes, ha a pivot már a sweep gyertya előtt ismert volt.
 - A sweep nem azonos BOS-szal: sweepnél wick átszúrás és visszazárás kell,
   BOS-nál alapértelmezésben záróáras szinttörés.
+- A displacement score nem jóslat és nem belépési döntés.
+- Az ATR-alapú komponensek csak múltbeli gyertyákból számolhatók.
+- Hiányzó volumen esetén a volumen komponens kimarad, nem kap hamis nullát.
 
 ## 8. Mely fájlokat érdemes elolvasni?
 
@@ -117,13 +132,16 @@ imbalance, és mikor történik likviditási szint átszúrása.
 - `apps/api/src/smc_assistant/domain/market_structure.py`
 - `apps/api/src/smc_assistant/domain/fair_value_gaps.py`
 - `apps/api/src/smc_assistant/domain/liquidity.py`
+- `apps/api/src/smc_assistant/domain/displacement.py`
 - `apps/api/tests/test_candles.py`
 - `apps/api/tests/test_market_structure.py`
 - `apps/api/tests/test_fair_value_gaps.py`
 - `apps/api/tests/test_liquidity.py`
+- `apps/api/tests/test_displacement.py`
 - `docs/strategy/market-structure.md`
 - `docs/strategy/fair-value-gaps.md`
 - `docs/strategy/liquidity.md`
+- `docs/strategy/displacement.md`
 
 ## 9. Hogyan lehet manuálisan kipróbálni?
 
@@ -132,10 +150,11 @@ cd apps/api
 /Users/bencevarga/Library/Python/3.10/bin/uv run pytest tests/test_market_structure.py
 /Users/bencevarga/Library/Python/3.10/bin/uv run pytest tests/test_fair_value_gaps.py
 /Users/bencevarga/Library/Python/3.10/bin/uv run pytest tests/test_liquidity.py
+/Users/bencevarga/Library/Python/3.10/bin/uv run pytest tests/test_displacement.py
 ```
 
 ## 10. Gyakorlófeladat
 
-Változtasd meg az egyik liquidity sweep tesztben a `max_confirmation_bars`
-értékét 0-ról 1-re. Figyeld meg, hogyan válik elfogadhatóvá a következő
-gyertyán történő visszazárás.
+Változtasd meg az egyik displacement tesztben az aktuális gyertya volumenét
+`None` értékre. Figyeld meg, hogy a score továbbra is kiszámolható, csak a
+volumen komponens marad ki.

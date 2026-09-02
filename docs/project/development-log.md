@@ -84,6 +84,10 @@ lett áthelyezve.
 - Unit tesztek készültek bullish sweep, bearish sweep, későbbi visszazárás,
   megerősítési ablak, még nem ismert pivot, érintés, sweep buffer és
   deduplikáció eseteire.
+- Létrejött az első displacement assessment domain modell.
+- Unit tesztek készültek iránymeghatározásra, prior ATR-re, erős displacementre,
+  hiányzó volumenre, consecutive gyertyákra, kevés ATR adatra és invalid
+  beállításokra.
 
 ### Ellenőrzött kapuk
 
@@ -107,6 +111,11 @@ lett áthelyezve.
 - Célzott liquidity Ruff és mypy ellenőrzés: sikeres.
 - Teljes backend ellenőrzés liquidity után: `uv run pytest` 45 teszt sikeres,
   `uv run ruff check .` sikeres, `uv run mypy src` sikeres.
+- Célzott displacement ellenőrzés: `uv run pytest tests/test_displacement.py`
+  10 teszt sikeres.
+- Célzott displacement Ruff és mypy ellenőrzés: sikeres.
+- Teljes backend ellenőrzés displacement után: `uv run pytest` 55 teszt
+  sikeres, `uv run ruff check .` sikeres, `uv run mypy src` sikeres.
 - Megjegyzés: a FastAPI TestClient egy upstream Starlette deprecation warningot
   jelez, de a tesztek sikeresek.
 
@@ -114,10 +123,10 @@ lett áthelyezve.
 
 Phase 1 következő mérföldkő:
 
-1. Displacement komponensek létrehozása ATR/body/range alapokon.
-2. Displacement score unit tesztek.
-3. Hiányzó volumen adat kezelése.
-4. Dokumentáció frissítése displacement félreértésekkel.
+1. Szintetikus OHLCV példák létrehozása a Phase 1 domain fogalmakhoz.
+2. Integrált domain teszt, amely swing, BOS, CHoCH, FVG, sweep és displacement
+   eseményeket determinisztikusan mutat.
+3. Dokumentáció frissítése arról, hogyan olvasható a szintetikus adatsor.
 
 ## Korábbi következő konkrét lépés
 

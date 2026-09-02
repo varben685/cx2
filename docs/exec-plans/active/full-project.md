@@ -78,7 +78,7 @@ ezért a Docker image build ebben a munkamenetben nem volt futtatható.
 - [x] CHoCH algoritmikus definíció és unit tesztek.
 - [x] FVG algoritmikus definíció és unit tesztek.
 - [x] Liquidity sweep algoritmikus definíció és unit tesztek.
-- [ ] Displacement komponensek és unit tesztek.
+- [x] Displacement komponensek és unit tesztek.
 - [ ] Szintetikus OHLCV példák.
 
 ## Phase 2: Webhook ingestion
@@ -208,3 +208,11 @@ ezért a Docker image build ebben a munkamenetben nem volt futtatható.
   9 teszt sikeres, célzott Ruff és mypy sikeres. Teljes backend ellenőrzés:
   `uv run pytest` 45 teszt sikeres, `uv run ruff check .` sikeres,
   `uv run mypy src` sikeres. Következő lépés: displacement.
+- 2026-09-02: Elkészült az első displacement assessment domain modell. A score
+  prior ATR, body/ATR, range/ATR, body-to-range, consecutive candle és opcionális
+  volumen komponensekből áll. Hiányzó ATR vagy volumen esetén a megfelelő
+  komponens kimarad és a score a rendelkezésre álló súlyokra normalizálódik.
+  Célzott ellenőrzés: `uv run pytest tests/test_displacement.py` 10 teszt
+  sikeres, célzott Ruff és mypy sikeres. Teljes backend ellenőrzés:
+  `uv run pytest` 55 teszt sikeres, `uv run ruff check .` sikeres,
+  `uv run mypy src` sikeres. Következő lépés: szintetikus OHLCV példák.

@@ -26,6 +26,10 @@ Alacsonyabb idősíkon keressük:
 - erős displacementet;
 - új FVG kialakulását.
 
+A displacement kezdetben külön komponensekből számolt score: body/ATR,
+range/ATR, body-to-range, egymást követő irányazonos gyertyák és opcionális
+volumenarány.
+
 ## Execution
 
 A rendszer belépési tervet készít:
@@ -46,4 +50,3 @@ flowchart TD
     E --> S[Rule score]
     S --> J[Journal és outcome]
 ```
-
