@@ -1,10 +1,14 @@
-# Phase 02: Webhook contract
+# Phase 02: Webhook contract és endpoint
 
 ## 1. Mit építettünk?
 
 Elkészült a TradingView webhook első verziózott Pydantic contractja. A modell
 validálja a `schemaVersion`, `eventId`, `eventType`, `source`, timeframe,
 bar-időbélyeg, market structure, FVG, execution és feature mezőket.
+
+Emellett létrejött az első HTTP fogadó endpoint:
+`POST /api/v1/webhooks/tradingview`. Valid payload esetén az API `202 Accepted`
+választ ad, de még nem ment adatbázisba és még nem indít setup scoringot.
 
 ## 2. Miért erre van szükség?
 
@@ -23,6 +27,7 @@ flowchart LR
     TV[TradingView JSON] --> P[Pydantic validation]
     P --> OK[Validated payload]
     P --> ERR[Validation error]
+    OK --> R[202 Accepted response]
     OK --> S[JSON Schema export]
 ```
 
@@ -52,11 +57,17 @@ A Pydantic modell közvetlenül illeszkedik a FastAPI-hoz, runtime validációt 
   képlettel.
 - A `eventId` még nem adatbázisos deduplikáció, de már kötelező contract mező.
 - Extra mezőket most tiltunk, hogy ne csússzon be dokumentálatlan adat.
+- A hibás payload API válasza nem echozza vissza a nyers input értékeket. Ez
+  csökkenti annak esélyét, hogy véletlenül beküldött secret visszakerüljön a
+  kliensoldali vagy proxy logokba.
 
 ## 8. Mely fájlokat érdemes elolvasni?
 
 - `apps/api/src/smc_assistant/contracts/tradingview.py`
+- `apps/api/src/smc_assistant/api/webhooks.py`
+- `apps/api/src/smc_assistant/api/errors.py`
 - `apps/api/tests/contracts/test_tradingview_contract.py`
+- `apps/api/tests/test_tradingview_webhook_api.py`
 - `docs/contracts/tradingview-webhook.md`
 - `docs/contracts/generated/tradingview-webhook.schema.json`
 - `scripts/export_tradingview_schema.py`
@@ -66,6 +77,7 @@ A Pydantic modell közvetlenül illeszkedik a FastAPI-hoz, runtime validációt 
 ```bash
 cd apps/api
 /Users/bencevarga/Library/Python/3.10/bin/uv run pytest tests/contracts/test_tradingview_contract.py
+/Users/bencevarga/Library/Python/3.10/bin/uv run pytest tests/test_tradingview_webhook_api.py
 /Users/bencevarga/Library/Python/3.10/bin/uv run python ../../scripts/export_tradingview_schema.py
 ```
 
@@ -73,4 +85,3 @@ cd apps/api
 
 Változtasd meg a teszt payloadban a `riskReward` értéket 3.0-ról 2.0-ra, és
 figyeld meg, hogy a validáció elutasítja a payloadot.
-

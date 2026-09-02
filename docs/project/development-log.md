@@ -161,6 +161,10 @@ repainting félreértésektől.
 - Létrejött a JSON Schema export script.
 - Létrejött a generált JSON Schema fájl.
 - Létrejött a Phase 2 learning dokumentum első változata.
+- Létrejött a `POST /api/v1/webhooks/tradingview` endpoint.
+- Valid payloadra az API gyors `202 Accepted` választ ad.
+- Hibás payloadnál az API validációs válasza nem echozza vissza a nyers input
+  értékeket.
 
 ### Ellenőrzött kapuk
 
@@ -170,13 +174,17 @@ repainting félreértésektől.
 - JSON Schema export: sikeres.
 - Teljes backend ellenőrzés webhook contract után: `uv run pytest` 68 teszt
   sikeres, `uv run ruff check .` sikeres, `uv run mypy src` sikeres.
+- Célzott webhook API ellenőrzés:
+  `uv run pytest tests/test_tradingview_webhook_api.py` 3 teszt sikeres.
+- Teljes backend ellenőrzés webhook endpoint után: `uv run pytest` 71 teszt
+  sikeres, `uv run ruff check .` sikeres, `uv run mypy src` sikeres.
 
 ### Következő konkrét lépés
 
 Phase 2 következő mérföldkő:
 
-1. `POST /api/v1/webhooks/tradingview` endpoint létrehozása.
-2. Pydantic validáció bekötése FastAPI route-ba.
-3. Gyors HTTP válasz valid payloadra.
-4. Hibás payload API tesztek.
-5. Feldolgozási válaszmodell előkészítése az idempotens persistence előtt.
+1. Idempotens event feldolgozás előkészítése `eventId` alapján.
+2. Bejövő webhook esemény application service bevezetése.
+3. In-memory repository tesztduplum létrehozása az első service tesztekhez.
+4. Duplikált webhook esemény biztonságos kezelése.
+5. PostgreSQL persistence előkészítése.

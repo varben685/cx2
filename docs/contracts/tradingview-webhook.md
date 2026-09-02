@@ -22,6 +22,31 @@ validálható és JSON Schema formában is exportálható.
 Az aktuális Phase 2 contract már részletes `marketStructure`, `fvg`,
 `execution` és `features` blokkokat is tartalmaz.
 
+## Endpoint
+
+```http
+POST /api/v1/webhooks/tradingview
+Content-Type: application/json
+```
+
+Valid payload esetén az API gyors `202 Accepted` választ ad. Ez még csak azt
+jelenti, hogy a payload contract szerint érvényes és feldolgozásra átadható; az
+idempotens adatbázisos mentés a következő Phase 2 szelet.
+
+```json
+{
+  "status": "VALIDATED",
+  "eventId": "BTCUSDT-1m-1720000000-bullish-choch",
+  "eventType": "SETUP_CANDIDATE",
+  "schemaVersion": "1.0",
+  "receivedAt": "2026-09-03T10:00:00Z",
+  "message": "TradingView webhook payload accepted for processing."
+}
+```
+
+Hibás payload esetén az API `422 Unprocessable Entity` választ ad. A validációs
+hibaválasz nem echozza vissza a nyers input értékeket.
+
 ## Teljes példa
 
 ```json
@@ -97,5 +122,8 @@ cd apps/api
 
 ## Kapcsolódó kód
 
+- `apps/api/src/smc_assistant/api/webhooks.py`
+- `apps/api/src/smc_assistant/api/errors.py`
 - `apps/api/src/smc_assistant/contracts/tradingview.py`
 - `apps/api/tests/contracts/test_tradingview_contract.py`
+- `apps/api/tests/test_tradingview_webhook_api.py`

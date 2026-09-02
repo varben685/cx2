@@ -86,9 +86,11 @@ ezért a Docker image build ebben a munkamenetben nem volt futtatható.
 - [x] Verziózott TradingView webhook contract.
 - [x] Pydantic validáció.
 - [x] JSON Schema export.
+- [x] TradingView webhook HTTP endpoint.
 - [ ] Idempotens event feldolgozás.
 - [ ] PostgreSQL persistence.
 - [ ] Audit események.
+- [x] Hibás payloadok biztonságos API válasza nyers input echo nélkül.
 - [ ] Hibás payloadok biztonságos naplózása.
 
 ## Phase 3: Pine Script prototípus
@@ -232,3 +234,8 @@ ezért a Docker image build ebben a munkamenetben nem volt futtatható.
   sikeres, célzott Ruff és mypy sikeres, JSON Schema export sikeres. Teljes
   backend ellenőrzés: `uv run pytest` 68 teszt sikeres, `uv run ruff check .`
   sikeres, `uv run mypy src` sikeres. Következő lépés: webhook endpoint.
+- 2026-09-03: Elkészült a `POST /api/v1/webhooks/tradingview` endpoint. Valid
+  payloadra gyors `202 Accepted` választ ad, a tényleges idempotens feldolgozás
+  és persistence előtt. A FastAPI validációs hibaválasz nyers input echo nélkül
+  tér vissza, így hibás webhooknál sem kerül vissza például véletlenül beküldött
+  secret érték a kliensnek. Következő lépés: idempotens event feldolgozás.
