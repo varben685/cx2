@@ -29,18 +29,34 @@ POST /api/v1/webhooks/tradingview
 Content-Type: application/json
 ```
 
-Valid payload esetén az API gyors `202 Accepted` választ ad. Ez még csak azt
-jelenti, hogy a payload contract szerint érvényes és feldolgozásra átadható; az
-idempotens adatbázisos mentés a következő Phase 2 szelet.
+Valid payload esetén az API gyors `202 Accepted` választ ad. Ez azt jelenti,
+hogy a payload contract szerint érvényes és feldolgozásra átadható. Az
+`eventId` alapján az endpoint idempotensen kezeli az ismételt beküldést; az első
+beküldés `ACCEPTED`, az ismételt beküldés `DUPLICATE` státuszt kap.
 
 ```json
 {
-  "status": "VALIDATED",
+  "status": "ACCEPTED",
   "eventId": "BTCUSDT-1m-1720000000-bullish-choch",
   "eventType": "SETUP_CANDIDATE",
   "schemaVersion": "1.0",
   "receivedAt": "2026-09-03T10:00:00Z",
+  "firstReceivedAt": "2026-09-03T10:00:00Z",
   "message": "TradingView webhook payload accepted for processing."
+}
+```
+
+Ismételt `eventId` esetén:
+
+```json
+{
+  "status": "DUPLICATE",
+  "eventId": "BTCUSDT-1m-1720000000-bullish-choch",
+  "eventType": "SETUP_CANDIDATE",
+  "schemaVersion": "1.0",
+  "receivedAt": "2026-09-03T10:00:30Z",
+  "firstReceivedAt": "2026-09-03T10:00:00Z",
+  "message": "TradingView webhook payload was already accepted."
 }
 ```
 
@@ -124,6 +140,9 @@ cd apps/api
 
 - `apps/api/src/smc_assistant/api/webhooks.py`
 - `apps/api/src/smc_assistant/api/errors.py`
+- `apps/api/src/smc_assistant/application/webhook_ingestion.py`
+- `apps/api/src/smc_assistant/infrastructure/in_memory_webhook_events.py`
 - `apps/api/src/smc_assistant/contracts/tradingview.py`
 - `apps/api/tests/contracts/test_tradingview_contract.py`
 - `apps/api/tests/test_tradingview_webhook_api.py`
+- `apps/api/tests/test_webhook_ingestion.py`

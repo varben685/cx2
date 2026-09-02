@@ -1,27 +1,31 @@
-from datetime import UTC, datetime
-from enum import StrEnum
+from typing import Annotated, cast
 
-from fastapi import APIRouter, status
+from fastapi import APIRouter, Depends, Request, status
 from pydantic import BaseModel, ConfigDict, Field
 
+from smc_assistant.application.webhook_ingestion import (
+    WebhookIngestionService,
+    WebhookIngestionStatus,
+)
 from smc_assistant.contracts.tradingview import TradingViewWebhookPayload
 
 router = APIRouter(prefix="/api/v1/webhooks", tags=["webhooks"])
 
 
-class WebhookProcessingStatus(StrEnum):
-    VALIDATED = "VALIDATED"
-
-
 class TradingViewWebhookResponse(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
 
-    status: WebhookProcessingStatus
+    status: WebhookIngestionStatus
     event_id: str = Field(alias="eventId")
     event_type: str = Field(alias="eventType")
     schema_version: str = Field(alias="schemaVersion")
-    received_at: datetime = Field(alias="receivedAt")
+    received_at: str = Field(alias="receivedAt")
+    first_received_at: str = Field(alias="firstReceivedAt")
     message: str
+
+
+def get_webhook_ingestion_service(request: Request) -> WebhookIngestionService:
+    return cast(WebhookIngestionService, request.app.state.webhook_ingestion_service)
 
 
 @router.post(
@@ -32,14 +36,20 @@ class TradingViewWebhookResponse(BaseModel):
 )
 def receive_tradingview_webhook(
     payload: TradingViewWebhookPayload,
+    ingestion_service: Annotated[
+        WebhookIngestionService,
+        Depends(get_webhook_ingestion_service),
+    ],
 ) -> TradingViewWebhookResponse:
+    result = ingestion_service.ingest_tradingview(payload)
     return TradingViewWebhookResponse.model_validate(
         {
-            "status": WebhookProcessingStatus.VALIDATED,
-            "eventId": payload.event_id,
-            "eventType": payload.event_type,
-            "schemaVersion": payload.schema_version,
-            "receivedAt": datetime.now(UTC),
-            "message": "TradingView webhook payload accepted for processing.",
+            "status": result.status,
+            "eventId": result.event_id,
+            "eventType": result.event_type,
+            "schemaVersion": result.schema_version,
+            "receivedAt": result.received_at.isoformat(),
+            "firstReceivedAt": result.first_received_at.isoformat(),
+            "message": result.message,
         }
     )

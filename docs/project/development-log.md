@@ -165,6 +165,10 @@ repainting félreértésektől.
 - Valid payloadra az API gyors `202 Accepted` választ ad.
 - Hibás payloadnál az API validációs válasza nem echozza vissza a nyers input
   értékeket.
+- Létrejött az első idempotens webhook ingestion application service.
+- Létrejött az in-memory webhook event repository tesztduplum.
+- Az API ismételt `eventId` esetén `DUPLICATE` státusszal tér vissza, és az első
+  beküldés `firstReceivedAt` idejét mutatja.
 
 ### Ellenőrzött kapuk
 
@@ -178,13 +182,19 @@ repainting félreértésektől.
   `uv run pytest tests/test_tradingview_webhook_api.py` 3 teszt sikeres.
 - Teljes backend ellenőrzés webhook endpoint után: `uv run pytest` 71 teszt
   sikeres, `uv run ruff check .` sikeres, `uv run mypy src` sikeres.
+- Célzott webhook ingestion ellenőrzés:
+  `uv run pytest tests/test_webhook_ingestion.py tests/test_tradingview_webhook_api.py`
+  7 teszt sikeres.
+- Teljes backend ellenőrzés idempotens ingestion után: `uv run pytest` 75 teszt
+  sikeres, `uv run ruff check .` sikeres, `uv run mypy src` sikeres.
 
 ### Következő konkrét lépés
 
 Phase 2 következő mérföldkő:
 
-1. Idempotens event feldolgozás előkészítése `eventId` alapján.
-2. Bejövő webhook esemény application service bevezetése.
-3. In-memory repository tesztduplum létrehozása az első service tesztekhez.
-4. Duplikált webhook esemény biztonságos kezelése.
-5. PostgreSQL persistence előkészítése.
+1. PostgreSQL persistence előkészítése.
+2. Webhook event adatbázistábla és migrációs stratégia kialakítása.
+3. `eventId` unique constraint tervezése.
+4. Repository interface megtartása, in-memory implementáció mellé Postgres
+   implementáció.
+5. Duplikált webhook esemény kezelése adatbázisos unique constraint mellett.

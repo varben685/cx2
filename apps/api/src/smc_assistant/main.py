@@ -5,7 +5,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from smc_assistant.api.errors import validation_exception_handler
 from smc_assistant.api.health import router as health_router
 from smc_assistant.api.webhooks import router as webhooks_router
+from smc_assistant.application.webhook_ingestion import WebhookIngestionService
 from smc_assistant.config import Settings
+from smc_assistant.infrastructure.in_memory_webhook_events import InMemoryWebhookEventRepository
 
 
 def create_app(settings: Settings | None = None) -> FastAPI:
@@ -25,6 +27,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     )
 
     app.state.settings = app_settings
+    app.state.webhook_ingestion_service = WebhookIngestionService(
+        InMemoryWebhookEventRepository()
+    )
     app.add_exception_handler(RequestValidationError, validation_exception_handler)
     app.include_router(health_router)
     app.include_router(webhooks_router)

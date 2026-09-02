@@ -54,12 +54,28 @@ def test_tradingview_webhook_accepts_valid_payload() -> None:
 
     assert response.status_code == 202
     payload = response.json()
-    assert payload["status"] == "VALIDATED"
+    assert payload["status"] == "ACCEPTED"
     assert payload["eventId"] == "BTCUSDT-1m-1720000000-bullish-choch"
     assert payload["eventType"] == "SETUP_CANDIDATE"
     assert payload["schemaVersion"] == "1.0"
     assert "receivedAt" in payload
+    assert payload["firstReceivedAt"] == payload["receivedAt"]
     assert payload["message"] == "TradingView webhook payload accepted for processing."
+
+
+def test_tradingview_webhook_marks_repeated_event_id_as_duplicate() -> None:
+    client = TestClient(create_app())
+
+    first_response = client.post("/api/v1/webhooks/tradingview", json=valid_payload())
+    second_response = client.post("/api/v1/webhooks/tradingview", json=valid_payload())
+
+    assert first_response.status_code == 202
+    assert second_response.status_code == 202
+    payload = second_response.json()
+    assert payload["status"] == "DUPLICATE"
+    assert payload["eventId"] == "BTCUSDT-1m-1720000000-bullish-choch"
+    assert payload["firstReceivedAt"] == first_response.json()["receivedAt"]
+    assert payload["message"] == "TradingView webhook payload was already accepted."
 
 
 def test_tradingview_webhook_rejects_invalid_payload() -> None:

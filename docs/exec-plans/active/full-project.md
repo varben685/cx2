@@ -87,7 +87,8 @@ ezért a Docker image build ebben a munkamenetben nem volt futtatható.
 - [x] Pydantic validáció.
 - [x] JSON Schema export.
 - [x] TradingView webhook HTTP endpoint.
-- [ ] Idempotens event feldolgozás.
+- [x] Első idempotens event feldolgozás `eventId` alapján.
+- [x] In-memory webhook event repository tesztduplum.
 - [ ] PostgreSQL persistence.
 - [ ] Audit események.
 - [x] Hibás payloadok biztonságos API válasza nyers input echo nélkül.
@@ -239,3 +240,8 @@ ezért a Docker image build ebben a munkamenetben nem volt futtatható.
   és persistence előtt. A FastAPI validációs hibaválasz nyers input echo nélkül
   tér vissza, így hibás webhooknál sem kerül vissza például véletlenül beküldött
   secret érték a kliensnek. Következő lépés: idempotens event feldolgozás.
+- 2026-09-03: Elkészült az első idempotens webhook ingestion service. Az
+  `eventId` az idempotencia kulcsa: az első beküldés `ACCEPTED`, az ismételt
+  beküldés `DUPLICATE` státuszt kap, és a rendszer az elsőként eltárolt payloadot
+  tartja meg. Az első repository in-memory, lockkal védett tesztduplum; a
+  következő lépés ennek PostgreSQL persistence-re cserélése.
