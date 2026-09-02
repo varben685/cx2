@@ -92,9 +92,9 @@ ezért a Docker image build ebben a munkamenetben nem volt futtatható.
 - [x] Első SQLAlchemy/PostgreSQL webhook event persistence.
 - [x] `webhook_events.event_id` unique constraint.
 - [x] Repository factory memory/postgres kapcsolóval.
-- [ ] Audit események.
+- [x] Első webhook audit események.
 - [x] Hibás payloadok biztonságos API válasza nyers input echo nélkül.
-- [ ] Hibás payloadok biztonságos naplózása.
+- [x] Hibás payloadok biztonságos naplózása nyers payload nélkül.
 
 ## Phase 3: Pine Script prototípus
 
@@ -253,3 +253,8 @@ ezért a Docker image build ebben a munkamenetben nem volt futtatható.
   `WEBHOOK_EVENT_REPOSITORY=memory|postgres` kapcsolóval választ repositoryt;
   Docker Compose alatt a webhook események PostgreSQL-be kerülnek. Következő
   lépés: audit események és biztonságos hibás-payload naplózás.
+- 2026-09-03: Elkészült az első webhook audit réteg. A sikeres webhook,
+  duplikált `eventId` és validációs hiba külön audit eventet kap:
+  `WEBHOOK_ACCEPTED`, `WEBHOOK_DUPLICATE`, `WEBHOOK_VALIDATION_FAILED`. Az audit
+  metadata csak azonosítókat, státuszt, útvonalat és hibaszámot tartalmaz, nyers
+  webhook payloadot nem.

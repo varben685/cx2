@@ -75,6 +75,17 @@ A webhook ingestion repository két módban indulhat:
 Docker Compose alatt a backend `postgres` módban indul. A `webhook_events`
 tábla `event_id` elsődleges/unique kulccsal védi az idempotenciát.
 
+## Audit
+
+A webhook flow három első audit eseményt ír:
+
+- `WEBHOOK_ACCEPTED`: új, valid webhook esemény.
+- `WEBHOOK_DUPLICATE`: már látott `eventId` ismételt beküldése.
+- `WEBHOOK_VALIDATION_FAILED`: FastAPI/Pydantic validációs hiba.
+
+Az audit metadata nem tartalmaz nyers webhook payloadot. Hibás payloadnál csak
+HTTP metódus, útvonal, hibaszám és validációs hibatípusok kerülnek auditba.
+
 ## Teljes példa
 
 ```json
@@ -152,7 +163,9 @@ cd apps/api
 
 - `apps/api/src/smc_assistant/api/webhooks.py`
 - `apps/api/src/smc_assistant/api/errors.py`
+- `apps/api/src/smc_assistant/application/audit.py`
 - `apps/api/src/smc_assistant/application/webhook_ingestion.py`
+- `apps/api/src/smc_assistant/infrastructure/logging_audit.py`
 - `apps/api/src/smc_assistant/infrastructure/in_memory_webhook_events.py`
 - `apps/api/src/smc_assistant/infrastructure/sql_webhook_events.py`
 - `apps/api/src/smc_assistant/infrastructure/webhook_event_schema.py`

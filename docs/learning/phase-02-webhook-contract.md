@@ -18,6 +18,10 @@ Most már van első SQLAlchemy/PostgreSQL persistence réteg is. Docker Compose
 alatt a backend PostgreSQL repositoryval indul, közvetlen lokális fejlesztésnél
 pedig alapból memory repository marad, hogy gyorsan lehessen tesztelni.
 
+A webhook flow audit eseményeket is ír. Sikeres befogadáskor
+`WEBHOOK_ACCEPTED`, duplikált `eventId` esetén `WEBHOOK_DUPLICATE`, hibás
+payload validációnál `WEBHOOK_VALIDATION_FAILED` keletkezik.
+
 ## 2. Miért erre van szükség?
 
 A TradingView alert egy külső rendszerből érkezik. A backend csak akkor tud
@@ -77,10 +81,14 @@ A Pydantic modell közvetlenül illeszkedik a FastAPI-hoz, runtime validációt 
   repository használható.
 - A táblaséma most `metadata.create_all()` segítségével inicializálódik. Ez jó
   első fejlesztési lépés, de később Alembic migrációkra kell váltani.
+- Az audit metadata nem tartalmaz nyers webhook payloadot. Hibás payloadnál csak
+  HTTP metódus, útvonal, hibaszám és validációs hibatípusok kerülnek az audit
+  eseménybe.
 
 ## 8. Mely fájlokat érdemes elolvasni?
 
 - `apps/api/src/smc_assistant/contracts/tradingview.py`
+- `apps/api/src/smc_assistant/application/audit.py`
 - `apps/api/src/smc_assistant/api/webhooks.py`
 - `apps/api/src/smc_assistant/api/errors.py`
 - `apps/api/src/smc_assistant/application/webhook_ingestion.py`
@@ -88,6 +96,7 @@ A Pydantic modell közvetlenül illeszkedik a FastAPI-hoz, runtime validációt 
 - `apps/api/src/smc_assistant/infrastructure/sql_webhook_events.py`
 - `apps/api/src/smc_assistant/infrastructure/webhook_event_schema.py`
 - `apps/api/src/smc_assistant/infrastructure/webhook_ingestion_factory.py`
+- `apps/api/src/smc_assistant/infrastructure/logging_audit.py`
 - `apps/api/tests/contracts/test_tradingview_contract.py`
 - `apps/api/tests/test_tradingview_webhook_api.py`
 - `apps/api/tests/test_webhook_ingestion.py`

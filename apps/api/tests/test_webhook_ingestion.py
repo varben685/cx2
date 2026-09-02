@@ -1,6 +1,7 @@
 from copy import deepcopy
 from datetime import UTC, datetime, timedelta
 
+from smc_assistant.application.audit import AuditEvent, AuditEventType
 from smc_assistant.application.webhook_ingestion import (
     WebhookIngestionService,
     WebhookIngestionStatus,
@@ -9,6 +10,14 @@ from smc_assistant.contracts.tradingview import TradingViewWebhookPayload
 from smc_assistant.infrastructure.in_memory_webhook_events import (
     InMemoryWebhookEventRepository,
 )
+
+
+class RecordingAuditLogger:
+    def __init__(self) -> None:
+        self.events: list[AuditEvent] = []
+
+    def record(self, event: AuditEvent) -> None:
+        self.events.append(event)
 
 
 def valid_payload() -> TradingViewWebhookPayload:
@@ -57,7 +66,8 @@ def valid_payload() -> TradingViewWebhookPayload:
 
 def test_ingestion_accepts_new_webhook_event() -> None:
     repository = InMemoryWebhookEventRepository()
-    service = WebhookIngestionService(repository)
+    audit_logger = RecordingAuditLogger()
+    service = WebhookIngestionService(repository, audit_logger)
     received_at = datetime(2026, 9, 3, 10, 0, tzinfo=UTC)
 
     result = service.ingest_tradingview(valid_payload(), received_at=received_at)
@@ -67,10 +77,14 @@ def test_ingestion_accepts_new_webhook_event() -> None:
     assert result.received_at == received_at
     assert result.first_received_at == received_at
     assert repository.get_by_event_id(result.event_id) is not None
+    assert audit_logger.events[0].event_type == AuditEventType.WEBHOOK_ACCEPTED
+    assert audit_logger.events[0].metadata["event_id"] == result.event_id
+    assert "payload" not in audit_logger.events[0].metadata
 
 
 def test_ingestion_marks_repeated_event_id_as_duplicate() -> None:
-    service = WebhookIngestionService(InMemoryWebhookEventRepository())
+    audit_logger = RecordingAuditLogger()
+    service = WebhookIngestionService(InMemoryWebhookEventRepository(), audit_logger)
     first_received_at = datetime(2026, 9, 3, 10, 0, tzinfo=UTC)
     second_received_at = first_received_at + timedelta(seconds=30)
 
@@ -87,6 +101,10 @@ def test_ingestion_marks_repeated_event_id_as_duplicate() -> None:
     assert second_result.status == WebhookIngestionStatus.DUPLICATE
     assert second_result.received_at == second_received_at
     assert second_result.first_received_at == first_received_at
+    assert audit_logger.events[1].event_type == AuditEventType.WEBHOOK_DUPLICATE
+    assert audit_logger.events[1].metadata["event_id"] == second_result.event_id
+    assert audit_logger.events[1].metadata["first_received_at"] == first_received_at.isoformat()
+    assert "payload" not in audit_logger.events[1].metadata
 
 
 def test_ingestion_uses_first_payload_for_duplicate_event_id() -> None:

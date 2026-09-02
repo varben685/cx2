@@ -174,6 +174,11 @@ repainting félreértésektől.
 - A `WEBHOOK_EVENT_REPOSITORY` kapcsolóval választható a `memory` és a `postgres`
   repository.
 - Docker Compose alatt a backend már `postgres` repository módban indul.
+- Létrejött az első típusos audit event modell.
+- A webhook ingestion `WEBHOOK_ACCEPTED` és `WEBHOOK_DUPLICATE` audit eseményeket
+  ír.
+- A validációs hiba handler `WEBHOOK_VALIDATION_FAILED` audit eseményt ír,
+  nyers payload nélkül.
 
 ### Ellenőrzött kapuk
 
@@ -198,13 +203,18 @@ repainting félreértésektől.
 - Teljes backend ellenőrzés SQL persistence után: `uv run pytest` 79 teszt
   sikeres, `uv run ruff check .` sikeres, `uv run mypy src` sikeres.
 - Docker Compose konfiguráció ellenőrzés: `docker compose config` sikeres.
+- Célzott audit ellenőrzés:
+  `uv run pytest tests/test_webhook_ingestion.py tests/test_tradingview_webhook_api.py tests/test_webhook_ingestion_factory.py`
+  8 teszt sikeres.
+- Teljes backend ellenőrzés audit után: `uv run pytest` 79 teszt sikeres,
+  `uv run ruff check .` sikeres, `uv run mypy src` sikeres.
 
 ### Következő konkrét lépés
 
 Phase 2 következő mérföldkő:
 
-1. Audit események bevezetése webhook ingestion köré.
-2. Hibás payloadok biztonságos naplózása nyers payload nélkül.
-3. Sikeres, duplikált és hibás webhook beérkezések mérhetővé tétele.
-4. PostgreSQL repository Docker smoke teszt, ha a Docker daemon fut.
-5. Később Alembic migrációs stratégia bevezetése a `create_all` helyett.
+1. Phase 2 lezáró Docker/PostgreSQL smoke teszt, ha a Docker daemon fut.
+2. Alembic migrációs stratégia bevezetése a `create_all` helyett.
+3. Phase 3 indítása: Pine Script prototípus.
+4. Swing/BOS/CHoCH/FVG/liquidity/displacement jelölések TradingView oldalon.
+5. JSON alert payload összehangolása a backend contracttal.

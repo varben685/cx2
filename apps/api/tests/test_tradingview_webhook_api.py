@@ -2,7 +2,16 @@ from copy import deepcopy
 
 from fastapi.testclient import TestClient
 
+from smc_assistant.application.audit import AuditEvent, AuditEventType
 from smc_assistant.main import create_app
+
+
+class RecordingAuditLogger:
+    def __init__(self) -> None:
+        self.events: list[AuditEvent] = []
+
+    def record(self, event: AuditEvent) -> None:
+        self.events.append(event)
 
 
 def valid_payload() -> dict[str, object]:
@@ -93,7 +102,10 @@ def test_tradingview_webhook_rejects_invalid_payload() -> None:
 
 
 def test_tradingview_webhook_validation_response_does_not_echo_raw_secret() -> None:
-    client = TestClient(create_app())
+    app = create_app()
+    audit_logger = RecordingAuditLogger()
+    app.state.audit_logger = audit_logger
+    client = TestClient(app)
     raw_payload = valid_payload()
     raw_payload["secret"] = "super-secret-value"
 
@@ -101,3 +113,6 @@ def test_tradingview_webhook_validation_response_does_not_echo_raw_secret() -> N
 
     assert response.status_code == 422
     assert "super-secret-value" not in response.text
+    assert audit_logger.events[0].event_type == AuditEventType.WEBHOOK_VALIDATION_FAILED
+    assert audit_logger.events[0].metadata["path"] == "/api/v1/webhooks/tradingview"
+    assert "super-secret-value" not in str(audit_logger.events[0].metadata)

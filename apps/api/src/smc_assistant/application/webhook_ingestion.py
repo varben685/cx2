@@ -3,6 +3,12 @@ from datetime import UTC, datetime
 from enum import StrEnum
 from typing import Any, Protocol
 
+from smc_assistant.application.audit import (
+    AuditEventType,
+    AuditLogger,
+    NoopAuditLogger,
+    create_audit_event,
+)
 from smc_assistant.contracts.tradingview import TradingViewWebhookPayload
 
 
@@ -44,8 +50,13 @@ class WebhookIngestionResult:
 
 
 class WebhookIngestionService:
-    def __init__(self, repository: WebhookEventRepository) -> None:
+    def __init__(
+        self,
+        repository: WebhookEventRepository,
+        audit_logger: AuditLogger | None = None,
+    ) -> None:
         self._repository = repository
+        self._audit_logger = audit_logger or NoopAuditLogger()
 
     def ingest_tradingview(
         self,
@@ -65,6 +76,18 @@ class WebhookIngestionService:
 
         save_result = self._repository.save_if_absent(record)
         if save_result.created:
+            self._audit_logger.record(
+                create_audit_event(
+                    AuditEventType.WEBHOOK_ACCEPTED,
+                    {
+                        "event_id": record.event_id,
+                        "event_type": record.event_type,
+                        "source": record.source,
+                        "schema_version": record.schema_version,
+                    },
+                    occurred_at=record.received_at,
+                )
+            )
             return WebhookIngestionResult(
                 status=WebhookIngestionStatus.ACCEPTED,
                 event_id=record.event_id,
@@ -76,6 +99,19 @@ class WebhookIngestionService:
             )
 
         existing_record = save_result.record
+        self._audit_logger.record(
+            create_audit_event(
+                AuditEventType.WEBHOOK_DUPLICATE,
+                {
+                    "event_id": existing_record.event_id,
+                    "event_type": existing_record.event_type,
+                    "source": existing_record.source,
+                    "schema_version": existing_record.schema_version,
+                    "first_received_at": existing_record.received_at.isoformat(),
+                },
+                occurred_at=event_received_at,
+            )
+        )
         return WebhookIngestionResult(
             status=WebhookIngestionStatus.DUPLICATE,
             event_id=existing_record.event_id,

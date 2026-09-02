@@ -6,6 +6,7 @@ from smc_assistant.api.errors import validation_exception_handler
 from smc_assistant.api.health import router as health_router
 from smc_assistant.api.webhooks import router as webhooks_router
 from smc_assistant.config import Settings
+from smc_assistant.infrastructure.logging_audit import create_audit_logger
 from smc_assistant.infrastructure.webhook_ingestion_factory import (
     create_webhook_ingestion_service,
 )
@@ -28,7 +29,11 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     )
 
     app.state.settings = app_settings
-    app.state.webhook_ingestion_service = create_webhook_ingestion_service(app_settings)
+    app.state.audit_logger = create_audit_logger()
+    app.state.webhook_ingestion_service = create_webhook_ingestion_service(
+        app_settings,
+        app.state.audit_logger,
+    )
     app.add_exception_handler(RequestValidationError, validation_exception_handler)
     app.include_router(health_router)
     app.include_router(webhooks_router)
