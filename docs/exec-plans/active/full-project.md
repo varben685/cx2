@@ -83,9 +83,9 @@ ezért a Docker image build ebben a munkamenetben nem volt futtatható.
 
 ## Phase 2: Webhook ingestion
 
-- [ ] Verziózott TradingView webhook contract.
-- [ ] Pydantic validáció.
-- [ ] JSON Schema export.
+- [x] Verziózott TradingView webhook contract.
+- [x] Pydantic validáció.
+- [x] JSON Schema export.
 - [ ] Idempotens event feldolgozás.
 - [ ] PostgreSQL persistence.
 - [ ] Audit események.
@@ -224,3 +224,11 @@ ezért a Docker image build ebben a munkamenetben nem volt futtatható.
   `uv run pytest` 56 teszt sikeres, `uv run ruff check .` sikeres,
   `uv run mypy src` sikeres. Phase 1 domain alapok lezárva. Következő lépés:
   Phase 2 webhook ingestion contract.
+- 2026-09-02: Phase 2-ben elkészült a TradingView webhook első verziózott
+  Pydantic contractja és a generált JSON Schema. A contract tiltja az extra
+  mezőket, validálja a timeframe-et, bar időrendet, FVG határokat, execution
+  sorrendet és a `riskReward` képletet. Célzott ellenőrzés:
+  `uv run pytest tests/contracts/test_tradingview_contract.py` 12 teszt
+  sikeres, célzott Ruff és mypy sikeres, JSON Schema export sikeres. Teljes
+  backend ellenőrzés: `uv run pytest` 68 teszt sikeres, `uv run ruff check .`
+  sikeres, `uv run mypy src` sikeres. Következő lépés: webhook endpoint.

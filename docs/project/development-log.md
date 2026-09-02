@@ -148,3 +148,35 @@ Phase 1 következő mérföldkő:
 Fontos szabály: a pivot csak akkor tekinthető ismertnek, amikor a szükséges
 jobb oldali gyertyák már lezárultak. Ez védi a rendszert a future leakage és a
 repainting félreértésektől.
+
+## 2026-09-02 Phase 2 állapot
+
+### Elkészült
+
+- Létrejött a TradingView webhook első Pydantic contract modellje.
+- A contract validálja a verziót, eseménytípust, forrást, timeframe-et,
+  időbélyegeket, market structure, FVG, execution és feature blokkokat.
+- A `riskReward` mezőt összeveti az entry/stop/target képlettel.
+- Extra payload mezők tiltottak.
+- Létrejött a JSON Schema export script.
+- Létrejött a generált JSON Schema fájl.
+- Létrejött a Phase 2 learning dokumentum első változata.
+
+### Ellenőrzött kapuk
+
+- Célzott contract ellenőrzés:
+  `uv run pytest tests/contracts/test_tradingview_contract.py` 12 teszt sikeres.
+- Célzott contract Ruff és mypy ellenőrzés: sikeres.
+- JSON Schema export: sikeres.
+- Teljes backend ellenőrzés webhook contract után: `uv run pytest` 68 teszt
+  sikeres, `uv run ruff check .` sikeres, `uv run mypy src` sikeres.
+
+### Következő konkrét lépés
+
+Phase 2 következő mérföldkő:
+
+1. `POST /api/v1/webhooks/tradingview` endpoint létrehozása.
+2. Pydantic validáció bekötése FastAPI route-ba.
+3. Gyors HTTP válasz valid payloadra.
+4. Hibás payload API tesztek.
+5. Feldolgozási válaszmodell előkészítése az idempotens persistence előtt.

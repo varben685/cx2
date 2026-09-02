@@ -1,4 +1,4 @@
-.PHONY: api-test api-lint api-typecheck web-install web-test web-lint web-typecheck test lint typecheck dev docker-up
+.PHONY: api-test api-lint api-typecheck api-schema web-install web-test web-lint web-typecheck test lint typecheck dev docker-up
 
 api-test:
 	cd apps/api && uv run pytest
@@ -8,6 +8,9 @@ api-lint:
 
 api-typecheck:
 	cd apps/api && uv run mypy src
+
+api-schema:
+	cd apps/api && uv run python ../../scripts/export_tradingview_schema.py
 
 web-install:
 	cd apps/web && npm install
@@ -32,4 +35,3 @@ dev:
 
 docker-up:
 	docker compose up --build
-

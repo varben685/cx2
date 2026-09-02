@@ -1,0 +1,284 @@
+{
+  "$defs": {
+    "ExecutionPayload": {
+      "additionalProperties": false,
+      "properties": {
+        "entry": {
+          "exclusiveMinimum": 0,
+          "title": "Entry",
+          "type": "number"
+        },
+        "riskReward": {
+          "exclusiveMinimum": 0,
+          "title": "Riskreward",
+          "type": "number"
+        },
+        "stopLoss": {
+          "exclusiveMinimum": 0,
+          "title": "Stoploss",
+          "type": "number"
+        },
+        "takeProfit": {
+          "exclusiveMinimum": 0,
+          "title": "Takeprofit",
+          "type": "number"
+        }
+      },
+      "required": [
+        "entry",
+        "stopLoss",
+        "takeProfit",
+        "riskReward"
+      ],
+      "title": "ExecutionPayload",
+      "type": "object"
+    },
+    "FairValueGapPayload": {
+      "additionalProperties": false,
+      "properties": {
+        "equilibrium": {
+          "exclusiveMinimum": 0,
+          "title": "Equilibrium",
+          "type": "number"
+        },
+        "lower": {
+          "exclusiveMinimum": 0,
+          "title": "Lower",
+          "type": "number"
+        },
+        "mitigationPercent": {
+          "maximum": 100,
+          "minimum": 0,
+          "title": "Mitigationpercent",
+          "type": "number"
+        },
+        "sizeAtrRatio": {
+          "minimum": 0,
+          "title": "Sizeatrratio",
+          "type": "number"
+        },
+        "upper": {
+          "exclusiveMinimum": 0,
+          "title": "Upper",
+          "type": "number"
+        }
+      },
+      "required": [
+        "lower",
+        "upper",
+        "equilibrium",
+        "sizeAtrRatio",
+        "mitigationPercent"
+      ],
+      "title": "FairValueGapPayload",
+      "type": "object"
+    },
+    "FeaturePayload": {
+      "additionalProperties": false,
+      "properties": {
+        "atr": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Atr"
+        },
+        "displacementScore": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Displacementscore",
+          "type": "number"
+        },
+        "relativeVolume": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Relativevolume"
+        },
+        "session": {
+          "$ref": "#/$defs/TradingSession"
+        }
+      },
+      "required": [
+        "displacementScore",
+        "session"
+      ],
+      "title": "FeaturePayload",
+      "type": "object"
+    },
+    "MarketBiasValue": {
+      "enum": [
+        "BULLISH",
+        "BEARISH",
+        "NEUTRAL"
+      ],
+      "title": "MarketBiasValue",
+      "type": "string"
+    },
+    "MarketStructurePayload": {
+      "additionalProperties": false,
+      "properties": {
+        "bos": {
+          "title": "Bos",
+          "type": "boolean"
+        },
+        "choch": {
+          "title": "Choch",
+          "type": "boolean"
+        },
+        "htfBias": {
+          "$ref": "#/$defs/MarketBiasValue"
+        },
+        "htfTimeframe": {
+          "minLength": 1,
+          "title": "Htftimeframe",
+          "type": "string"
+        },
+        "liquiditySweep": {
+          "title": "Liquiditysweep",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "htfTimeframe",
+        "htfBias",
+        "bos",
+        "choch",
+        "liquiditySweep"
+      ],
+      "title": "MarketStructurePayload",
+      "type": "object"
+    },
+    "TradeDirection": {
+      "enum": [
+        "LONG",
+        "SHORT"
+      ],
+      "title": "TradeDirection",
+      "type": "string"
+    },
+    "TradingSession": {
+      "enum": [
+        "ASIA",
+        "LONDON",
+        "NEW_YORK",
+        "OFF_HOURS"
+      ],
+      "title": "TradingSession",
+      "type": "string"
+    },
+    "WebhookEventType": {
+      "enum": [
+        "SETUP_CANDIDATE"
+      ],
+      "title": "WebhookEventType",
+      "type": "string"
+    },
+    "WebhookSource": {
+      "enum": [
+        "TRADINGVIEW"
+      ],
+      "title": "WebhookSource",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "barCloseTime": {
+      "format": "date-time",
+      "title": "Barclosetime",
+      "type": "string"
+    },
+    "barOpenTime": {
+      "format": "date-time",
+      "title": "Baropentime",
+      "type": "string"
+    },
+    "direction": {
+      "$ref": "#/$defs/TradeDirection"
+    },
+    "eventId": {
+      "maxLength": 200,
+      "minLength": 8,
+      "title": "Eventid",
+      "type": "string"
+    },
+    "eventType": {
+      "$ref": "#/$defs/WebhookEventType"
+    },
+    "exchange": {
+      "maxLength": 40,
+      "minLength": 1,
+      "title": "Exchange",
+      "type": "string"
+    },
+    "execution": {
+      "$ref": "#/$defs/ExecutionPayload"
+    },
+    "features": {
+      "$ref": "#/$defs/FeaturePayload"
+    },
+    "fvg": {
+      "$ref": "#/$defs/FairValueGapPayload"
+    },
+    "marketStructure": {
+      "$ref": "#/$defs/MarketStructurePayload"
+    },
+    "schemaVersion": {
+      "const": "1.0",
+      "title": "Schemaversion",
+      "type": "string"
+    },
+    "source": {
+      "$ref": "#/$defs/WebhookSource"
+    },
+    "strategyVersion": {
+      "maxLength": 80,
+      "minLength": 1,
+      "title": "Strategyversion",
+      "type": "string"
+    },
+    "symbol": {
+      "maxLength": 40,
+      "minLength": 1,
+      "title": "Symbol",
+      "type": "string"
+    },
+    "timeframe": {
+      "title": "Timeframe",
+      "type": "string"
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "eventId",
+    "eventType",
+    "source",
+    "strategyVersion",
+    "symbol",
+    "exchange",
+    "timeframe",
+    "barOpenTime",
+    "barCloseTime",
+    "direction",
+    "marketStructure",
+    "fvg",
+    "execution",
+    "features"
+  ],
+  "title": "TradingViewWebhookPayload",
+  "type": "object"
+}

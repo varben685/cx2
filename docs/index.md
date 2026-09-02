@@ -10,6 +10,7 @@ Ez a könyvtár az `smc-ai-trading-assistant` működésének hiteles forrása.
 - [Eredeti projektbrief](project/original-project-brief.md): a teljes indító utasítás.
 - [Phase 00 learning](learning/phase-00-bootstrap.md): bootstrap magyarázat.
 - [Phase 01 learning](learning/phase-01-domain-model.md): domain modell és pivot alapok.
+- [Phase 02 learning](learning/phase-02-webhook-contract.md): TradingView webhook contract.
 - [Szintetikus OHLCV példák](strategy/synthetic-examples.md): Phase 1 integrált mini chart.
 
 ## Területek
