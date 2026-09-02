@@ -77,6 +77,9 @@ lett áthelyezve.
 - Létrejött az első CHoCH klasszifikáció `MarketBias` állapottal.
 - Unit tesztek készültek bullish CHoCH, bearish CHoCH, azonos irányú BOS,
   semleges induló bias és időrendi rendezés eseteire.
+- Létrejött az első háromgyertyás Fair Value Gap domain modell.
+- Unit tesztek készültek bullish FVG, bearish FVG, érintkező gyertyák, kevés
+  adat, abszolút méretszűrés, tick alapú méretszűrés és átfedő ablakok eseteire.
 
 ### Ellenőrzött kapuk
 
@@ -90,6 +93,11 @@ lett áthelyezve.
   18 teszt sikeres.
 - Teljes backend ellenőrzés CHoCH után: `uv run pytest` 27 teszt sikeres,
   `uv run ruff check .` sikeres, `uv run mypy src` sikeres.
+- Célzott FVG ellenőrzés: `uv run pytest tests/test_fair_value_gaps.py`
+  9 teszt sikeres.
+- Célzott FVG Ruff és mypy ellenőrzés: sikeres.
+- Teljes backend ellenőrzés FVG után: `uv run pytest` 36 teszt sikeres,
+  `uv run ruff check .` sikeres, `uv run mypy src` sikeres.
 - Megjegyzés: a FastAPI TestClient egy upstream Starlette deprecation warningot
   jelez, de a tesztek sikeresek.
 
@@ -97,10 +105,11 @@ lett áthelyezve.
 
 Phase 1 következő mérföldkő:
 
-1. FVG algoritmikus definíció létrehozása háromgyertyás modellel.
-2. Bullish és bearish FVG unit tesztek.
-3. Minimális méret és ATR/tick alapú későbbi konfiguráció előkészítése.
-4. Dokumentáció frissítése FVG edge case-ekkel.
+1. Liquidity sweep algoritmikus definíció létrehozása confirmed pivotokra
+   építve.
+2. Bullish és bearish sweep unit tesztek.
+3. Visszazárási szabály és opcionális megerősítési ablak előkészítése.
+4. Dokumentáció frissítése sweep edge case-ekkel.
 
 ## Korábbi következő konkrét lépés
 

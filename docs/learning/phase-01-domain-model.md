@@ -6,7 +6,8 @@ Elkészült az első OHLCV `Candle` domain modell, valamint a confirmed swing hi
 és swing low pivot algoritmus. Erre ráépült az első BOS detektor is, amely
 ismert swing high vagy swing low szint záróáras, bufferrel szűrt áttörését
 jelöli. Elkészült az első CHoCH klasszifikáció is, amely a BOS eseményeket az
-aktuális `MarketBias` állapothoz viszonyítja.
+aktuális `MarketBias` állapothoz viszonyítja. Elkészült az első háromgyertyás
+Fair Value Gap modell is.
 
 A `Candle` modell validálja az UTC időbélyegeket, az OHLC árkapcsolatokat és az
 opcionális volumen értékét.
@@ -32,6 +33,11 @@ bias `NEUTRAL`, az első törés csak beállítja az irányt. Ha később ellent
 irányú törés érkezik, akkor `BULLISH_CHOCH` vagy `BEARISH_CHOCH` esemény jön
 létre.
 
+Az FVG detektor három gyertyás ablakokat vizsgál. Bullish FVG akkor jön létre,
+ha az első gyertya high értéke alacsonyabb, mint a harmadik gyertya low értéke.
+Bearish FVG akkor jön létre, ha az első gyertya low értéke magasabb, mint a
+harmadik gyertya high értéke.
+
 ```mermaid
 sequenceDiagram
     participant Data as OHLCV gyertyák
@@ -44,6 +50,7 @@ sequenceDiagram
     Pivot->>Algo: ismert swing szint
     Algo->>Algo: close + buffer törésvizsgálat
     Algo->>Algo: break iránya kontra aktuális bias
+    Data->>Algo: háromgyertyás FVG ablak
 ```
 
 ## 4. Milyen alternatívák léteznek?
@@ -55,13 +62,14 @@ sequenceDiagram
 - Wick alapú BOS close confirmation nélkül.
 - Trendállapotot is kezelő BOS/CHoCH state machine.
 - Több idősíkú bias modell, ahol a CHoCH csak HTF kontextusban érvényes.
+- Bonyolultabb FVG modell ATR-szűréssel, mitigation állapottal és életkorral.
 
 ## 5. Miért ezt választottuk?
 
-Az induló szigorú pivot, záróáras BOS és bias-alapú CHoCH modell egyszerű,
-reprodukálható és jól tesztelhető. Tanulási célra is jó, mert világosan látszik,
-mikor válik ismertté egy swing, mikor történik struktúratörés, és mikor vált a
-struktúra karaktert.
+Az induló szigorú pivot, záróáras BOS, bias-alapú CHoCH és háromgyertyás FVG
+modell egyszerű, reprodukálható és jól tesztelhető. Tanulási célra is jó, mert
+világosan látszik, mikor válik ismertté egy swing, mikor történik
+struktúratörés, mikor vált a struktúra karaktert, és mikor alakul ki imbalance.
 
 ## 6. Milyen trading fogalmak kapcsolódnak hozzá?
 
@@ -69,6 +77,8 @@ struktúra karaktert.
 - Swing low: megerősített lokális mélypont.
 - BOS: ismert swing szint áttörése, alapértelmezésben záróárral megerősítve.
 - CHoCH: az aktuális bias-szal ellentétes irányú structure break.
+- FVG: háromgyertyás imbalance, ahol az első és harmadik gyertya között üres
+  árzóna marad.
 - Future leakage: jövőbeli információ használata a döntési pillanat előtt.
 - Repainting: amikor egy indikátor utólag úgy rajzol jelet, mintha az korábban
   is ismert lett volna.
@@ -82,24 +92,30 @@ struktúra karaktert.
 - A wick-only törés alapértelmezésben nem BOS, mert `close_confirmation = true`.
 - A CHoCH nem jelent automatikus trendfordulót vagy belépési jelzést.
 - A túl gyors bias váltás zajos piacon sok hamis CHoCH jelzést adhat.
+- Az FVG csak a harmadik gyertya lezárása után ismert.
+- Az érintkező gyertyák nem alkotnak FVG-t, mert nincs mérhető gap.
 
 ## 8. Mely fájlokat érdemes elolvasni?
 
 - `apps/api/src/smc_assistant/domain/candles.py`
 - `apps/api/src/smc_assistant/domain/market_structure.py`
+- `apps/api/src/smc_assistant/domain/fair_value_gaps.py`
 - `apps/api/tests/test_candles.py`
 - `apps/api/tests/test_market_structure.py`
+- `apps/api/tests/test_fair_value_gaps.py`
 - `docs/strategy/market-structure.md`
+- `docs/strategy/fair-value-gaps.md`
 
 ## 9. Hogyan lehet manuálisan kipróbálni?
 
 ```bash
 cd apps/api
 /Users/bencevarga/Library/Python/3.10/bin/uv run pytest tests/test_market_structure.py
+/Users/bencevarga/Library/Python/3.10/bin/uv run pytest tests/test_fair_value_gaps.py
 ```
 
 ## 10. Gyakorlófeladat
 
-Változtasd meg az egyik CHoCH tesztben az `initial_bias` értékét `BULLISH`-ról
-`NEUTRAL`-ra. Figyeld meg, hogy az első ellentétesnek tűnő törés miért nem lesz
-azonnal CHoCH semleges kontextusból.
+Változtasd meg az egyik FVG tesztben a harmadik gyertya `low` értékét úgy, hogy
+pontosan megegyezzen az első gyertya `high` értékével. Figyeld meg, hogy a
+szigorú definíció miatt ilyenkor nem jön létre bullish FVG.

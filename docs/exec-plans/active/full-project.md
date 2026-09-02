@@ -76,7 +76,7 @@ ezért a Docker image build ebben a munkamenetben nem volt futtatható.
 - [x] Swing high/low algoritmikus definíció és unit tesztek.
 - [x] BOS algoritmikus definíció és unit tesztek.
 - [x] CHoCH algoritmikus definíció és unit tesztek.
-- [ ] FVG algoritmikus definíció és unit tesztek.
+- [x] FVG algoritmikus definíció és unit tesztek.
 - [ ] Liquidity sweep algoritmikus definíció és unit tesztek.
 - [ ] Displacement komponensek és unit tesztek.
 - [ ] Szintetikus OHLCV példák.
@@ -193,3 +193,10 @@ ezért a Docker image build ebben a munkamenetben nem volt futtatható.
   18 teszt sikeres. Teljes backend ellenőrzés: `uv run pytest` 27 teszt
   sikeres, `uv run ruff check .` sikeres, `uv run mypy src` sikeres. Következő
   lépés: FVG.
+- 2026-09-02: Elkészült az első háromgyertyás FVG domain modell. Bullish és
+  bearish FVG-t detektál, `detected_at_index` mezővel rögzíti a felismerés
+  időpontját, és támogat abszolút, valamint tick alapú minimális méretszűrést.
+  Célzott ellenőrzés: `uv run pytest tests/test_fair_value_gaps.py` 9 teszt
+  sikeres, célzott Ruff és mypy sikeres. Teljes backend ellenőrzés:
+  `uv run pytest` 36 teszt sikeres, `uv run ruff check .` sikeres,
+  `uv run mypy src` sikeres. Következő lépés: liquidity sweep.
