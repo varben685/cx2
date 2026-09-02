@@ -80,6 +80,10 @@ lett áthelyezve.
 - Létrejött az első háromgyertyás Fair Value Gap domain modell.
 - Unit tesztek készültek bullish FVG, bearish FVG, érintkező gyertyák, kevés
   adat, abszolút méretszűrés, tick alapú méretszűrés és átfedő ablakok eseteire.
+- Létrejött az első liquidity sweep domain modell.
+- Unit tesztek készültek bullish sweep, bearish sweep, későbbi visszazárás,
+  megerősítési ablak, még nem ismert pivot, érintés, sweep buffer és
+  deduplikáció eseteire.
 
 ### Ellenőrzött kapuk
 
@@ -98,6 +102,11 @@ lett áthelyezve.
 - Célzott FVG Ruff és mypy ellenőrzés: sikeres.
 - Teljes backend ellenőrzés FVG után: `uv run pytest` 36 teszt sikeres,
   `uv run ruff check .` sikeres, `uv run mypy src` sikeres.
+- Célzott liquidity ellenőrzés: `uv run pytest tests/test_liquidity.py`
+  9 teszt sikeres.
+- Célzott liquidity Ruff és mypy ellenőrzés: sikeres.
+- Teljes backend ellenőrzés liquidity után: `uv run pytest` 45 teszt sikeres,
+  `uv run ruff check .` sikeres, `uv run mypy src` sikeres.
 - Megjegyzés: a FastAPI TestClient egy upstream Starlette deprecation warningot
   jelez, de a tesztek sikeresek.
 
@@ -105,11 +114,10 @@ lett áthelyezve.
 
 Phase 1 következő mérföldkő:
 
-1. Liquidity sweep algoritmikus definíció létrehozása confirmed pivotokra
-   építve.
-2. Bullish és bearish sweep unit tesztek.
-3. Visszazárási szabály és opcionális megerősítési ablak előkészítése.
-4. Dokumentáció frissítése sweep edge case-ekkel.
+1. Displacement komponensek létrehozása ATR/body/range alapokon.
+2. Displacement score unit tesztek.
+3. Hiányzó volumen adat kezelése.
+4. Dokumentáció frissítése displacement félreértésekkel.
 
 ## Korábbi következő konkrét lépés
 

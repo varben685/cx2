@@ -77,7 +77,7 @@ ezért a Docker image build ebben a munkamenetben nem volt futtatható.
 - [x] BOS algoritmikus definíció és unit tesztek.
 - [x] CHoCH algoritmikus definíció és unit tesztek.
 - [x] FVG algoritmikus definíció és unit tesztek.
-- [ ] Liquidity sweep algoritmikus definíció és unit tesztek.
+- [x] Liquidity sweep algoritmikus definíció és unit tesztek.
 - [ ] Displacement komponensek és unit tesztek.
 - [ ] Szintetikus OHLCV példák.
 
@@ -200,3 +200,11 @@ ezért a Docker image build ebben a munkamenetben nem volt futtatható.
   sikeres, célzott Ruff és mypy sikeres. Teljes backend ellenőrzés:
   `uv run pytest` 36 teszt sikeres, `uv run ruff check .` sikeres,
   `uv run mypy src` sikeres. Következő lépés: liquidity sweep.
+- 2026-09-02: Elkészült az első liquidity sweep domain modell confirmed
+  pivotokra építve. Bullish sweep swing low alá szúrást és fölé visszazárást,
+  bearish sweep swing high fölé szúrást és alá visszazárást jelent. Támogatott
+  a `sweep_buffer`, a `max_confirmation_bars` és az egy pivotra jutó egyszeri
+  sweep esemény. Célzott ellenőrzés: `uv run pytest tests/test_liquidity.py`
+  9 teszt sikeres, célzott Ruff és mypy sikeres. Teljes backend ellenőrzés:
+  `uv run pytest` 45 teszt sikeres, `uv run ruff check .` sikeres,
+  `uv run mypy src` sikeres. Következő lépés: displacement.

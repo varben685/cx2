@@ -7,7 +7,8 @@ Elkészült az első OHLCV `Candle` domain modell, valamint a confirmed swing hi
 ismert swing high vagy swing low szint záróáras, bufferrel szűrt áttörését
 jelöli. Elkészült az első CHoCH klasszifikáció is, amely a BOS eseményeket az
 aktuális `MarketBias` állapothoz viszonyítja. Elkészült az első háromgyertyás
-Fair Value Gap modell is.
+Fair Value Gap modell is. Elkészült az első liquidity sweep detektor confirmed
+pivotokra, wick átszúrásra és visszazárásra építve.
 
 A `Candle` modell validálja az UTC időbélyegeket, az OHLC árkapcsolatokat és az
 opcionális volumen értékét.
@@ -38,6 +39,11 @@ ha az első gyertya high értéke alacsonyabb, mint a harmadik gyertya low ért�
 Bearish FVG akkor jön létre, ha az első gyertya low értéke magasabb, mint a
 harmadik gyertya high értéke.
 
+A liquidity sweep detektor confirmed swing szinteket használ. Bullish sweep
+akkor jön létre, ha az ár egy ismert swing low alá szúr, majd visszazár fölé.
+Bearish sweep akkor jön létre, ha az ár egy ismert swing high fölé szúr, majd
+visszazár alá.
+
 ```mermaid
 sequenceDiagram
     participant Data as OHLCV gyertyák
@@ -51,6 +57,8 @@ sequenceDiagram
     Algo->>Algo: close + buffer törésvizsgálat
     Algo->>Algo: break iránya kontra aktuális bias
     Data->>Algo: háromgyertyás FVG ablak
+    Pivot->>Algo: sweep szint
+    Algo->>Algo: wick átszúrás + visszazárás
 ```
 
 ## 4. Milyen alternatívák léteznek?
@@ -63,13 +71,16 @@ sequenceDiagram
 - Trendállapotot is kezelő BOS/CHoCH state machine.
 - Több idősíkú bias modell, ahol a CHoCH csak HTF kontextusban érvényes.
 - Bonyolultabb FVG modell ATR-szűréssel, mitigation állapottal és életkorral.
+- Sweep modell displacement vagy CHoCH kötelező megerősítéssel.
+- Sweep modell több gyertyás likviditási zónákkal, nem csak pivot szinttel.
 
 ## 5. Miért ezt választottuk?
 
 Az induló szigorú pivot, záróáras BOS, bias-alapú CHoCH és háromgyertyás FVG
-modell egyszerű, reprodukálható és jól tesztelhető. Tanulási célra is jó, mert
-világosan látszik, mikor válik ismertté egy swing, mikor történik
-struktúratörés, mikor vált a struktúra karaktert, és mikor alakul ki imbalance.
+modell, valamint az egyszerű sweep modell reprodukálható és jól tesztelhető.
+Tanulási célra is jó, mert világosan látszik, mikor válik ismertté egy swing,
+mikor történik struktúratörés, mikor vált a struktúra karaktert, mikor alakul ki
+imbalance, és mikor történik likviditási szint átszúrása.
 
 ## 6. Milyen trading fogalmak kapcsolódnak hozzá?
 
@@ -79,6 +90,8 @@ struktúratörés, mikor vált a struktúra karaktert, és mikor alakul ki imbal
 - CHoCH: az aktuális bias-szal ellentétes irányú structure break.
 - FVG: háromgyertyás imbalance, ahol az első és harmadik gyertya között üres
   árzóna marad.
+- Liquidity sweep: ismert swing szint kanócos átszúrása és visszazárás a szint
+  mögé.
 - Future leakage: jövőbeli információ használata a döntési pillanat előtt.
 - Repainting: amikor egy indikátor utólag úgy rajzol jelet, mintha az korábban
   is ismert lett volna.
@@ -94,17 +107,23 @@ struktúratörés, mikor vált a struktúra karaktert, és mikor alakul ki imbal
 - A túl gyors bias váltás zajos piacon sok hamis CHoCH jelzést adhat.
 - Az FVG csak a harmadik gyertya lezárása után ismert.
 - Az érintkező gyertyák nem alkotnak FVG-t, mert nincs mérhető gap.
+- A sweep csak akkor érvényes, ha a pivot már a sweep gyertya előtt ismert volt.
+- A sweep nem azonos BOS-szal: sweepnél wick átszúrás és visszazárás kell,
+  BOS-nál alapértelmezésben záróáras szinttörés.
 
 ## 8. Mely fájlokat érdemes elolvasni?
 
 - `apps/api/src/smc_assistant/domain/candles.py`
 - `apps/api/src/smc_assistant/domain/market_structure.py`
 - `apps/api/src/smc_assistant/domain/fair_value_gaps.py`
+- `apps/api/src/smc_assistant/domain/liquidity.py`
 - `apps/api/tests/test_candles.py`
 - `apps/api/tests/test_market_structure.py`
 - `apps/api/tests/test_fair_value_gaps.py`
+- `apps/api/tests/test_liquidity.py`
 - `docs/strategy/market-structure.md`
 - `docs/strategy/fair-value-gaps.md`
+- `docs/strategy/liquidity.md`
 
 ## 9. Hogyan lehet manuálisan kipróbálni?
 
@@ -112,10 +131,11 @@ struktúratörés, mikor vált a struktúra karaktert, és mikor alakul ki imbal
 cd apps/api
 /Users/bencevarga/Library/Python/3.10/bin/uv run pytest tests/test_market_structure.py
 /Users/bencevarga/Library/Python/3.10/bin/uv run pytest tests/test_fair_value_gaps.py
+/Users/bencevarga/Library/Python/3.10/bin/uv run pytest tests/test_liquidity.py
 ```
 
 ## 10. Gyakorlófeladat
 
-Változtasd meg az egyik FVG tesztben a harmadik gyertya `low` értékét úgy, hogy
-pontosan megegyezzen az első gyertya `high` értékével. Figyeld meg, hogy a
-szigorú definíció miatt ilyenkor nem jön létre bullish FVG.
+Változtasd meg az egyik liquidity sweep tesztben a `max_confirmation_bars`
+értékét 0-ról 1-re. Figyeld meg, hogyan válik elfogadhatóvá a következő
+gyertyán történő visszazárás.
