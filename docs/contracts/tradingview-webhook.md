@@ -63,6 +63,18 @@ Ismételt `eventId` esetén:
 Hibás payload esetén az API `422 Unprocessable Entity` választ ad. A validációs
 hibaválasz nem echozza vissza a nyers input értékeket.
 
+## Persistence
+
+A webhook ingestion repository két módban indulhat:
+
+- `WEBHOOK_EVENT_REPOSITORY=memory`: gyors lokális fejlesztés, tartós mentés
+  nélkül.
+- `WEBHOOK_EVENT_REPOSITORY=postgres`: SQLAlchemy alapú mentés a PostgreSQL
+  `webhook_events` táblába.
+
+Docker Compose alatt a backend `postgres` módban indul. A `webhook_events`
+tábla `event_id` elsődleges/unique kulccsal védi az idempotenciát.
+
 ## Teljes példa
 
 ```json
@@ -142,7 +154,10 @@ cd apps/api
 - `apps/api/src/smc_assistant/api/errors.py`
 - `apps/api/src/smc_assistant/application/webhook_ingestion.py`
 - `apps/api/src/smc_assistant/infrastructure/in_memory_webhook_events.py`
+- `apps/api/src/smc_assistant/infrastructure/sql_webhook_events.py`
+- `apps/api/src/smc_assistant/infrastructure/webhook_event_schema.py`
 - `apps/api/src/smc_assistant/contracts/tradingview.py`
 - `apps/api/tests/contracts/test_tradingview_contract.py`
 - `apps/api/tests/test_tradingview_webhook_api.py`
 - `apps/api/tests/test_webhook_ingestion.py`
+- `apps/api/tests/test_sql_webhook_events.py`

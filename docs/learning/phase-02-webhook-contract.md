@@ -14,6 +14,10 @@ Az endpoint mögött már van egy első idempotens ingestion service is. Ez
 `eventId` alapján kezeli az ismételt webhook beküldéseket: az első beküldés
 `ACCEPTED`, a későbbi azonos `eventId` beküldés `DUPLICATE`.
 
+Most már van első SQLAlchemy/PostgreSQL persistence réteg is. Docker Compose
+alatt a backend PostgreSQL repositoryval indul, közvetlen lokális fejlesztésnél
+pedig alapból memory repository marad, hogy gyorsan lehessen tesztelni.
+
 ## 2. Miért erre van szükség?
 
 A TradingView alert egy külső rendszerből érkezik. A backend csak akkor tud
@@ -69,8 +73,10 @@ A Pydantic modell közvetlenül illeszkedik a FastAPI-hoz, runtime validációt 
   csökkenti annak esélyét, hogy véletlenül beküldött secret visszakerüljön a
   kliensoldali vagy proxy logokba.
 - Az idempotencia jelenleg in-memory repositoryval működik, tehát folyamat
-  újraindítás után nem marad meg. Ez szándékos átmeneti lépés a PostgreSQL
-  persistence előtt.
+  újraindítás után nem marad meg. Docker Compose alatt viszont már PostgreSQL
+  repository használható.
+- A táblaséma most `metadata.create_all()` segítségével inicializálódik. Ez jó
+  első fejlesztési lépés, de később Alembic migrációkra kell váltani.
 
 ## 8. Mely fájlokat érdemes elolvasni?
 
@@ -79,9 +85,13 @@ A Pydantic modell közvetlenül illeszkedik a FastAPI-hoz, runtime validációt 
 - `apps/api/src/smc_assistant/api/errors.py`
 - `apps/api/src/smc_assistant/application/webhook_ingestion.py`
 - `apps/api/src/smc_assistant/infrastructure/in_memory_webhook_events.py`
+- `apps/api/src/smc_assistant/infrastructure/sql_webhook_events.py`
+- `apps/api/src/smc_assistant/infrastructure/webhook_event_schema.py`
+- `apps/api/src/smc_assistant/infrastructure/webhook_ingestion_factory.py`
 - `apps/api/tests/contracts/test_tradingview_contract.py`
 - `apps/api/tests/test_tradingview_webhook_api.py`
 - `apps/api/tests/test_webhook_ingestion.py`
+- `apps/api/tests/test_sql_webhook_events.py`
 - `docs/contracts/tradingview-webhook.md`
 - `docs/contracts/generated/tradingview-webhook.schema.json`
 - `scripts/export_tradingview_schema.py`
@@ -93,6 +103,7 @@ cd apps/api
 /Users/bencevarga/Library/Python/3.10/bin/uv run pytest tests/contracts/test_tradingview_contract.py
 /Users/bencevarga/Library/Python/3.10/bin/uv run pytest tests/test_tradingview_webhook_api.py
 /Users/bencevarga/Library/Python/3.10/bin/uv run pytest tests/test_webhook_ingestion.py
+/Users/bencevarga/Library/Python/3.10/bin/uv run pytest tests/test_sql_webhook_events.py
 /Users/bencevarga/Library/Python/3.10/bin/uv run python ../../scripts/export_tradingview_schema.py
 ```
 

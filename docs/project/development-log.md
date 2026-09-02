@@ -169,6 +169,11 @@ repainting félreértésektől.
 - Létrejött az in-memory webhook event repository tesztduplum.
 - Az API ismételt `eventId` esetén `DUPLICATE` státusszal tér vissza, és az első
   beküldés `firstReceivedAt` idejét mutatja.
+- Létrejött az első SQLAlchemy alapú webhook event repository.
+- Létrejött a `webhook_events` adatbázistábla séma `event_id` unique kulccsal.
+- A `WEBHOOK_EVENT_REPOSITORY` kapcsolóval választható a `memory` és a `postgres`
+  repository.
+- Docker Compose alatt a backend már `postgres` repository módban indul.
 
 ### Ellenőrzött kapuk
 
@@ -187,14 +192,19 @@ repainting félreértésektől.
   7 teszt sikeres.
 - Teljes backend ellenőrzés idempotens ingestion után: `uv run pytest` 75 teszt
   sikeres, `uv run ruff check .` sikeres, `uv run mypy src` sikeres.
+- Célzott SQL webhook repository ellenőrzés:
+  `uv run pytest tests/test_sql_webhook_events.py tests/test_webhook_ingestion_factory.py`
+  4 teszt sikeres.
+- Teljes backend ellenőrzés SQL persistence után: `uv run pytest` 79 teszt
+  sikeres, `uv run ruff check .` sikeres, `uv run mypy src` sikeres.
+- Docker Compose konfiguráció ellenőrzés: `docker compose config` sikeres.
 
 ### Következő konkrét lépés
 
 Phase 2 következő mérföldkő:
 
-1. PostgreSQL persistence előkészítése.
-2. Webhook event adatbázistábla és migrációs stratégia kialakítása.
-3. `eventId` unique constraint tervezése.
-4. Repository interface megtartása, in-memory implementáció mellé Postgres
-   implementáció.
-5. Duplikált webhook esemény kezelése adatbázisos unique constraint mellett.
+1. Audit események bevezetése webhook ingestion köré.
+2. Hibás payloadok biztonságos naplózása nyers payload nélkül.
+3. Sikeres, duplikált és hibás webhook beérkezések mérhetővé tétele.
+4. PostgreSQL repository Docker smoke teszt, ha a Docker daemon fut.
+5. Később Alembic migrációs stratégia bevezetése a `create_all` helyett.

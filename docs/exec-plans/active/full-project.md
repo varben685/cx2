@@ -89,7 +89,9 @@ ezért a Docker image build ebben a munkamenetben nem volt futtatható.
 - [x] TradingView webhook HTTP endpoint.
 - [x] Első idempotens event feldolgozás `eventId` alapján.
 - [x] In-memory webhook event repository tesztduplum.
-- [ ] PostgreSQL persistence.
+- [x] Első SQLAlchemy/PostgreSQL webhook event persistence.
+- [x] `webhook_events.event_id` unique constraint.
+- [x] Repository factory memory/postgres kapcsolóval.
 - [ ] Audit események.
 - [x] Hibás payloadok biztonságos API válasza nyers input echo nélkül.
 - [ ] Hibás payloadok biztonságos naplózása.
@@ -245,3 +247,9 @@ ezért a Docker image build ebben a munkamenetben nem volt futtatható.
   beküldés `DUPLICATE` státuszt kap, és a rendszer az elsőként eltárolt payloadot
   tartja meg. Az első repository in-memory, lockkal védett tesztduplum; a
   következő lépés ennek PostgreSQL persistence-re cserélése.
+- 2026-09-03: Elkészült az első SQLAlchemy alapú webhook event persistence.
+  Létrejött a `webhook_events` tábla `event_id` elsődleges/unique kulccsal,
+  JSON payload mezővel és UTC időbélyegekkel. A backend
+  `WEBHOOK_EVENT_REPOSITORY=memory|postgres` kapcsolóval választ repositoryt;
+  Docker Compose alatt a webhook események PostgreSQL-be kerülnek. Következő
+  lépés: audit események és biztonságos hibás-payload naplózás.
