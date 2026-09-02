@@ -15,6 +15,17 @@ class StructureBreakKind(StrEnum):
     BEARISH_BOS = "BEARISH_BOS"
 
 
+class MarketBias(StrEnum):
+    NEUTRAL = "NEUTRAL"
+    BULLISH = "BULLISH"
+    BEARISH = "BEARISH"
+
+
+class CharacterChangeKind(StrEnum):
+    BULLISH_CHOCH = "BULLISH_CHOCH"
+    BEARISH_CHOCH = "BEARISH_CHOCH"
+
+
 @dataclass(frozen=True, slots=True)
 class ConfirmedPivot:
     kind: PivotKind
@@ -57,6 +68,15 @@ class StructureBreak:
     broken_pivot: ConfirmedPivot
     broken_level: float
     break_price: float
+
+
+@dataclass(frozen=True, slots=True)
+class CharacterChange:
+    kind: CharacterChangeKind
+    candle_index: int
+    previous_bias: MarketBias
+    new_bias: MarketBias
+    triggering_break: StructureBreak
 
 
 def find_confirmed_pivots(
@@ -128,6 +148,41 @@ def find_bos_events(
     return events
 
 
+def find_choch_events(
+    structure_breaks: Sequence[StructureBreak],
+    initial_bias: MarketBias = MarketBias.NEUTRAL,
+) -> list[CharacterChange]:
+    current_bias = initial_bias
+    events: list[CharacterChange] = []
+
+    ordered_breaks = sorted(
+        enumerate(structure_breaks),
+        key=lambda indexed_break: (indexed_break[1].candle_index, indexed_break[0]),
+    )
+
+    for _, structure_break in ordered_breaks:
+        break_bias = _bias_from_structure_break(structure_break)
+        if current_bias == MarketBias.NEUTRAL:
+            current_bias = break_bias
+            continue
+
+        if break_bias == current_bias:
+            continue
+
+        events.append(
+            CharacterChange(
+                kind=_choch_kind_for_new_bias(break_bias),
+                candle_index=structure_break.candle_index,
+                previous_bias=current_bias,
+                new_bias=break_bias,
+                triggering_break=structure_break,
+            )
+        )
+        current_bias = break_bias
+
+    return events
+
+
 def _detect_bos_for_pivot(
     candle_index: int,
     candle: Candle,
@@ -159,6 +214,20 @@ def _detect_bos_for_pivot(
             )
 
     return None
+
+
+def _bias_from_structure_break(structure_break: StructureBreak) -> MarketBias:
+    if structure_break.kind == StructureBreakKind.BULLISH_BOS:
+        return MarketBias.BULLISH
+
+    return MarketBias.BEARISH
+
+
+def _choch_kind_for_new_bias(new_bias: MarketBias) -> CharacterChangeKind:
+    if new_bias == MarketBias.BULLISH:
+        return CharacterChangeKind.BULLISH_CHOCH
+
+    return CharacterChangeKind.BEARISH_CHOCH
 
 
 def _is_strict_swing_high(

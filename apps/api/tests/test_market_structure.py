@@ -4,13 +4,17 @@ import pytest
 
 from smc_assistant.domain.candles import Candle
 from smc_assistant.domain.market_structure import (
+    CharacterChange,
+    CharacterChangeKind,
     ConfirmedPivot,
+    MarketBias,
     PivotKind,
     PivotSettings,
     StructureBreak,
     StructureBreakKind,
     StructureBreakSettings,
     find_bos_events,
+    find_choch_events,
     find_confirmed_pivots,
 )
 
@@ -275,3 +279,131 @@ def test_bos_is_emitted_once_per_broken_pivot() -> None:
 def test_rejects_negative_break_buffer() -> None:
     with pytest.raises(ValueError, match="break_buffer"):
         StructureBreakSettings(break_buffer=-0.01)
+
+
+def make_pivot(
+    kind: PivotKind,
+    *,
+    index: int,
+    confirmed_at_index: int,
+    price: float,
+) -> ConfirmedPivot:
+    return ConfirmedPivot(
+        kind=kind,
+        candle_index=index,
+        confirmed_at_index=confirmed_at_index,
+        price=price,
+    )
+
+
+def make_structure_break(kind: StructureBreakKind, *, candle_index: int) -> StructureBreak:
+    if kind == StructureBreakKind.BULLISH_BOS:
+        pivot = make_pivot(
+            PivotKind.SWING_HIGH,
+            index=candle_index - 3,
+            confirmed_at_index=candle_index - 1,
+            price=110.0,
+        )
+        return StructureBreak(
+            kind=kind,
+            candle_index=candle_index,
+            broken_pivot=pivot,
+            broken_level=110.0,
+            break_price=111.0,
+        )
+
+    pivot = make_pivot(
+        PivotKind.SWING_LOW,
+        index=candle_index - 3,
+        confirmed_at_index=candle_index - 1,
+        price=90.0,
+    )
+    return StructureBreak(
+        kind=kind,
+        candle_index=candle_index,
+        broken_pivot=pivot,
+        broken_level=90.0,
+        break_price=89.0,
+    )
+
+
+def test_finds_bullish_choch_when_bearish_bias_breaks_upward() -> None:
+    bullish_break = make_structure_break(StructureBreakKind.BULLISH_BOS, candle_index=8)
+
+    events = find_choch_events([bullish_break], initial_bias=MarketBias.BEARISH)
+
+    assert events == [
+        CharacterChange(
+            kind=CharacterChangeKind.BULLISH_CHOCH,
+            candle_index=8,
+            previous_bias=MarketBias.BEARISH,
+            new_bias=MarketBias.BULLISH,
+            triggering_break=bullish_break,
+        )
+    ]
+
+
+def test_finds_bearish_choch_when_bullish_bias_breaks_downward() -> None:
+    bearish_break = make_structure_break(StructureBreakKind.BEARISH_BOS, candle_index=8)
+
+    events = find_choch_events([bearish_break], initial_bias=MarketBias.BULLISH)
+
+    assert events == [
+        CharacterChange(
+            kind=CharacterChangeKind.BEARISH_CHOCH,
+            candle_index=8,
+            previous_bias=MarketBias.BULLISH,
+            new_bias=MarketBias.BEARISH,
+            triggering_break=bearish_break,
+        )
+    ]
+
+
+def test_same_direction_structure_break_does_not_create_choch() -> None:
+    bullish_break = make_structure_break(StructureBreakKind.BULLISH_BOS, candle_index=8)
+
+    assert find_choch_events([bullish_break], initial_bias=MarketBias.BULLISH) == []
+
+
+def test_neutral_bias_uses_first_break_as_context_without_choch() -> None:
+    first_break = make_structure_break(StructureBreakKind.BULLISH_BOS, candle_index=8)
+    second_break = make_structure_break(StructureBreakKind.BEARISH_BOS, candle_index=12)
+
+    events = find_choch_events([first_break, second_break])
+
+    assert events == [
+        CharacterChange(
+            kind=CharacterChangeKind.BEARISH_CHOCH,
+            candle_index=12,
+            previous_bias=MarketBias.BULLISH,
+            new_bias=MarketBias.BEARISH,
+            triggering_break=second_break,
+        )
+    ]
+
+
+def test_choch_classification_is_chronological_even_if_input_is_unsorted() -> None:
+    later_bullish_break = make_structure_break(StructureBreakKind.BULLISH_BOS, candle_index=14)
+    earlier_bearish_break = make_structure_break(StructureBreakKind.BEARISH_BOS, candle_index=10)
+
+    events = find_choch_events(
+        [later_bullish_break, earlier_bearish_break],
+        initial_bias=MarketBias.BULLISH,
+    )
+
+    assert events == [
+        CharacterChange(
+            kind=CharacterChangeKind.BEARISH_CHOCH,
+            candle_index=10,
+            previous_bias=MarketBias.BULLISH,
+            new_bias=MarketBias.BEARISH,
+            triggering_break=earlier_bearish_break,
+        ),
+        CharacterChange(
+            kind=CharacterChangeKind.BULLISH_CHOCH,
+            candle_index=14,
+            previous_bias=MarketBias.BEARISH,
+            new_bias=MarketBias.BULLISH,
+            triggering_break=later_bullish_break,
+        ),
+    ]

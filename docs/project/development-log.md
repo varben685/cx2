@@ -74,6 +74,9 @@ lett áthelyezve.
   buffer támogatással.
 - Unit tesztek készültek bullish BOS, bearish BOS, wick-only törés, break
   buffer, ismeretlen pivot és deduplikáció esetekre.
+- Létrejött az első CHoCH klasszifikáció `MarketBias` állapottal.
+- Unit tesztek készültek bullish CHoCH, bearish CHoCH, azonos irányú BOS,
+  semleges induló bias és időrendi rendezés eseteire.
 
 ### Ellenőrzött kapuk
 
@@ -83,6 +86,10 @@ lett áthelyezve.
 - Célzott BOS ellenőrzés: `uv run pytest tests/test_market_structure.py`
   13 teszt sikeres.
 - Célzott Ruff ellenőrzés: sikeres.
+- Célzott CHoCH ellenőrzés: `uv run pytest tests/test_market_structure.py`
+  18 teszt sikeres.
+- Teljes backend ellenőrzés CHoCH után: `uv run pytest` 27 teszt sikeres,
+  `uv run ruff check .` sikeres, `uv run mypy src` sikeres.
 - Megjegyzés: a FastAPI TestClient egy upstream Starlette deprecation warningot
   jelez, de a tesztek sikeresek.
 
@@ -90,11 +97,10 @@ lett áthelyezve.
 
 Phase 1 következő mérföldkő:
 
-1. CHoCH algoritmikus definíció létrehozása a BOS eseményekre építve.
-2. Egyszerű trendállapot vagy bias tracking bevezetése.
-3. Bullish és bearish CHoCH unit tesztek.
-4. Dokumentáció frissítése arról, hogy a CHoCH önmagában nem garantál
-   trendfordulót.
+1. FVG algoritmikus definíció létrehozása háromgyertyás modellel.
+2. Bullish és bearish FVG unit tesztek.
+3. Minimális méret és ATR/tick alapú későbbi konfiguráció előkészítése.
+4. Dokumentáció frissítése FVG edge case-ekkel.
 
 ## Korábbi következő konkrét lépés
 

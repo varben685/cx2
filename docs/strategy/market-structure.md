@@ -82,6 +82,51 @@ Fontos: ez az első implementáció még nem állapít meg teljes trendállapoto
 következő CHoCH réteg fogja megkülönböztetni, hogy egy struktúratörés a meglévő
 irány folytatása vagy karakterváltás-e.
 
+## CHoCH algoritmus
+
+A CHoCH az első implementációban a BOS eseményekből és egy egyszerű
+`MarketBias` állapotból származik.
+
+Bias állapotok:
+
+- `NEUTRAL`: még nincs irányított kontextus.
+- `BULLISH`: az aktuális struktúra felfelé értelmezett.
+- `BEARISH`: az aktuális struktúra lefelé értelmezett.
+
+Bullish CHoCH:
+
+```text
+previousBias = BEARISH
+structureBreak.kind = BULLISH_BOS
+```
+
+Bearish CHoCH:
+
+```text
+previousBias = BULLISH
+structureBreak.kind = BEARISH_BOS
+```
+
+Ha az induló bias `NEUTRAL`, akkor az első BOS csak kontextust ad, de még nem
+CHoCH. A CHoCH csak akkor jön létre, amikor már volt értelmezett előző bias, és
+az új structure break ezzel ellentétes irányú.
+
+```mermaid
+stateDiagram-v2
+    [*] --> NEUTRAL
+    NEUTRAL --> BULLISH: bullish break
+    NEUTRAL --> BEARISH: bearish break
+    BULLISH --> BULLISH: bullish break
+    BEARISH --> BEARISH: bearish break
+    BULLISH --> BEARISH: bearish CHoCH
+    BEARISH --> BULLISH: bullish CHoCH
+```
+
+Fontos: a CHoCH önmagában nem garantál trendfordulót. Csak azt jelzi, hogy a
+korábbi struktúra irányával ellentétes, jelentős törés történt. A későbbi setup
+pontozásnak displacement, FVG, liquidity sweep és risk-reward alapján is
+szűrnie kell.
+
 ## Kapcsolódó kód
 
 - `apps/api/src/smc_assistant/domain/candles.py`

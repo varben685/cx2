@@ -75,7 +75,7 @@ ezért a Docker image build ebben a munkamenetben nem volt futtatható.
 - [x] Strategy specification első változata.
 - [x] Swing high/low algoritmikus definíció és unit tesztek.
 - [x] BOS algoritmikus definíció és unit tesztek.
-- [ ] CHoCH algoritmikus definíció és unit tesztek.
+- [x] CHoCH algoritmikus definíció és unit tesztek.
 - [ ] FVG algoritmikus definíció és unit tesztek.
 - [ ] Liquidity sweep algoritmikus definíció és unit tesztek.
 - [ ] Displacement komponensek és unit tesztek.
@@ -186,3 +186,10 @@ ezért a Docker image build ebben a munkamenetben nem volt futtatható.
   célzott Ruff sikeres. Teljes backend ellenőrzés: `uv run pytest` 22 teszt
   sikeres, `uv run ruff check .` sikeres, `uv run mypy src` sikeres. Következő
   lépés: CHoCH.
+- 2026-09-02: Elkészült az első CHoCH klasszifikáció `MarketBias` alapján.
+  A rendszer időrendbe rendezi a BOS eseményeket, semleges biasból először csak
+  kontextust épít, majd az ellentétes irányú structure breakből CHoCH eseményt
+  hoz létre. Célzott ellenőrzés: `uv run pytest tests/test_market_structure.py`
+  18 teszt sikeres. Teljes backend ellenőrzés: `uv run pytest` 27 teszt
+  sikeres, `uv run ruff check .` sikeres, `uv run mypy src` sikeres. Következő
+  lépés: FVG.

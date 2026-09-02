@@ -5,7 +5,8 @@
 Elkészült az első OHLCV `Candle` domain modell, valamint a confirmed swing high
 és swing low pivot algoritmus. Erre ráépült az első BOS detektor is, amely
 ismert swing high vagy swing low szint záróáras, bufferrel szűrt áttörését
-jelöli.
+jelöli. Elkészült az első CHoCH klasszifikáció is, amely a BOS eseményeket az
+aktuális `MarketBias` állapothoz viszonyítja.
 
 A `Candle` modell validálja az UTC időbélyegeket, az OHLC árkapcsolatokat és az
 opcionális volumen értékét.
@@ -26,6 +27,11 @@ kisebb az összes környező low értéknél.
 A BOS detektor csak olyan pivotot törhet, amely a break gyertya előtt már
 ismert volt. Alapértelmezésben a törést a záróárnak kell megerősítenie.
 
+A CHoCH réteg időrendben végigmegy a structure break eseményeken. Ha az induló
+bias `NEUTRAL`, az első törés csak beállítja az irányt. Ha később ellentétes
+irányú törés érkezik, akkor `BULLISH_CHOCH` vagy `BEARISH_CHOCH` esemény jön
+létre.
+
 ```mermaid
 sequenceDiagram
     participant Data as OHLCV gyertyák
@@ -37,6 +43,7 @@ sequenceDiagram
     Algo->>Pivot: csak a jobb ablak lezárása után
     Pivot->>Algo: ismert swing szint
     Algo->>Algo: close + buffer törésvizsgálat
+    Algo->>Algo: break iránya kontra aktuális bias
 ```
 
 ## 4. Milyen alternatívák léteznek?
@@ -47,18 +54,21 @@ sequenceDiagram
 - ZigZag-szerű százalékos elmozdulás modell.
 - Wick alapú BOS close confirmation nélkül.
 - Trendállapotot is kezelő BOS/CHoCH state machine.
+- Több idősíkú bias modell, ahol a CHoCH csak HTF kontextusban érvényes.
 
 ## 5. Miért ezt választottuk?
 
-Az induló szigorú pivot és záróáras BOS modell egyszerű, reprodukálható és jól
-tesztelhető. Tanulási célra is jó, mert világosan látszik, mikor válik ismertté
-egy swing, és mikor történik tényleges struktúratörés.
+Az induló szigorú pivot, záróáras BOS és bias-alapú CHoCH modell egyszerű,
+reprodukálható és jól tesztelhető. Tanulási célra is jó, mert világosan látszik,
+mikor válik ismertté egy swing, mikor történik struktúratörés, és mikor vált a
+struktúra karaktert.
 
 ## 6. Milyen trading fogalmak kapcsolódnak hozzá?
 
 - Swing high: megerősített lokális csúcs.
 - Swing low: megerősített lokális mélypont.
 - BOS: ismert swing szint áttörése, alapértelmezésben záróárral megerősítve.
+- CHoCH: az aktuális bias-szal ellentétes irányú structure break.
 - Future leakage: jövőbeli információ használata a döntési pillanat előtt.
 - Repainting: amikor egy indikátor utólag úgy rajzol jelet, mintha az korábban
   is ismert lett volna.
@@ -70,7 +80,8 @@ egy swing, és mikor történik tényleges struktúratörés.
 - A túl nagy `rightBars` késői, de stabilabb jeleket adhat.
 - Az egyenlő high/low értékeket az első verzió nem jelöli pivotként.
 - A wick-only törés alapértelmezésben nem BOS, mert `close_confirmation = true`.
-- Ez a BOS réteg még nem dönti el, hogy az esemény trendfolytatás vagy CHoCH.
+- A CHoCH nem jelent automatikus trendfordulót vagy belépési jelzést.
+- A túl gyors bias váltás zajos piacon sok hamis CHoCH jelzést adhat.
 
 ## 8. Mely fájlokat érdemes elolvasni?
 
@@ -89,6 +100,6 @@ cd apps/api
 
 ## 10. Gyakorlófeladat
 
-Változtasd meg egy BOS tesztben a `break_buffer` értékét 0-ról 1-re, majd
-figyeld meg, mikor marad el a BOS esemény. Ez segít megérteni, miért szűrjük a
-minimális szinttúllépést.
+Változtasd meg az egyik CHoCH tesztben az `initial_bias` értékét `BULLISH`-ról
+`NEUTRAL`-ra. Figyeld meg, hogy az első ellentétesnek tűnő törés miért nem lesz
+azonnal CHoCH semleges kontextusból.
