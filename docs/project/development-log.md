@@ -70,12 +70,19 @@ lett áthelyezve.
   felismerésre.
 - A market structure dokumentáció frissült.
 - Létrejött a Phase 1 learning dokumentum első változata.
+- Létrejött az első BOS detektor known pivot, close confirmation és break
+  buffer támogatással.
+- Unit tesztek készültek bullish BOS, bearish BOS, wick-only törés, break
+  buffer, ismeretlen pivot és deduplikáció esetekre.
 
 ### Ellenőrzött kapuk
 
-- `uv run pytest`: 14 teszt sikeres.
+- `uv run pytest`: 22 teszt sikeres.
 - `uv run ruff check .`: sikeres.
 - `uv run mypy src`: sikeres.
+- Célzott BOS ellenőrzés: `uv run pytest tests/test_market_structure.py`
+  13 teszt sikeres.
+- Célzott Ruff ellenőrzés: sikeres.
 - Megjegyzés: a FastAPI TestClient egy upstream Starlette deprecation warningot
   jelez, de a tesztek sikeresek.
 
@@ -83,10 +90,11 @@ lett áthelyezve.
 
 Phase 1 következő mérföldkő:
 
-1. BOS algoritmikus definíció létrehozása confirmed pivotokra építve.
-2. Bullish és bearish BOS unit tesztek.
-3. Close confirmation és break buffer paraméterezése.
-4. Dokumentáció frissítése arról, hogy a BOS csak ismert swing szintet törhet.
+1. CHoCH algoritmikus definíció létrehozása a BOS eseményekre építve.
+2. Egyszerű trendállapot vagy bias tracking bevezetése.
+3. Bullish és bearish CHoCH unit tesztek.
+4. Dokumentáció frissítése arról, hogy a CHoCH önmagában nem garantál
+   trendfordulót.
 
 ## Korábbi következő konkrét lépés
 

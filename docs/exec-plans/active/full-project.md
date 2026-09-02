@@ -74,7 +74,7 @@ ezért a Docker image build ebben a munkamenetben nem volt futtatható.
 - [x] Trading glossary első változata.
 - [x] Strategy specification első változata.
 - [x] Swing high/low algoritmikus definíció és unit tesztek.
-- [ ] BOS algoritmikus definíció és unit tesztek.
+- [x] BOS algoritmikus definíció és unit tesztek.
 - [ ] CHoCH algoritmikus definíció és unit tesztek.
 - [ ] FVG algoritmikus definíció és unit tesztek.
 - [ ] Liquidity sweep algoritmikus definíció és unit tesztek.
@@ -179,3 +179,10 @@ ezért a Docker image build ebben a munkamenetben nem volt futtatható.
   `confirmed_at_index` mezőben auditálható. Ellenőrzés: `uv run pytest`
   14 teszt sikeres, `uv run ruff check .` sikeres, `uv run mypy src` sikeres.
   Következő lépés: BOS.
+- 2026-09-02: Elkészült az első BOS detektor confirmed pivotokra építve.
+  Támogatja a záróáras megerősítést, a `break_buffer` szűrést, a még nem ismert
+  pivotok kizárását és az egy pivotra jutó egyszeri eseményt. Célzott
+  ellenőrzés: `uv run pytest tests/test_market_structure.py` 13 teszt sikeres,
+  célzott Ruff sikeres. Teljes backend ellenőrzés: `uv run pytest` 22 teszt
+  sikeres, `uv run ruff check .` sikeres, `uv run mypy src` sikeres. Következő
+  lépés: CHoCH.

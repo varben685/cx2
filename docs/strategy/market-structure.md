@@ -50,10 +50,41 @@ Ez azért kritikus, mert a backtest, a TradingView jelölés és a későbbi ML
 dataset nem kezelheti úgy a pivotot, mintha már a pivotgyertya pillanatában
 ismert lett volna. Ez future leakage lenne.
 
+## BOS algoritmus
+
+Az első BOS implementáció kizárólag confirmed pivotokra épül.
+
+Bullish BOS:
+
+```text
+ismert swing high létezik
+break gyertya indexe > swingHigh.confirmedAtIndex
+breakPrice > swingHigh.price + breakBuffer
+```
+
+Bearish BOS:
+
+```text
+ismert swing low létezik
+break gyertya indexe > swingLow.confirmedAtIndex
+breakPrice < swingLow.price - breakBuffer
+```
+
+Alapértelmezésben `breakPrice = candle.close`, tehát záróáras megerősítést
+használunk. Ha `closeConfirmation = false`, akkor bullish törésnél a high,
+bearish törésnél a low alapján is detektálható a szint átszúrása.
+
+Egy pivothoz csak egy BOS esemény készül. Ha az ár több későbbi gyertyán is a
+törött szint felett vagy alatt marad, az nem hoz létre újabb eseményt ugyanarra
+a pivotra.
+
+Fontos: ez az első implementáció még nem állapít meg teljes trendállapotot. A
+következő CHoCH réteg fogja megkülönböztetni, hogy egy struktúratörés a meglévő
+irány folytatása vagy karakterváltás-e.
+
 ## Kapcsolódó kód
 
 - `apps/api/src/smc_assistant/domain/candles.py`
 - `apps/api/src/smc_assistant/domain/market_structure.py`
 - `apps/api/tests/test_candles.py`
 - `apps/api/tests/test_market_structure.py`
-

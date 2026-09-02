@@ -10,6 +10,11 @@ class PivotKind(StrEnum):
     SWING_LOW = "SWING_LOW"
 
 
+class StructureBreakKind(StrEnum):
+    BULLISH_BOS = "BULLISH_BOS"
+    BEARISH_BOS = "BEARISH_BOS"
+
+
 @dataclass(frozen=True, slots=True)
 class ConfirmedPivot:
     kind: PivotKind
@@ -33,6 +38,25 @@ class PivotSettings:
 
         if self.right_bars < 1:
             raise ValueError("right_bars must be at least 1.")
+
+
+@dataclass(frozen=True, slots=True)
+class StructureBreakSettings:
+    break_buffer: float = 0.0
+    close_confirmation: bool = True
+
+    def __post_init__(self) -> None:
+        if self.break_buffer < 0:
+            raise ValueError("break_buffer must be non-negative.")
+
+
+@dataclass(frozen=True, slots=True)
+class StructureBreak:
+    kind: StructureBreakKind
+    candle_index: int
+    broken_pivot: ConfirmedPivot
+    broken_level: float
+    break_price: float
 
 
 def find_confirmed_pivots(
@@ -74,6 +98,67 @@ def find_confirmed_pivots(
             )
 
     return pivots
+
+
+def find_bos_events(
+    candles: Sequence[Candle],
+    pivots: Sequence[ConfirmedPivot],
+    settings: StructureBreakSettings | None = None,
+) -> list[StructureBreak]:
+    break_settings = settings or StructureBreakSettings()
+    events: list[StructureBreak] = []
+    already_broken: set[tuple[PivotKind, int, int]] = set()
+
+    for candle_index, candle in enumerate(candles):
+        known_pivots = [
+            pivot
+            for pivot in pivots
+            if pivot.confirmed_at_index < candle_index
+            and (pivot.kind, pivot.candle_index, pivot.confirmed_at_index) not in already_broken
+        ]
+
+        for pivot in known_pivots:
+            event = _detect_bos_for_pivot(candle_index, candle, pivot, break_settings)
+            if event is None:
+                continue
+
+            events.append(event)
+            already_broken.add((pivot.kind, pivot.candle_index, pivot.confirmed_at_index))
+
+    return events
+
+
+def _detect_bos_for_pivot(
+    candle_index: int,
+    candle: Candle,
+    pivot: ConfirmedPivot,
+    settings: StructureBreakSettings,
+) -> StructureBreak | None:
+    if pivot.kind == PivotKind.SWING_HIGH:
+        threshold = pivot.price + settings.break_buffer
+        break_price = candle.close if settings.close_confirmation else candle.high
+        if break_price > threshold:
+            return StructureBreak(
+                kind=StructureBreakKind.BULLISH_BOS,
+                candle_index=candle_index,
+                broken_pivot=pivot,
+                broken_level=pivot.price,
+                break_price=break_price,
+            )
+
+    if pivot.kind == PivotKind.SWING_LOW:
+        threshold = pivot.price - settings.break_buffer
+        break_price = candle.close if settings.close_confirmation else candle.low
+        if break_price < threshold:
+            return StructureBreak(
+                kind=StructureBreakKind.BEARISH_BOS,
+                candle_index=candle_index,
+                broken_pivot=pivot,
+                broken_level=pivot.price,
+                break_price=break_price,
+            )
+
+    return None
 
 
 def _is_strict_swing_high(
