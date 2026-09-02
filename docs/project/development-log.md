@@ -59,7 +59,36 @@ lett áthelyezve.
 - Pine Script prototípus még nincs implementálva.
 - Backtest, journal, ML és AI magyarázati réteg későbbi fázis.
 
-## Következő konkrét lépés
+## 2026-09-02 állapot
+
+### Elkészült
+
+- Létrejött az OHLCV `Candle` domain modell.
+- Létrejött a confirmed swing high / swing low pivot algoritmus.
+- A pivot felismerési ideje explicit: `confirmed_at_index`.
+- Unit tesztek készültek az OHLC validációra és a késleltetett pivot
+  felismerésre.
+- A market structure dokumentáció frissült.
+- Létrejött a Phase 1 learning dokumentum első változata.
+
+### Ellenőrzött kapuk
+
+- `uv run pytest`: 14 teszt sikeres.
+- `uv run ruff check .`: sikeres.
+- `uv run mypy src`: sikeres.
+- Megjegyzés: a FastAPI TestClient egy upstream Starlette deprecation warningot
+  jelez, de a tesztek sikeresek.
+
+### Következő konkrét lépés
+
+Phase 1 következő mérföldkő:
+
+1. BOS algoritmikus definíció létrehozása confirmed pivotokra építve.
+2. Bullish és bearish BOS unit tesztek.
+3. Close confirmation és break buffer paraméterezése.
+4. Dokumentáció frissítése arról, hogy a BOS csak ismert swing szintet törhet.
+
+## Korábbi következő konkrét lépés
 
 Phase 1 következő mérföldkő:
 
@@ -71,4 +100,3 @@ Phase 1 következő mérföldkő:
 Fontos szabály: a pivot csak akkor tekinthető ismertnek, amikor a szükséges
 jobb oldali gyertyák már lezárultak. Ez védi a rendszert a future leakage és a
 repainting félreértésektől.
-

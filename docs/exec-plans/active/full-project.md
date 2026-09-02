@@ -73,7 +73,7 @@ ezért a Docker image build ebben a munkamenetben nem volt futtatható.
 - [x] Risk-reward unit tesztek.
 - [x] Trading glossary első változata.
 - [x] Strategy specification első változata.
-- [ ] Swing high/low algoritmikus definíció és unit tesztek.
+- [x] Swing high/low algoritmikus definíció és unit tesztek.
 - [ ] BOS algoritmikus definíció és unit tesztek.
 - [ ] CHoCH algoritmikus definíció és unit tesztek.
 - [ ] FVG algoritmikus definíció és unit tesztek.
@@ -174,3 +174,8 @@ ezért a Docker image build ebben a munkamenetben nem volt futtatható.
   `docs/project/original-project-brief.md` fájlba. Létrejött a rövid
   fejlesztési napló: `docs/project/development-log.md`. A fő munkakönyvtár
   innentől `/Users/bencevarga/Projects/cx2`.
+- 2026-09-02: Phase 1-ben elkészült az OHLCV `Candle` domain modell és a
+  confirmed swing high / swing low pivot algoritmus. A felismerési késleltetés
+  `confirmed_at_index` mezőben auditálható. Ellenőrzés: `uv run pytest`
+  14 teszt sikeres, `uv run ruff check .` sikeres, `uv run mypy src` sikeres.
+  Következő lépés: BOS.
