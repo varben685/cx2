@@ -243,6 +243,10 @@ Phase 2 következő mérföldkő:
 - TradingView editor visszajelzés alapján a több soros Pine függvényhívások
   egy soros formára lettek alakítva, mert `Mismatched input 'end of line without
   line continuation' expecting ')'` hibát okozhatnak.
+- TradingView képernyőkép alapján az első vizuális nézet túl zajos volt. Az
+  indikátor clean alapbeállításra váltott: 5/5 pivot ablak, swing/BOS/sweep/
+  displacement debug elemek alapból kikapcsolva, FVG-ből alapból csak setuphoz
+  kapcsolódó zóna.
 
 ### Nem ellenőrzött vagy részben nyitott
 
@@ -251,6 +255,6 @@ Phase 2 következő mérföldkő:
 
 ### Következő konkrét lépés
 
-1. Pine script kézi fordítása TradingView editorban.
+1. Pine script újratesztelése TradingView editorban a clean alapnézettel.
 2. Alert payload összevetése a backend Pydantic validációval.
 3. Repainting kockázatok dokumentálása TradingView szemszögből.

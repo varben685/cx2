@@ -1,19 +1,22 @@
 //@version=5
 indicator("SMC Assistant Prototype", shorttitle="SMC Assistant", overlay=true, max_labels_count=500, max_boxes_count=100)
 
-leftBars = input.int(2, "Left bars", minval=1, maxval=20)
-rightBars = input.int(2, "Right bars", minval=1, maxval=20)
+leftBars = input.int(5, "Left bars", minval=1, maxval=20)
+rightBars = input.int(5, "Right bars", minval=1, maxval=20)
 breakBufferTicks = input.int(0, "Break buffer ticks", minval=0, maxval=100)
 sweepBufferTicks = input.int(0, "Sweep buffer ticks", minval=0, maxval=100)
 useCloseConfirmation = input.bool(true, "Use close confirmation")
-showSwings = input.bool(true, "Show swings")
-showStructure = input.bool(true, "Show BOS/CHoCH")
+showSwings = input.bool(false, "Show swings")
+showBosLabels = input.bool(false, "Show BOS labels")
+showChochLabels = input.bool(true, "Show CHoCH labels")
 showFvgs = input.bool(true, "Show FVGs")
-showSweeps = input.bool(true, "Show liquidity sweeps")
-showDisplacement = input.bool(true, "Show displacement")
+showOnlySetupFvgs = input.bool(true, "Only setup FVGs")
+showSweeps = input.bool(false, "Show liquidity sweeps")
+showDisplacement = input.bool(false, "Show displacement")
 htfTimeframe = input.timeframe("15", "HTF timeframe")
 strategyVersion = input.string("smc-rce-v1", "Strategy version")
-fvgMinTicks = input.int(1, "Min FVG size ticks", minval=0, maxval=1000)
+fvgMinTicks = input.int(5, "Min FVG size ticks", minval=0, maxval=1000)
+fvgProjectionBars = input.int(12, "FVG projection bars", minval=1, maxval=100)
 atrPeriod = input.int(14, "ATR period", minval=2, maxval=100)
 bodyAtrThreshold = input.float(0.7, "Body/ATR threshold", minval=0.1, maxval=10.0)
 bodyToRangeThreshold = input.float(0.55, "Body/range threshold", minval=0.1, maxval=1.0)
@@ -58,23 +61,27 @@ bearishChoch = bearishBos and marketBias == 1
 if bullishBos
     brokenSwingHighBar := lastSwingHighBar
     marketBias := 1
-    if showStructure
+    if (bullishChoch and showChochLabels) or (not bullishChoch and showBosLabels)
         label.new(bar_index, high, bullishChoch ? "CHoCH" : "BOS", style=label.style_label_down, color=bullishChoch ? color.new(color.yellow, 0) : color.new(color.blue, 0), textcolor=color.black, size=size.small)
 
 if bearishBos
     brokenSwingLowBar := lastSwingLowBar
     marketBias := -1
-    if showStructure
+    if (bearishChoch and showChochLabels) or (not bearishChoch and showBosLabels)
         label.new(bar_index, low, bearishChoch ? "CHoCH" : "BOS", style=label.style_label_up, color=bearishChoch ? color.new(color.yellow, 0) : color.new(color.purple, 0), textcolor=color.white, size=size.small)
 
 bullishFvg = low > high[2] and low - high[2] >= fvgMinSize
 bearishFvg = high < low[2] and low[2] - high >= fvgMinSize
+activeBullishSetup = bullishChoch and bullishFvg
+activeBearishSetup = bearishChoch and bearishFvg
+showBullishFvgBox = showFvgs and bullishFvg and (not showOnlySetupFvgs or activeBullishSetup)
+showBearishFvgBox = showFvgs and bearishFvg and (not showOnlySetupFvgs or activeBearishSetup)
 
-if showFvgs and bullishFvg
-    box.new(left=bar_index - 2, top=low, right=bar_index + 20, bottom=high[2], bgcolor=color.new(color.teal, 82), border_color=color.new(color.teal, 35))
+if showBullishFvgBox
+    box.new(left=bar_index - 2, top=low, right=bar_index + fvgProjectionBars, bottom=high[2], bgcolor=color.new(color.teal, 88), border_color=color.new(color.teal, 45))
 
-if showFvgs and bearishFvg
-    box.new(left=bar_index - 2, top=low[2], right=bar_index + 20, bottom=high, bgcolor=color.new(color.orange, 82), border_color=color.new(color.orange, 35))
+if showBearishFvgBox
+    box.new(left=bar_index - 2, top=low[2], right=bar_index + fvgProjectionBars, bottom=high, bgcolor=color.new(color.orange, 88), border_color=color.new(color.orange, 45))
 
 bullishSweep = not na(lastSwingLowPrice) and low < lastSwingLowPrice - sweepBuffer and close > lastSwingLowPrice
 bearishSweep = not na(lastSwingHighPrice) and high > lastSwingHighPrice + sweepBuffer and close < lastSwingHighPrice
@@ -99,8 +106,6 @@ isBearishDisplacement = close < open and displacementScore >= displacementThresh
 plotshape(showDisplacement and isBullishDisplacement, title="Bullish displacement", style=shape.triangleup, location=location.belowbar, color=color.new(color.teal, 0), size=size.tiny)
 plotshape(showDisplacement and isBearishDisplacement, title="Bearish displacement", style=shape.triangledown, location=location.abovebar, color=color.new(color.orange, 0), size=size.tiny)
 
-activeBullishSetup = bullishChoch and bullishFvg
-activeBearishSetup = bearishChoch and bearishFvg
 setupDirection = activeBullishSetup ? "LONG" : activeBearishSetup ? "SHORT" : ""
 setupCandidate = setupDirection != ""
 htfBias = marketBias == 1 ? "BULLISH" : marketBias == -1 ? "BEARISH" : "NEUTRAL"

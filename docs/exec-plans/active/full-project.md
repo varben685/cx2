@@ -106,6 +106,7 @@ ezért a Docker image build ebben a munkamenetben nem volt futtatható.
 - [x] Displacement score.
 - [x] JSON alert payload váz.
 - [x] Első repainting kockázat dokumentálása.
+- [x] Clean alapnézet a zajos debug jelölések helyett.
 
 ## Phase 4: Rule-based setup scoring
 
@@ -268,3 +269,6 @@ ezért a Docker image build ebben a munkamenetben nem volt futtatható.
   entryt, FVG-n kívüli stopot, fix 2R targetet és számolt `riskReward` mezőt
   használ. Lokális Pine fordító nincs, ezért statikus teszt ellenőrzi a
   komponensek és backend contract kulcsmezők jelenlétét.
+- 2026-09-03: TradingView képernyőkép alapján a prototípus túl zajos volt, ezért
+  clean alapnézetre váltott: 5/5 pivot ablak, kikapcsolt swing/BOS/sweep/
+  displacement debug elemek, és setuphoz kötött FVG boxok.

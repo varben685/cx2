@@ -15,6 +15,14 @@ Ez még nem végleges stratégia, hanem vizuális és alert alap:
 - backend contracthoz igazított JSON alert payload váz;
 - egyszerű FVG equilibrium entry, stop loss, take profit és risk-reward számítás.
 
+Az első TradingView próba túl zajosnak bizonyult, mert minden debug marker
+látszott egyszerre. Ezért az alapértelmezett nézet most signal-first:
+
+- `leftBars/rightBars = 5/5`, kevésbé érzékeny pivotokkal;
+- swing label, BOS label, sweep label és displacement marker alapból kikapcsolva;
+- CHoCH label alapból bekapcsolva;
+- FVG boxból alapból csak a setuphoz kapcsolódó zóna látszik.
+
 ## 2. Miért erre van szükség?
 
 A backend már fogad TradingView webhookot, de kell egy TradingView oldali forrás,
@@ -31,6 +39,8 @@ mezőket kell pontosítani.
 - A session felismerés egyszerűsített.
 - A production alert előtt TradingView editorban kézzel fordítani és finomítani
   kell.
+- Ha részletes diagnosztika kell, a kikapcsolt debug elemek egyenként
+  visszakapcsolhatók az indikátor beállításaiban.
 
 ## 4. Repainting védelem
 
@@ -53,5 +63,6 @@ ismertként a megerősítő gyertyák lezárása előtt.
 
 ## 6. Következő lépés
 
-A következő Phase 3 szeletben TradingView editorban kell fordítani a scriptet,
-majd a tényleges alert payloadot összevetni a backend Pydantic contracttal.
+A következő Phase 3 szeletben TradingView editorban kell újra ellenőrizni a
+tiszta alapnézetet, majd a tényleges alert payloadot összevetni a backend
+Pydantic contracttal.
