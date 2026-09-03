@@ -113,11 +113,13 @@ ezért a Docker image build ebben a munkamenetben nem volt futtatható.
 
 ## Phase 4: Rule-based setup scoring
 
-- [ ] Pontozási komponensek.
-- [ ] 0-100 közötti score.
-- [ ] Elutasítási okok.
-- [ ] Strategy configuration versioning.
-- [ ] Determinisztikus magyarázat.
+- [x] Első pontozási komponensek.
+- [x] 0-100 közötti score.
+- [x] Első elutasítási okok.
+- [x] Strategy és scoring configuration versioning.
+- [x] Első determinisztikus pozitív/negatív indokok.
+- [ ] TradingView webhook payload mappolása scoring inputra.
+- [ ] Scoring bekötése az ingestion flow mellé.
 
 ## Phase 5: Outcome és backtest
 
@@ -289,3 +291,6 @@ ezért a Docker image build ebben a munkamenetben nem volt futtatható.
 - 2026-09-03: A Pine alert payload nullable ATR és exchange fallback kezelést
   kapott. A backend contract reprezentatív Pine-szerű LONG és SHORT payloadokat
   validál, beleértve a 2R executiont és a `relativeVolume: null` esetet.
+- 2026-09-03: Elindult a Phase 4 rule-based setup scoring. Létrejött az első
+  domain scoring modul 0-100 ponttal, komponenspontokkal, config verzióval,
+  pozitív/negatív indokokkal és hard reject okokkal.

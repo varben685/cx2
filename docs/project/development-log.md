@@ -291,3 +291,32 @@ Phase 2 következő mérföldkő:
    a bias bootstrap viselkedésével.
 2. Tényleges TradingView alert kézi beküldése a lokális webhook endpoint felé.
 3. Repainting kockázatok dokumentálása TradingView szemszögből.
+
+## 2026-09-03 Phase 4 állapot
+
+### Elkészült
+
+- Elindult a rule-based setup scoring fázis.
+- Létrejött az első determinisztikus domain scoring modul:
+  `apps/api/src/smc_assistant/domain/setup_scoring.py`.
+- A scoring 0-100 közötti pontszámot ad HTF bias, CHoCH, liquidity sweep,
+  displacement, FVG size/ATR, session és risk-reward komponensekből.
+- Az eredmény tartalmaz strategy versiont, scoring config versiont,
+  komponenspontokat, pozitív okokat, negatív okokat és hard reject okokat.
+- Az első hard reject okok: ellenirányú HTF bias, hiányzó CHoCH, minimum alatti
+  risk-reward és acceptance threshold alatti score.
+- Létrejött a Phase 4 learning dokumentum első változata.
+
+### Ellenőrzött kapuk
+
+- Célzott scoring ellenőrzés: `uv run pytest tests/test_setup_scoring.py`
+  8 teszt sikeres.
+- Célzott scoring Ruff és mypy ellenőrzés: sikeres.
+- Teljes backend ellenőrzés scoring alap után: `uv run pytest` 100 teszt
+  sikeres, `uv run ruff check .` sikeres, `uv run mypy src` sikeres.
+
+### Következő konkrét lépés
+
+1. TradingView webhook payload mappolása belső `SetupScoringInput` objektumra.
+2. Scoring bekötése az ingestion flow mellé.
+3. Pontozott setup candidate belső séma előkészítése.
