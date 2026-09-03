@@ -23,3 +23,36 @@ class InMemorySetupCandidateRepository:
     def get_by_event_id(self, event_id: str) -> SetupCandidateRecord | None:
         with self._lock:
             return self._records_by_event_id.get(event_id)
+
+    def get_by_setup_id(self, setup_id: str) -> SetupCandidateRecord | None:
+        with self._lock:
+            return next(
+                (
+                    record
+                    for record in self._records_by_event_id.values()
+                    if record.setup_id == setup_id
+                ),
+                None,
+            )
+
+    def list_recent(
+        self,
+        *,
+        limit: int = 50,
+        symbol: str | None = None,
+        accepted: bool | None = None,
+    ) -> list[SetupCandidateRecord]:
+        with self._lock:
+            records = list(self._records_by_event_id.values())
+
+        if symbol is not None:
+            records = [record for record in records if record.symbol == symbol]
+
+        if accepted is not None:
+            records = [record for record in records if record.accepted is accepted]
+
+        return sorted(
+            records,
+            key=lambda record: (record.received_at, record.setup_id),
+            reverse=True,
+        )[:limit]

@@ -33,3 +33,18 @@ A tartós, külön `SetupCandidate` adatbázis-entitás első változata elkész
 Jelenleg a `setup_id` megegyezik az idempotens `event_id` értékkel. A score
 snapshotként tárolódik: komponenspontok, reject okok, pozitív és negatív indokok
 együtt kerülnek a setup candidate rekordba.
+
+## Lekérdező API
+
+Az első setup API endpointok:
+
+```http
+GET /api/v1/setups?limit=50&symbol=BTCUSDT&accepted=true
+GET /api/v1/setups/{setup_id}
+```
+
+A lista endpoint a legfrissebb `received_at` szerint csökkenő sorrendben adja
+vissza a setupokat. A `limit` 1 és 100 közötti érték lehet. A `symbol` és
+`accepted` query paraméter opcionális szűrő.
+
+Ismeretlen `setup_id` esetén az API `404 Not Found` választ ad.

@@ -343,9 +343,21 @@ Phase 2 következő mérföldkő:
 - Teljes backend ellenőrzés setup candidate persistence után: `uv run pytest`
   107 teszt sikeres, `uv run ruff check .` sikeres,
   `uv run mypy src` sikeres.
+- Létrejött az első setup lekérdező API:
+  `GET /api/v1/setups` és `GET /api/v1/setups/{setup_id}`.
+- A setup lista `limit`, `symbol` és `accepted` query paraméterekkel szűrhető.
+- A FastAPI app state ugyanazt a setup candidate repository példányt osztja meg
+  az ingestion és a lekérdező router között.
+- Memory és SQL repository szinten is elkészült a `list_recent` és
+  `get_by_setup_id` művelet.
+- Célzott setup API ellenőrzés:
+  `uv run pytest tests/test_setup_candidates.py tests/test_sql_setup_candidates.py tests/test_webhook_ingestion_factory.py tests/test_setups_api.py tests/test_tradingview_webhook_api.py`
+  20 teszt sikeres.
+- Teljes backend ellenőrzés setup API után: `uv run pytest` 117 teszt sikeres,
+  `uv run ruff check .` sikeres, `uv run mypy src` sikeres.
 
 ### Következő konkrét lépés
 
-1. Setup lekérdező API első verziójának megtervezése.
-2. Setup lista endpoint memory és SQL repository támogatással.
-3. Frontend dashboard első setup listájának előkészítése.
+1. Frontend dashboard első setup listájának előkészítése.
+2. Backend setup API response formájának bekötése a frontend kliensbe.
+3. Lokális end-to-end smoke teszt: webhook beküldés után setup megjelenik.

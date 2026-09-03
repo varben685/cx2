@@ -1,3 +1,4 @@
+from dataclasses import replace
 from datetime import UTC, datetime
 
 from smc_assistant.application.setup_candidates import (
@@ -91,3 +92,47 @@ def test_in_memory_setup_candidate_repository_is_idempotent_by_event_id() -> Non
     assert second_result.created is False
     assert second_result.record == first_record
     assert repository.get_by_event_id(first_record.event_id) == first_record
+
+
+def test_in_memory_setup_candidate_repository_lists_recent_records_with_filters() -> None:
+    repository = InMemorySetupCandidateRepository()
+    first_record = setup_candidate_record()
+    second_record = replace(
+        first_record,
+        setup_id="ETHUSDT-1-1767225720000-LONG",
+        event_id="ETHUSDT-1-1767225720000-LONG",
+        symbol="ETHUSDT",
+        received_at=datetime(2026, 9, 3, 10, 1, tzinfo=UTC),
+    )
+    rejected_record = replace(
+        first_record,
+        setup_id="SOLUSDT-1-1767225780000-LONG",
+        event_id="SOLUSDT-1-1767225780000-LONG",
+        symbol="SOLUSDT",
+        accepted=False,
+        received_at=datetime(2026, 9, 3, 10, 2, tzinfo=UTC),
+    )
+
+    repository.save_if_absent(first_record)
+    repository.save_if_absent(second_record)
+    repository.save_if_absent(rejected_record)
+
+    assert [record.symbol for record in repository.list_recent(limit=2)] == [
+        "SOLUSDT",
+        "ETHUSDT",
+    ]
+    assert [record.symbol for record in repository.list_recent(symbol="ETHUSDT")] == [
+        "ETHUSDT"
+    ]
+    assert [record.symbol for record in repository.list_recent(accepted=False)] == [
+        "SOLUSDT"
+    ]
+
+
+def test_in_memory_setup_candidate_repository_gets_by_setup_id() -> None:
+    repository = InMemorySetupCandidateRepository()
+    record = setup_candidate_record()
+    repository.save_if_absent(record)
+
+    assert repository.get_by_setup_id(record.setup_id) == record
+    assert repository.get_by_setup_id("missing-setup") is None

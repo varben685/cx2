@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Any, Protocol
+from typing import Any, Protocol, runtime_checkable
 
 from smc_assistant.contracts.tradingview import TradingViewWebhookPayload
 from smc_assistant.domain.setup_scoring import SetupScore
@@ -34,11 +34,24 @@ class SetupCandidateSaveResult:
     created: bool
 
 
+@runtime_checkable
 class SetupCandidateRepository(Protocol):
     def save_if_absent(self, record: SetupCandidateRecord) -> SetupCandidateSaveResult:
         pass
 
     def get_by_event_id(self, event_id: str) -> SetupCandidateRecord | None:
+        pass
+
+    def get_by_setup_id(self, setup_id: str) -> SetupCandidateRecord | None:
+        pass
+
+    def list_recent(
+        self,
+        *,
+        limit: int = 50,
+        symbol: str | None = None,
+        accepted: bool | None = None,
+    ) -> list[SetupCandidateRecord]:
         pass
 
 

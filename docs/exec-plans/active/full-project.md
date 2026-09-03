@@ -122,7 +122,8 @@ ezért a Docker image build ebben a munkamenetben nem volt futtatható.
 - [x] Scoring bekötése az ingestion flow mellé.
 - [x] Pontozott setup candidate belső séma előkészítése.
 - [x] Setup candidate memory és SQL repository.
-- [ ] Setup lekérdező API első verziója.
+- [x] Setup lekérdező API első verziója.
+- [ ] Frontend setup lista első verziója.
 
 ## Phase 5: Outcome és backtest
 
@@ -303,3 +304,6 @@ ezért a Docker image build ebben a munkamenetben nem volt futtatható.
 - 2026-09-03: Létrejött a pontozott `SetupCandidateRecord`, az idempotens
   in-memory és SQL setup candidate repository, valamint a `setup_candidates`
   tábla `event_id` kapcsolattal a `webhook_events` táblára.
+- 2026-09-03: Elkészült az első setup lekérdező API. A
+  `GET /api/v1/setups` lista `limit`, `symbol` és `accepted` szűrőkkel működik,
+  a `GET /api/v1/setups/{setup_id}` részletező ismeretlen setupnál 404-et ad.

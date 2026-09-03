@@ -1,7 +1,7 @@
 from datetime import UTC, datetime
 from typing import Any
 
-from sqlalchemy import Engine, insert, select
+from sqlalchemy import Engine, Select, insert, select
 from sqlalchemy.engine import RowMapping
 from sqlalchemy.exc import IntegrityError
 
@@ -55,26 +55,7 @@ class SQLSetupCandidateRepository:
         return SetupCandidateSaveResult(record=record, created=True)
 
     def get_by_event_id(self, event_id: str) -> SetupCandidateRecord | None:
-        query = select(
-            setup_candidates.c.setup_id,
-            setup_candidates.c.event_id,
-            setup_candidates.c.schema_version,
-            setup_candidates.c.strategy_version,
-            setup_candidates.c.scoring_config_version,
-            setup_candidates.c.symbol,
-            setup_candidates.c.exchange,
-            setup_candidates.c.timeframe,
-            setup_candidates.c.direction,
-            setup_candidates.c.htf_bias,
-            setup_candidates.c.score,
-            setup_candidates.c.accepted,
-            setup_candidates.c.components,
-            setup_candidates.c.rejection_reasons,
-            setup_candidates.c.positive_reasons,
-            setup_candidates.c.negative_reasons,
-            setup_candidates.c.bar_close_time,
-            setup_candidates.c.received_at,
-        ).where(setup_candidates.c.event_id == event_id)
+        query = _select_setup_candidate_records().where(setup_candidates.c.event_id == event_id)
 
         with self._engine.connect() as connection:
             row = connection.execute(query).mappings().one_or_none()
@@ -83,6 +64,65 @@ class SQLSetupCandidateRepository:
             return None
 
         return _record_from_row(row)
+
+    def get_by_setup_id(self, setup_id: str) -> SetupCandidateRecord | None:
+        query = _select_setup_candidate_records().where(setup_candidates.c.setup_id == setup_id)
+
+        with self._engine.connect() as connection:
+            row = connection.execute(query).mappings().one_or_none()
+
+        if row is None:
+            return None
+
+        return _record_from_row(row)
+
+    def list_recent(
+        self,
+        *,
+        limit: int = 50,
+        symbol: str | None = None,
+        accepted: bool | None = None,
+    ) -> list[SetupCandidateRecord]:
+        query = _select_setup_candidate_records()
+
+        if symbol is not None:
+            query = query.where(setup_candidates.c.symbol == symbol)
+
+        if accepted is not None:
+            query = query.where(setup_candidates.c.accepted.is_(accepted))
+
+        query = query.order_by(
+            setup_candidates.c.received_at.desc(),
+            setup_candidates.c.setup_id.desc(),
+        ).limit(limit)
+
+        with self._engine.connect() as connection:
+            rows = connection.execute(query).mappings().all()
+
+        return [_record_from_row(row) for row in rows]
+
+
+def _select_setup_candidate_records() -> Select[Any]:
+    return select(
+        setup_candidates.c.setup_id,
+        setup_candidates.c.event_id,
+        setup_candidates.c.schema_version,
+        setup_candidates.c.strategy_version,
+        setup_candidates.c.scoring_config_version,
+        setup_candidates.c.symbol,
+        setup_candidates.c.exchange,
+        setup_candidates.c.timeframe,
+        setup_candidates.c.direction,
+        setup_candidates.c.htf_bias,
+        setup_candidates.c.score,
+        setup_candidates.c.accepted,
+        setup_candidates.c.components,
+        setup_candidates.c.rejection_reasons,
+        setup_candidates.c.positive_reasons,
+        setup_candidates.c.negative_reasons,
+        setup_candidates.c.bar_close_time,
+        setup_candidates.c.received_at,
+    )
 
 
 def _record_from_row(row: RowMapping) -> SetupCandidateRecord:

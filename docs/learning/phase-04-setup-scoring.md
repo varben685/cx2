@@ -58,24 +58,32 @@ az AI magyarázati réteg auditálhatóságához.
   Ezt később lehet külön UUID-re cserélni, ha több setup is származhat egyetlen
   külső eseményből.
 - A memory és SQL repository is idempotens `event_id` alapján.
+- Elkészült az első setup lekérdező API:
+  `GET /api/v1/setups` és `GET /api/v1/setups/{setup_id}`.
+- A lista endpoint `limit`, `symbol` és `accepted` query paraméterekkel
+  szűrhető.
+- A lekérdező API ugyanazt a setup repository példányt olvassa, amelybe a
+  webhook ingestion flow ment.
 
 ## 4. Kapcsolódó fájlok
 
 - `apps/api/src/smc_assistant/domain/setup_scoring.py`
 - `apps/api/src/smc_assistant/application/setup_scoring.py`
 - `apps/api/src/smc_assistant/application/setup_candidates.py`
+- `apps/api/src/smc_assistant/api/setups.py`
 - `apps/api/src/smc_assistant/infrastructure/in_memory_setup_candidates.py`
 - `apps/api/src/smc_assistant/infrastructure/sql_setup_candidates.py`
 - `apps/api/tests/test_setup_scoring.py`
 - `apps/api/tests/test_setup_scoring_mapping.py`
 - `apps/api/tests/test_setup_candidates.py`
 - `apps/api/tests/test_sql_setup_candidates.py`
+- `apps/api/tests/test_setups_api.py`
 - `docs/strategy/setup-scoring.md`
 - `tradingview/indicators/smc_assistant_prototype.pine`
 - `apps/api/src/smc_assistant/contracts/tradingview.py`
 
 ## 5. Következő lépés
 
-A következő Phase 4 szeletben az első setup lekérdező API-t kell előkészíteni.
-Ezzel a beérkezett és pontozott setupok már nemcsak webhook válaszként, hanem
-külön endpointon is megjelenhetnek.
+A következő Phase 4 szeletben a frontend dashboard első setup listáját érdemes
+előkészíteni, hogy a beérkező és pontozott setupok böngészőből is láthatóak
+legyenek.

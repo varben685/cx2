@@ -1,3 +1,4 @@
+from dataclasses import replace
 from datetime import UTC, datetime, timedelta
 
 from sqlalchemy import create_engine
@@ -102,3 +103,62 @@ def test_sql_setup_candidate_repository_returns_none_for_unknown_event_id() -> N
     _, setup_repository = create_repositories()
 
     assert setup_repository.get_by_event_id("missing-event-id") is None
+
+
+def test_sql_setup_candidate_repository_gets_by_setup_id() -> None:
+    webhook_repository, setup_repository = create_repositories()
+    webhook = webhook_record()
+    record = setup_candidate_record(event_id=webhook.event_id)
+    webhook_repository.save_if_absent(webhook)
+    setup_repository.save_if_absent(record)
+
+    assert setup_repository.get_by_setup_id(record.setup_id) == record
+    assert setup_repository.get_by_setup_id("missing-setup") is None
+
+
+def test_sql_setup_candidate_repository_lists_recent_records_with_filters() -> None:
+    webhook_repository, setup_repository = create_repositories()
+    first_webhook = webhook_record(event_id="BTCUSDT-1-1767225660000-LONG")
+    second_webhook = webhook_record(
+        event_id="ETHUSDT-1-1767225720000-LONG",
+        received_at=first_webhook.received_at + timedelta(minutes=1),
+    )
+    third_webhook = webhook_record(
+        event_id="SOLUSDT-1-1767225780000-LONG",
+        received_at=first_webhook.received_at + timedelta(minutes=2),
+    )
+    first_record = setup_candidate_record(event_id=first_webhook.event_id)
+    second_record = setup_candidate_record(
+        event_id=second_webhook.event_id,
+        received_at=second_webhook.received_at,
+    )
+    second_record = replace(
+        second_record,
+        symbol="ETHUSDT",
+    )
+    third_record = setup_candidate_record(
+        event_id=third_webhook.event_id,
+        score=42.0,
+        received_at=third_webhook.received_at,
+    )
+    third_record = replace(
+        third_record,
+        symbol="SOLUSDT",
+        accepted=False,
+    )
+
+    for webhook in [first_webhook, second_webhook, third_webhook]:
+        webhook_repository.save_if_absent(webhook)
+    for record in [first_record, second_record, third_record]:
+        setup_repository.save_if_absent(record)
+
+    assert [record.symbol for record in setup_repository.list_recent(limit=2)] == [
+        "SOLUSDT",
+        "ETHUSDT",
+    ]
+    assert [record.symbol for record in setup_repository.list_recent(symbol="ETHUSDT")] == [
+        "ETHUSDT"
+    ]
+    assert [record.symbol for record in setup_repository.list_recent(accepted=False)] == [
+        "SOLUSDT"
+    ]
