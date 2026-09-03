@@ -145,6 +145,10 @@ HTTP metódus, útvonal, hibaszám és validációs hibatípusok kerülnek audit
   `abs(takeProfit - entry) / abs(entry - stopLoss)` képlettel.
 - `fvg.lower < fvg.upper`, és az equilibrium a zónán belül van.
 - Extra mező nem engedélyezett, hogy a contract explicit maradjon.
+- A Pine prototípusból érkező payloadnál az `features.atr` lehet `null`, ha az
+  ATR még nem számolható a chart adott pontján.
+- Ha a TradingView instrumentumhoz nincs exchange prefix, a Pine prototípus
+  `UNKNOWN` exchange értéket küld üres string helyett.
 
 ## JSON Schema
 

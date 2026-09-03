@@ -76,6 +76,81 @@ def test_accepts_short_execution_order() -> None:
     assert payload.direction == TradeDirection.SHORT
 
 
+def test_accepts_pine_prototype_long_candidate_payload_shape() -> None:
+    raw_payload = valid_payload()
+    raw_payload["eventId"] = "BTCUSDT-1-1767225660000-LONG"
+    raw_payload["exchange"] = "UNKNOWN"
+    raw_payload["marketStructure"] = {
+        "htfTimeframe": "15",
+        "htfBias": "BULLISH",
+        "bos": True,
+        "choch": True,
+        "liquiditySweep": False,
+    }
+    raw_payload["fvg"] = {
+        "lower": 100.0,
+        "upper": 110.0,
+        "equilibrium": 105.0,
+        "sizeAtrRatio": 0.0,
+        "mitigationPercent": 0.0,
+    }
+    raw_payload["execution"] = {
+        "entry": 105.0,
+        "stopLoss": 99.0,
+        "takeProfit": 117.0,
+        "riskReward": 2.0,
+    }
+    raw_payload["features"] = {
+        "atr": None,
+        "relativeVolume": None,
+        "displacementScore": 0.0,
+        "session": "OFF_HOURS",
+    }
+
+    payload = TradingViewWebhookPayload.model_validate(raw_payload)
+
+    assert payload.execution.risk_reward == 2.0
+    assert payload.features.atr is None
+    assert payload.exchange == "UNKNOWN"
+
+
+def test_accepts_pine_prototype_short_candidate_payload_shape() -> None:
+    raw_payload = valid_payload()
+    raw_payload["eventId"] = "BTCUSDT-1-1767225660000-SHORT"
+    raw_payload["direction"] = "SHORT"
+    raw_payload["marketStructure"] = {
+        "htfTimeframe": "15",
+        "htfBias": "BEARISH",
+        "bos": True,
+        "choch": True,
+        "liquiditySweep": False,
+    }
+    raw_payload["fvg"] = {
+        "lower": 90.0,
+        "upper": 100.0,
+        "equilibrium": 95.0,
+        "sizeAtrRatio": 0.0,
+        "mitigationPercent": 0.0,
+    }
+    raw_payload["execution"] = {
+        "entry": 95.0,
+        "stopLoss": 101.0,
+        "takeProfit": 83.0,
+        "riskReward": 2.0,
+    }
+    raw_payload["features"] = {
+        "atr": None,
+        "relativeVolume": None,
+        "displacementScore": 0.0,
+        "session": "NEW_YORK",
+    }
+
+    payload = TradingViewWebhookPayload.model_validate(raw_payload)
+
+    assert payload.direction == TradeDirection.SHORT
+    assert payload.execution.risk_reward == 2.0
+
+
 def test_rejects_unsupported_schema_version() -> None:
     raw_payload = valid_payload()
     raw_payload["schemaVersion"] = "2.0"

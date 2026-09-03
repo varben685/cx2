@@ -150,6 +150,7 @@ setupDirection = activeBullishSetup ? "LONG" : activeBearishSetup ? "SHORT" : ""
 setupCandidate = setupDirection != ""
 htfBias = marketBias == 1 ? "BULLISH" : marketBias == -1 ? "BEARISH" : "NEUTRAL"
 sessionName = session.ismarket ? "NEW_YORK" : "OFF_HOURS"
+exchangeName = syminfo.prefix == "" ? "UNKNOWN" : syminfo.prefix
 eventId = syminfo.ticker + "-" + timeframe.period + "-" + str.tostring(time_close) + "-" + setupDirection
 activeFvgLower = activeBullishSetup ? high[2] : activeBearishSetup ? high : na
 activeFvgUpper = activeBullishSetup ? low : activeBearishSetup ? low[2] : na
@@ -159,6 +160,7 @@ setupStopLoss = activeBullishSetup ? activeFvgLower - syminfo.mintick : activeBe
 setupRisk = math.abs(setupEntry - setupStopLoss)
 setupTakeProfit = activeBullishSetup ? setupEntry + setupRisk * 2.0 : activeBearishSetup ? setupEntry - setupRisk * 2.0 : na
 setupRiskReward = setupRisk > 0 ? math.abs(setupTakeProfit - setupEntry) / setupRisk : na
+jsonAtr = na(priorAtr) ? "null" : str.tostring(priorAtr)
 
 if showBiasBadge and barstate.islast
     if not na(biasBadge)
@@ -172,7 +174,7 @@ alertPayload := alertPayload + '"eventType":"SETUP_CANDIDATE",'
 alertPayload := alertPayload + '"source":"TRADINGVIEW",'
 alertPayload := alertPayload + '"strategyVersion":"' + strategyVersion + '",'
 alertPayload := alertPayload + '"symbol":"' + syminfo.ticker + '",'
-alertPayload := alertPayload + '"exchange":"' + syminfo.prefix + '",'
+alertPayload := alertPayload + '"exchange":"' + exchangeName + '",'
 alertPayload := alertPayload + '"timeframe":"' + timeframe.period + '",'
 alertPayload := alertPayload + '"barOpenTime":"' + str.format_time(time, "yyyy-MM-dd'T'HH:mm:ss'Z'", "UTC") + '",'
 alertPayload := alertPayload + '"barCloseTime":"' + str.format_time(time_close, "yyyy-MM-dd'T'HH:mm:ss'Z'", "UTC") + '",'
@@ -180,7 +182,7 @@ alertPayload := alertPayload + '"direction":"' + setupDirection + '",'
 alertPayload := alertPayload + '"marketStructure":{"htfTimeframe":"' + htfTimeframe + '","htfBias":"' + htfBias + '","bos":' + str.tostring(bullishBos or bearishBos) + ',"choch":' + str.tostring(bullishChoch or bearishChoch) + ',"liquiditySweep":' + str.tostring(bullishSweep or bearishSweep) + '},'
 alertPayload := alertPayload + '"fvg":{"lower":' + str.tostring(activeFvgLower) + ',"upper":' + str.tostring(activeFvgUpper) + ',"equilibrium":' + str.tostring(activeFvgEquilibrium) + ',"sizeAtrRatio":0.0,"mitigationPercent":0.0},'
 alertPayload := alertPayload + '"execution":{"entry":' + str.tostring(setupEntry) + ',"stopLoss":' + str.tostring(setupStopLoss) + ',"takeProfit":' + str.tostring(setupTakeProfit) + ',"riskReward":' + str.tostring(setupRiskReward) + '},'
-alertPayload := alertPayload + '"features":{"atr":' + str.tostring(priorAtr) + ',"relativeVolume":null,"displacementScore":' + str.tostring(displacementScore) + ',"session":"' + sessionName + '"}}'
+alertPayload := alertPayload + '"features":{"atr":' + jsonAtr + ',"relativeVolume":null,"displacementScore":' + str.tostring(displacementScore) + ',"session":"' + sessionName + '"}}'
 
 if setupCandidate
     alert(alertPayload, alert.freq_once_per_bar_close)

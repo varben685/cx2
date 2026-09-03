@@ -109,6 +109,7 @@ ezért a Docker image build ebben a munkamenetben nem volt futtatható.
 - [x] Clean alapnézet a zajos debug jelölések helyett.
 - [x] Latest swing high/low struktúraszintek és bias badge.
 - [x] Watched swing alapú BOS ellenőrzés és semleges bias bootstrap.
+- [x] Pine-szerű LONG/SHORT alert payload contract-validáció.
 
 ## Phase 4: Rule-based setup scoring
 
@@ -285,3 +286,6 @@ ezért a Docker image build ebben a munkamenetben nem volt futtatható.
   hogy az új pivot-visszaigazolás ne takarhasson el egy ugyanazon baron történő
   structure breaket. A semleges bias megerősített HH/HL vagy LH/LL swing
   sorozatból is kap irányt.
+- 2026-09-03: A Pine alert payload nullable ATR és exchange fallback kezelést
+  kapott. A backend contract reprezentatív Pine-szerű LONG és SHORT payloadokat
+  validál, beleértve a 2R executiont és a `relativeVolume: null` esetet.

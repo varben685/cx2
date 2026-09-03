@@ -55,6 +55,11 @@ mezőket kell pontosítani.
   akkor is mutatják, milyen törést figyel az indikátor.
 - A bias bootstrap nem jelent kereskedési setupot önmagában. Csak kontextust ad,
   hogy a későbbi ellentétes structure break már CHoCH-ként értelmezhető legyen.
+- A Pine alert payloadban az opcionális ATR mező `null`, ha a TradingView még
+  nem tud prior ATR-t számolni. Ez érvényes JSON marad, és illeszkedik a backend
+  contracthoz.
+- Üres TradingView exchange prefix esetén a script `UNKNOWN` értéket küld, mert
+  a backend contract nem enged üres exchange stringet.
 
 ## 4. Repainting védelem
 
@@ -84,5 +89,6 @@ megerősítést kapott.
 ## 6. Következő lépés
 
 A következő Phase 3 szeletben TradingView editorban kell újra ellenőrizni a
-balanced alapnézetet és a bias bootstrap viselkedését, majd a tényleges alert
-payloadot összevetni a backend Pydantic contracttal.
+balanced alapnézetet és a bias bootstrap viselkedését, majd kézi alerttel is
+ellenőrizni kell, hogy a TradingViewból érkező tényleges JSON ugyanazt a formát
+adja, mint amit a backend tesztek most reprezentatív példákkal validálnak.

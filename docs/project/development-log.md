@@ -268,6 +268,17 @@ Phase 2 következő mérföldkő:
   `uv run pytest tests/test_tradingview_pine_prototype.py` 10 teszt sikeres.
 - Teljes backend ellenőrzés bias finomítás után: `uv run pytest` 89 teszt
   sikeres, `uv run ruff check .` sikeres, `uv run mypy src` sikeres.
+- A Pine alert payload össze lett hangolva a backend contracttal az opcionális
+  értékek szintjén is: hiányzó prior ATR esetén `null`, üres TradingView
+  exchange prefix esetén `UNKNOWN` kerül a JSON-ba.
+- A backend contract kapott reprezentatív Pine-szerű LONG és SHORT payload
+  teszteket, 2R executionnel, `relativeVolume: null` értékkel és nullable ATR
+  esettel.
+- Célzott Pine/contract összevetés:
+  `uv run pytest tests/contracts/test_tradingview_contract.py tests/test_tradingview_pine_prototype.py`
+  25 teszt sikeres.
+- Teljes backend ellenőrzés Pine/contract összevetés után: `uv run pytest`
+  92 teszt sikeres, `uv run ruff check .` sikeres, `uv run mypy src` sikeres.
 
 ### Nem ellenőrzött vagy részben nyitott
 
@@ -278,5 +289,5 @@ Phase 2 következő mérföldkő:
 
 1. Pine script újratesztelése TradingView editorban a balanced alapnézettel és
    a bias bootstrap viselkedésével.
-2. Alert payload összevetése a backend Pydantic validációval.
+2. Tényleges TradingView alert kézi beküldése a lokális webhook endpoint felé.
 3. Repainting kockázatok dokumentálása TradingView szemszögből.

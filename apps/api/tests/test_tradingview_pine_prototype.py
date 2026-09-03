@@ -121,6 +121,15 @@ def test_pine_alert_payload_uses_non_placeholder_execution_values() -> None:
     assert "setupRiskReward" in source
 
 
+def test_pine_alert_payload_avoids_invalid_optional_json_values() -> None:
+    source = PINE_PROTOTYPE.read_text(encoding="utf-8")
+
+    assert 'exchangeName = syminfo.prefix == "" ? "UNKNOWN" : syminfo.prefix' in source
+    assert '"exchange":"\' + exchangeName' in source
+    assert 'jsonAtr = na(priorAtr) ? "null" : str.tostring(priorAtr)' in source
+    assert '"features":{"atr":\' + jsonAtr' in source
+
+
 def test_pine_prototype_avoids_multiline_calls_that_break_tradingview() -> None:
     source = PINE_PROTOTYPE.read_text(encoding="utf-8")
 
