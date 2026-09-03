@@ -29,11 +29,12 @@ body {
 }
 
 .app-content {
-  width: min(960px, 100%);
+  width: min(1280px, 100%);
   padding: 32px 24px;
 }
 
-.status-panel {
+.status-panel,
+.setups-panel {
   display: grid;
   gap: 24px;
   padding: 24px;
@@ -42,17 +43,34 @@ body {
   border-radius: 8px;
 }
 
-.status-heading {
+.setups-panel {
+  margin-top: 24px;
+}
+
+.status-heading,
+.setups-heading {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 16px;
 }
 
-.status-heading h2.ant-typography {
+.status-heading h2.ant-typography,
+.setups-heading h2.ant-typography {
   margin: 4px 0 0;
   font-size: 24px;
   line-height: 1.25;
+}
+
+.setups-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.symbol-filter {
+  width: 180px;
 }
 
 .status-grid {
@@ -66,6 +84,20 @@ body {
     padding: 20px 16px;
   }
 
+  .status-heading,
+  .setups-heading {
+    flex-direction: column;
+  }
+
+  .setups-actions {
+    justify-content: flex-start;
+    width: 100%;
+  }
+
+  .symbol-filter {
+    width: min(260px, 100%);
+  }
+
   .status-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -76,4 +108,3 @@ body {
     grid-template-columns: 1fr;
   }
 }
-

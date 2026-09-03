@@ -355,9 +355,26 @@ Phase 2 következő mérföldkő:
   20 teszt sikeres.
 - Teljes backend ellenőrzés setup API után: `uv run pytest` 117 teszt sikeres,
   `uv run ruff check .` sikeres, `uv run mypy src` sikeres.
+- Elkészült a frontend dashboard első setup listája.
+- A frontend API kliens támogatja a `GET /api/v1/setups` hívást `limit`,
+  `symbol` és `accepted` query paraméterekkel.
+- A dashboard táblázatban mutatja a szimbólumot, irányt, HTF bias-t, score-t,
+  accepted/rejected státuszt, indokokat és beérkezési időt.
+- A setup lista kapott symbol inputot és accepted/rejected szegmentált szűrőt.
+- A frontend tesztkörhöz bekerült a szükséges jsdom `matchMedia` és
+  `getComputedStyle` polyfill.
+- Frontend ellenőrzés: `npm run test` 2 teszt sikeres, `npm run lint` sikeres,
+  `npm run typecheck` sikeres, `npm run build` sikeres.
+- Backend regressziós ellenőrzés frontend setup lista után: `uv run pytest`
+  117 teszt sikeres, `uv run ruff check .` sikeres,
+  `uv run mypy src` sikeres.
+- A build Vite bundle méret figyelmeztetést ad az AntD miatt.
+- A korábbi `npm audit` findingben jelzett `nanoid` dependency `3.3.18`
+  verzióra frissült a lockfile-ban. Az audit parancs registry válaszra várva
+  kétszer beragadt, ezért kontrolláltan megszakításra került.
 
 ### Következő konkrét lépés
 
-1. Frontend dashboard első setup listájának előkészítése.
-2. Backend setup API response formájának bekötése a frontend kliensbe.
-3. Lokális end-to-end smoke teszt: webhook beküldés után setup megjelenik.
+1. Lokális end-to-end smoke teszt: webhook beküldés után setup megjelenik.
+2. Frontend setup részletező nézet első verziója.
+3. Frontend üres/adat/hiba állapotok finomítása valós API mellett.

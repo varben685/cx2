@@ -64,6 +64,10 @@ az AI magyarázati réteg auditálhatóságához.
   szűrhető.
 - A lekérdező API ugyanazt a setup repository példányt olvassa, amelybe a
   webhook ingestion flow ment.
+- Elkészült a frontend dashboard első setup listája. A React kliens a
+  `/api/v1/setups` endpointot hívja, és táblázatban mutatja a szimbólumot,
+  irányt, bias-t, score-t, elfogadási státuszt és indokokat.
+- A dashboardon symbol input és accepted/rejected szegmentált szűrő van.
 
 ## 4. Kapcsolódó fájlok
 
@@ -78,12 +82,15 @@ az AI magyarázati réteg auditálhatóságához.
 - `apps/api/tests/test_setup_candidates.py`
 - `apps/api/tests/test_sql_setup_candidates.py`
 - `apps/api/tests/test_setups_api.py`
+- `apps/web/src/api.ts`
+- `apps/web/src/App.tsx`
+- `apps/web/src/App.test.tsx`
 - `docs/strategy/setup-scoring.md`
 - `tradingview/indicators/smc_assistant_prototype.pine`
 - `apps/api/src/smc_assistant/contracts/tradingview.py`
 
 ## 5. Következő lépés
 
-A következő Phase 4 szeletben a frontend dashboard első setup listáját érdemes
-előkészíteni, hogy a beérkező és pontozott setupok böngészőből is láthatóak
-legyenek.
+A következő Phase 4 szeletben lokális end-to-end smoke tesztet érdemes
+előkészíteni: webhook beküldés után ugyanaz a pontozott setup jelenjen meg a
+frontend listában.
