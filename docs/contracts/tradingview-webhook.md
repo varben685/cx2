@@ -47,6 +47,7 @@ tartalmából.
   "schemaVersion": "1.0",
   "receivedAt": "2026-09-03T10:00:00Z",
   "firstReceivedAt": "2026-09-03T10:00:00Z",
+  "setupCandidateId": "BTCUSDT-1m-1720000000-bullish-choch",
   "setupScore": {
     "score": 100.0,
     "accepted": true,
@@ -71,6 +72,7 @@ Ismételt `eventId` esetén:
   "schemaVersion": "1.0",
   "receivedAt": "2026-09-03T10:00:30Z",
   "firstReceivedAt": "2026-09-03T10:00:00Z",
+  "setupCandidateId": "BTCUSDT-1m-1720000000-bullish-choch",
   "setupScore": {
     "score": 100.0,
     "accepted": true,

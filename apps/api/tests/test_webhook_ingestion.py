@@ -7,6 +7,9 @@ from smc_assistant.application.webhook_ingestion import (
     WebhookIngestionStatus,
 )
 from smc_assistant.contracts.tradingview import TradingViewWebhookPayload
+from smc_assistant.infrastructure.in_memory_setup_candidates import (
+    InMemorySetupCandidateRepository,
+)
 from smc_assistant.infrastructure.in_memory_webhook_events import (
     InMemoryWebhookEventRepository,
 )
@@ -66,24 +69,35 @@ def valid_payload() -> TradingViewWebhookPayload:
 
 def test_ingestion_accepts_new_webhook_event() -> None:
     repository = InMemoryWebhookEventRepository()
+    setup_candidate_repository = InMemorySetupCandidateRepository()
     audit_logger = RecordingAuditLogger()
-    service = WebhookIngestionService(repository, audit_logger)
+    service = WebhookIngestionService(
+        repository,
+        audit_logger,
+        setup_candidate_repository=setup_candidate_repository,
+    )
     received_at = datetime(2026, 9, 3, 10, 0, tzinfo=UTC)
 
     result = service.ingest_tradingview(valid_payload(), received_at=received_at)
 
     assert result.status == WebhookIngestionStatus.ACCEPTED
     assert result.event_id == "BTCUSDT-1m-1720000000-bullish-choch"
+    assert result.setup_candidate_id == result.event_id
     assert result.received_at == received_at
     assert result.first_received_at == received_at
     assert result.setup_score.accepted is True
     assert result.setup_score.score == 100.0
     assert repository.get_by_event_id(result.event_id) is not None
+    setup_candidate = setup_candidate_repository.get_by_event_id(result.event_id)
+    assert setup_candidate is not None
+    assert setup_candidate.score == 100.0
+    assert setup_candidate.accepted is True
     assert audit_logger.events[0].event_type == AuditEventType.WEBHOOK_ACCEPTED
     assert audit_logger.events[0].metadata["event_id"] == result.event_id
     assert audit_logger.events[0].metadata["setup_score"] == 100.0
     assert audit_logger.events[0].metadata["setup_accepted"] is True
     assert audit_logger.events[0].metadata["scoring_config_version"] == "rule-score-v1"
+    assert audit_logger.events[0].metadata["setup_candidate_id"] == result.setup_candidate_id
     assert "payload" not in audit_logger.events[0].metadata
 
 
@@ -104,6 +118,7 @@ def test_ingestion_marks_repeated_event_id_as_duplicate() -> None:
 
     assert first_result.status == WebhookIngestionStatus.ACCEPTED
     assert second_result.status == WebhookIngestionStatus.DUPLICATE
+    assert second_result.setup_candidate_id == first_result.setup_candidate_id
     assert second_result.received_at == second_received_at
     assert second_result.first_received_at == first_received_at
     assert second_result.setup_score.score == first_result.setup_score.score
@@ -111,6 +126,7 @@ def test_ingestion_marks_repeated_event_id_as_duplicate() -> None:
     assert audit_logger.events[1].metadata["event_id"] == second_result.event_id
     assert audit_logger.events[1].metadata["first_received_at"] == first_received_at.isoformat()
     assert audit_logger.events[1].metadata["setup_score"] == 100.0
+    assert audit_logger.events[1].metadata["setup_candidate_id"] == first_result.setup_candidate_id
     assert "payload" not in audit_logger.events[1].metadata
 
 

@@ -44,6 +44,7 @@ class TradingViewWebhookResponse(BaseModel):
     schema_version: str = Field(alias="schemaVersion")
     received_at: str = Field(alias="receivedAt")
     first_received_at: str = Field(alias="firstReceivedAt")
+    setup_candidate_id: str = Field(alias="setupCandidateId")
     setup_score: SetupScoreResponse = Field(alias="setupScore")
     message: str
 
@@ -74,6 +75,7 @@ def receive_tradingview_webhook(
             "schemaVersion": result.schema_version,
             "receivedAt": result.received_at.isoformat(),
             "firstReceivedAt": result.first_received_at.isoformat(),
+            "setupCandidateId": result.setup_candidate_id,
             "setupScore": _setup_score_response(result.setup_score),
             "message": result.message,
         }

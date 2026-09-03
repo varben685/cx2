@@ -329,9 +329,23 @@ Phase 2 következő mérföldkő:
 - Célzott scoring ingestion Ruff és mypy ellenőrzés: sikeres.
 - Teljes backend ellenőrzés scoring ingestion után: `uv run pytest` 102 teszt
   sikeres, `uv run ruff check .` sikeres, `uv run mypy src` sikeres.
+- Létrejött a pontozott `SetupCandidateRecord` belső séma.
+- Létrejött az idempotens in-memory setup candidate repository.
+- Létrejött az SQLAlchemy alapú `setup_candidates` tábla és repository.
+- A `setup_candidates.event_id` unique kapcsolatként mutat a
+  `webhook_events.event_id` mezőre.
+- Az ingestion flow új webhook eseménynél setup candidate rekordot is ment,
+  memory és postgres repository módban is.
+- Az API válasz `setupCandidateId` mezővel is visszatér.
+- Célzott setup candidate persistence ellenőrzés:
+  `uv run pytest tests/test_setup_candidates.py tests/test_sql_setup_candidates.py tests/test_webhook_ingestion.py tests/test_tradingview_webhook_api.py`
+  12 teszt sikeres.
+- Teljes backend ellenőrzés setup candidate persistence után: `uv run pytest`
+  107 teszt sikeres, `uv run ruff check .` sikeres,
+  `uv run mypy src` sikeres.
 
 ### Következő konkrét lépés
 
-1. Pontozott setup candidate belső séma előkészítése.
-2. Setup score persistence stratégia eldöntése.
-3. Setup lekérdező API első verziójának megtervezése.
+1. Setup lekérdező API első verziójának megtervezése.
+2. Setup lista endpoint memory és SQL repository támogatással.
+3. Frontend dashboard első setup listájának előkészítése.

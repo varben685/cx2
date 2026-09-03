@@ -120,7 +120,9 @@ ezért a Docker image build ebben a munkamenetben nem volt futtatható.
 - [x] Első determinisztikus pozitív/negatív indokok.
 - [x] TradingView webhook payload mappolása scoring inputra.
 - [x] Scoring bekötése az ingestion flow mellé.
-- [ ] Pontozott setup candidate belső séma előkészítése.
+- [x] Pontozott setup candidate belső séma előkészítése.
+- [x] Setup candidate memory és SQL repository.
+- [ ] Setup lekérdező API első verziója.
 
 ## Phase 5: Outcome és backtest
 
@@ -298,3 +300,6 @@ ezért a Docker image build ebben a munkamenetben nem volt futtatható.
 - 2026-09-03: A TradingView webhook payload már `SetupScoringInput` objektumra
   mappelődik, az ingestion flow score-t számol, az API válasz `setupScore`
   blokkot ad vissza, az audit metadata pedig payload nélkül rögzíti a score-t.
+- 2026-09-03: Létrejött a pontozott `SetupCandidateRecord`, az idempotens
+  in-memory és SQL setup candidate repository, valamint a `setup_candidates`
+  tábla `event_id` kapcsolattal a `webhook_events` táblára.

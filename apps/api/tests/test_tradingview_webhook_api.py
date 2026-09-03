@@ -69,6 +69,7 @@ def test_tradingview_webhook_accepts_valid_payload() -> None:
     assert payload["schemaVersion"] == "1.0"
     assert "receivedAt" in payload
     assert payload["firstReceivedAt"] == payload["receivedAt"]
+    assert payload["setupCandidateId"] == "BTCUSDT-1m-1720000000-bullish-choch"
     assert payload["setupScore"]["score"] == 100.0
     assert payload["setupScore"]["accepted"] is True
     assert payload["setupScore"]["configVersion"] == "rule-score-v1"
@@ -89,6 +90,7 @@ def test_tradingview_webhook_marks_repeated_event_id_as_duplicate() -> None:
     assert payload["status"] == "DUPLICATE"
     assert payload["eventId"] == "BTCUSDT-1m-1720000000-bullish-choch"
     assert payload["firstReceivedAt"] == first_response.json()["receivedAt"]
+    assert payload["setupCandidateId"] == first_response.json()["setupCandidateId"]
     assert payload["setupScore"] == first_response.json()["setupScore"]
     assert payload["message"] == "TradingView webhook payload was already accepted."
 
