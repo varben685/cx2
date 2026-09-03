@@ -161,6 +161,7 @@ cd apps/api
 
 ## Kapcsolódó kód
 
+- `tradingview/indicators/smc_assistant_prototype.pine`
 - `apps/api/src/smc_assistant/api/webhooks.py`
 - `apps/api/src/smc_assistant/api/errors.py`
 - `apps/api/src/smc_assistant/application/audit.py`

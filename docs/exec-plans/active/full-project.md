@@ -98,13 +98,14 @@ ezért a Docker image build ebben a munkamenetben nem volt futtatható.
 
 ## Phase 3: Pine Script prototípus
 
-- [ ] Swing jelölés.
-- [ ] BOS/CHoCH jelölés.
-- [ ] FVG zónák.
-- [ ] Liquidity sweep.
-- [ ] Displacement score.
-- [ ] JSON alert payload.
-- [ ] Repainting kockázatok dokumentálása.
+- [x] Első indikátor skeleton.
+- [x] Swing jelölés.
+- [x] BOS/CHoCH jelölés.
+- [x] FVG zónák.
+- [x] Liquidity sweep.
+- [x] Displacement score.
+- [x] JSON alert payload váz.
+- [x] Első repainting kockázat dokumentálása.
 
 ## Phase 4: Rule-based setup scoring
 
@@ -258,3 +259,12 @@ ezért a Docker image build ebben a munkamenetben nem volt futtatható.
   `WEBHOOK_ACCEPTED`, `WEBHOOK_DUPLICATE`, `WEBHOOK_VALIDATION_FAILED`. Az audit
   metadata csak azonosítókat, státuszt, útvonalat és hibaszámot tartalmaz, nyers
   webhook payloadot nem.
+- 2026-09-03: A Docker daemon nem futott, ezért a Phase 2 lezáró konténeres
+  smoke teszt nem volt végrehajtható. Elindult a Phase 3 Pine Script prototípus:
+  létrejött az első TradingView indikátor skeleton swing, BOS/CHoCH, FVG,
+  liquidity sweep, displacement és backend contracthoz igazított alert payload
+  vázzal.
+- 2026-09-03: A Pine prototípus alert payloadja már egyszerű FVG equilibrium
+  entryt, FVG-n kívüli stopot, fix 2R targetet és számolt `riskReward` mezőt
+  használ. Lokális Pine fordító nincs, ezért statikus teszt ellenőrzi a
+  komponensek és backend contract kulcsmezők jelenlétét.

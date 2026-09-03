@@ -208,6 +208,7 @@ repainting félreértésektől.
   8 teszt sikeres.
 - Teljes backend ellenőrzés audit után: `uv run pytest` 79 teszt sikeres,
   `uv run ruff check .` sikeres, `uv run mypy src` sikeres.
+- Docker daemon ellenőrzés: nem sikeres, mert a Docker daemon nem futott.
 
 ### Következő konkrét lépés
 
@@ -218,3 +219,35 @@ Phase 2 következő mérföldkő:
 3. Phase 3 indítása: Pine Script prototípus.
 4. Swing/BOS/CHoCH/FVG/liquidity/displacement jelölések TradingView oldalon.
 5. JSON alert payload összehangolása a backend contracttal.
+
+## 2026-09-03 Phase 3 állapot
+
+### Elkészült
+
+- Létrejött az első TradingView Pine Script indikátor prototípus:
+  `tradingview/indicators/smc_assistant_prototype.pine`.
+- A prototípus swing high / swing low, BOS/CHoCH, FVG, liquidity sweep és
+  displacement jelölési alapokat tartalmaz.
+- Létrejött a backend webhook contract kulcsmezőihez igazított JSON alert
+  payload váz.
+- A payload `execution` blokkja első körben FVG equilibrium entryt, FVG-n kívüli
+  stopot, fix 2R targetet és ebből számolt risk-reward értéket használ.
+- Létrejött a Phase 3 learning dokumentum első változata.
+
+### Ellenőrzött kapuk
+
+- Célzott Pine prototípus statikus ellenőrzés:
+  `uv run pytest tests/test_tradingview_pine_prototype.py` 4 teszt sikeres.
+- Teljes backend ellenőrzés Pine prototípus után: `uv run pytest` 83 teszt
+  sikeres, `uv run ruff check .` sikeres, `uv run mypy src` sikeres.
+
+### Nem ellenőrzött vagy részben nyitott
+
+- Pine fordítás lokálisan nem ellenőrizhető TradingView editor nélkül.
+- Az `execution` blokk még prototípus logika, nem végleges kereskedési szabály.
+
+### Következő konkrét lépés
+
+1. Pine script kézi fordítása TradingView editorban.
+2. Alert payload összevetése a backend Pydantic validációval.
+3. Repainting kockázatok dokumentálása TradingView szemszögből.
