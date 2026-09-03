@@ -251,6 +251,13 @@ Phase 2 következő mérföldkő:
   indikátor balanced alapbeállításra váltott: 3/3 pivot ablak, BOS/CHoCH label
   alapból bekapcsolva, sweep/displacement/swing debug elemek kikapcsolva, FVG
   boxokból egyszerre legfeljebb 8 látszik.
+- A balanced nézethez bekerült a legutóbbi swing high / swing low szint
+  jobbra nyúló vonalakkal, valamint egy aktuális bias badge. Így akkor is van
+  strukturális kontextus, amikor nincs friss BOS/CHoCH esemény a képernyőn.
+- Frissített Pine statikus ellenőrzés:
+  `uv run pytest tests/test_tradingview_pine_prototype.py` 8 teszt sikeres.
+- Teljes backend ellenőrzés struktúraszintek után: `uv run pytest` 87 teszt
+  sikeres, `uv run ruff check .` sikeres, `uv run mypy src` sikeres.
 
 ### Nem ellenőrzött vagy részben nyitott
 
@@ -259,6 +266,6 @@ Phase 2 következő mérföldkő:
 
 ### Következő konkrét lépés
 
-1. Pine script újratesztelése TradingView editorban a clean alapnézettel.
+1. Pine script újratesztelése TradingView editorban a balanced alapnézettel.
 2. Alert payload összevetése a backend Pydantic validációval.
 3. Repainting kockázatok dokumentálása TradingView szemszögből.

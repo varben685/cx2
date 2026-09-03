@@ -11,6 +11,8 @@ showBosLabels = input.bool(true, "Show BOS labels")
 showChochLabels = input.bool(true, "Show CHoCH labels")
 showFvgs = input.bool(true, "Show FVGs")
 showOnlySetupFvgs = input.bool(false, "Only setup FVGs")
+showStructureLevels = input.bool(true, "Show latest structure levels")
+showBiasBadge = input.bool(true, "Show bias badge")
 showSweeps = input.bool(false, "Show liquidity sweeps")
 showDisplacement = input.bool(false, "Show displacement")
 htfTimeframe = input.timeframe("15", "HTF timeframe")
@@ -35,6 +37,9 @@ var int brokenSwingHighBar = na
 var int brokenSwingLowBar = na
 var int marketBias = 0
 var box[] fvgBoxes = array.new_box()
+var line lastSwingHighLine = na
+var line lastSwingLowLine = na
+var label biasBadge = na
 
 pivotHigh = ta.pivothigh(high, leftBars, rightBars)
 pivotLow = ta.pivotlow(low, leftBars, rightBars)
@@ -42,12 +47,20 @@ pivotLow = ta.pivotlow(low, leftBars, rightBars)
 if not na(pivotHigh)
     lastSwingHighPrice := pivotHigh
     lastSwingHighBar := bar_index - rightBars
+    if showStructureLevels
+        if not na(lastSwingHighLine)
+            line.delete(lastSwingHighLine)
+        lastSwingHighLine := line.new(lastSwingHighBar, pivotHigh, bar_index, pivotHigh, extend=extend.right, color=color.new(color.red, 35), style=line.style_dashed, width=1)
     if showSwings
         label.new(lastSwingHighBar, pivotHigh, "SH", style=label.style_label_down, color=color.new(color.red, 10), textcolor=color.white, size=size.tiny)
 
 if not na(pivotLow)
     lastSwingLowPrice := pivotLow
     lastSwingLowBar := bar_index - rightBars
+    if showStructureLevels
+        if not na(lastSwingLowLine)
+            line.delete(lastSwingLowLine)
+        lastSwingLowLine := line.new(lastSwingLowBar, pivotLow, bar_index, pivotLow, extend=extend.right, color=color.new(color.lime, 35), style=line.style_dashed, width=1)
     if showSwings
         label.new(lastSwingLowBar, pivotLow, "SL", style=label.style_label_up, color=color.new(color.green, 10), textcolor=color.white, size=size.tiny)
 
@@ -127,6 +140,12 @@ setupStopLoss = activeBullishSetup ? activeFvgLower - syminfo.mintick : activeBe
 setupRisk = math.abs(setupEntry - setupStopLoss)
 setupTakeProfit = activeBullishSetup ? setupEntry + setupRisk * 2.0 : activeBearishSetup ? setupEntry - setupRisk * 2.0 : na
 setupRiskReward = setupRisk > 0 ? math.abs(setupTakeProfit - setupEntry) / setupRisk : na
+
+if showBiasBadge and barstate.islast
+    if not na(biasBadge)
+        label.delete(biasBadge)
+    biasBadgeColor = marketBias == 1 ? color.new(color.teal, 0) : marketBias == -1 ? color.new(color.orange, 0) : color.new(color.gray, 0)
+    biasBadge := label.new(bar_index, high, "Bias: " + htfBias, style=label.style_label_left, color=biasBadgeColor, textcolor=color.white, size=size.small)
 
 alertPayload = '{"schemaVersion":"1.0",'
 alertPayload := alertPayload + '"eventId":"' + eventId + '",'

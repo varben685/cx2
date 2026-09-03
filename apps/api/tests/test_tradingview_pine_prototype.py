@@ -31,9 +31,22 @@ def test_pine_prototype_uses_clean_defaults() -> None:
     assert 'showBosLabels = input.bool(true, "Show BOS labels")' in source
     assert 'showChochLabels = input.bool(true, "Show CHoCH labels")' in source
     assert 'showOnlySetupFvgs = input.bool(false, "Only setup FVGs")' in source
+    assert 'showStructureLevels = input.bool(true, "Show latest structure levels")' in source
+    assert 'showBiasBadge = input.bool(true, "Show bias badge")' in source
     assert 'showSweeps = input.bool(false, "Show liquidity sweeps")' in source
     assert 'showDisplacement = input.bool(false, "Show displacement")' in source
     assert 'maxVisibleFvgs = input.int(8, "Max visible FVGs"' in source
+
+
+def test_pine_prototype_shows_latest_structure_context() -> None:
+    source = PINE_PROTOTYPE.read_text(encoding="utf-8")
+
+    assert "var line lastSwingHighLine = na" in source
+    assert "var line lastSwingLowLine = na" in source
+    assert "line.new(lastSwingHighBar" in source
+    assert "line.new(lastSwingLowBar" in source
+    assert "extend=extend.right" in source
+    assert "Bias: " in source
 
 
 def test_pine_prototype_caps_visible_fvg_boxes() -> None:

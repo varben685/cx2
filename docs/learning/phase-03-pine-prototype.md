@@ -23,6 +23,10 @@ Ezért az alapértelmezett nézet most balanced:
 - swing label, sweep label és displacement marker alapból kikapcsolva;
 - BOS és CHoCH label alapból bekapcsolva;
 - FVG boxok alapból látszanak, de csak az utolsó 8 marad a charton.
+- A legutóbbi swing high és swing low szint alapból két finom, jobbra nyúló
+  vonalként látszik.
+- A jobb oldalon egy kis bias badge mutatja az aktuális `BULLISH`, `BEARISH`
+  vagy `NEUTRAL` állapotot.
 
 ## 2. Miért erre van szükség?
 
@@ -42,6 +46,8 @@ mezőket kell pontosítani.
   kell.
 - Ha részletes diagnosztika kell, a kikapcsolt debug elemek egyenként
   visszakapcsolhatók az indikátor beállításaiban.
+- Ha BOS/CHoCH épp nincs a látható chart szakaszon, a legutóbbi struktúraszintek
+  akkor is mutatják, milyen törést figyel az indikátor.
 
 ## 4. Repainting védelem
 
@@ -65,5 +71,5 @@ ismertként a megerősítő gyertyák lezárása előtt.
 ## 6. Következő lépés
 
 A következő Phase 3 szeletben TradingView editorban kell újra ellenőrizni a
-tiszta alapnézetet, majd a tényleges alert payloadot összevetni a backend
+balanced alapnézetet, majd a tényleges alert payloadot összevetni a backend
 Pydantic contracttal.

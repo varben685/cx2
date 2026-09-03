@@ -107,6 +107,7 @@ ezért a Docker image build ebben a munkamenetben nem volt futtatható.
 - [x] JSON alert payload váz.
 - [x] Első repainting kockázat dokumentálása.
 - [x] Clean alapnézet a zajos debug jelölések helyett.
+- [x] Latest swing high/low struktúraszintek és bias badge.
 
 ## Phase 4: Rule-based setup scoring
 
@@ -276,3 +277,6 @@ ezért a Docker image build ebben a munkamenetben nem volt futtatható.
   alapbeállításra váltott: 3/3 pivot ablak, BOS/CHoCH label alapból bekapcsolva,
   sweep/displacement/swing debug elemek kikapcsolva, és legfeljebb 8 látható
   FVG box.
+- 2026-09-03: A balanced Pine nézet kapott két mindig értelmezhető kontextus
+  elemet: legutóbbi swing high / swing low szintet jobbra nyúló vonalakkal, és
+  egy aktuális bias badge-et.
