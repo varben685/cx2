@@ -258,6 +258,16 @@ Phase 2 következő mérföldkő:
   `uv run pytest tests/test_tradingview_pine_prototype.py` 8 teszt sikeres.
 - Teljes backend ellenőrzés struktúraszintek után: `uv run pytest` 87 teszt
   sikeres, `uv run ruff check .` sikeres, `uv run mypy src` sikeres.
+- A BOS/CHoCH logika finomítva lett: a break ellenőrzés a bar elején ismert,
+  figyelt swing szinteken fut, és csak utána frissül az újonnan megerősített
+  pivot. Ez csökkenti annak kockázatát, hogy egy friss pivot-visszaigazolás
+  eltakarjon egy tényleges structure breaket.
+- A bias badge semleges állapotból már megerősített swing-sorozat alapján is
+  irányt tud találni: HH/HL esetén bullish, LH/LL esetén bearish kontextus.
+- Frissített Pine statikus ellenőrzés bias finomítás után:
+  `uv run pytest tests/test_tradingview_pine_prototype.py` 10 teszt sikeres.
+- Teljes backend ellenőrzés bias finomítás után: `uv run pytest` 89 teszt
+  sikeres, `uv run ruff check .` sikeres, `uv run mypy src` sikeres.
 
 ### Nem ellenőrzött vagy részben nyitott
 
@@ -266,6 +276,7 @@ Phase 2 következő mérföldkő:
 
 ### Következő konkrét lépés
 
-1. Pine script újratesztelése TradingView editorban a balanced alapnézettel.
+1. Pine script újratesztelése TradingView editorban a balanced alapnézettel és
+   a bias bootstrap viselkedésével.
 2. Alert payload összevetése a backend Pydantic validációval.
 3. Repainting kockázatok dokumentálása TradingView szemszögből.

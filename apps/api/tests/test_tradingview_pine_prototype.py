@@ -49,6 +49,30 @@ def test_pine_prototype_shows_latest_structure_context() -> None:
     assert "Bias: " in source
 
 
+def test_pine_prototype_uses_watched_swing_levels_for_breaks() -> None:
+    source = PINE_PROTOTYPE.read_text(encoding="utf-8")
+
+    assert "watchedSwingHighPrice = lastSwingHighPrice" in source
+    assert "watchedSwingLowPrice = lastSwingLowPrice" in source
+    assert "bullishBos = not na(watchedSwingHighPrice)" in source
+    assert "bearishBos = not na(watchedSwingLowPrice)" in source
+    assert "brokenSwingHighBar := watchedSwingHighBar" in source
+    assert "brokenSwingLowBar := watchedSwingLowBar" in source
+
+
+def test_pine_prototype_bootstraps_neutral_bias_from_swing_sequence() -> None:
+    source = PINE_PROTOTYPE.read_text(encoding="utf-8")
+
+    assert "var float previousSwingHighPrice = na" in source
+    assert "var float previousSwingLowPrice = na" in source
+    assert "previousSwingHighPrice := lastSwingHighPrice" in source
+    assert "previousSwingLowPrice := lastSwingLowPrice" in source
+    assert "bullishSwingSequence" in source
+    assert "bearishSwingSequence" in source
+    assert "if marketBias == 0 and bullishSwingSequence" in source
+    assert "if marketBias == 0 and bearishSwingSequence" in source
+
+
 def test_pine_prototype_caps_visible_fvg_boxes() -> None:
     source = PINE_PROTOTYPE.read_text(encoding="utf-8")
 

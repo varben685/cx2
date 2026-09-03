@@ -108,6 +108,7 @@ ezért a Docker image build ebben a munkamenetben nem volt futtatható.
 - [x] Első repainting kockázat dokumentálása.
 - [x] Clean alapnézet a zajos debug jelölések helyett.
 - [x] Latest swing high/low struktúraszintek és bias badge.
+- [x] Watched swing alapú BOS ellenőrzés és semleges bias bootstrap.
 
 ## Phase 4: Rule-based setup scoring
 
@@ -280,3 +281,7 @@ ezért a Docker image build ebben a munkamenetben nem volt futtatható.
 - 2026-09-03: A balanced Pine nézet kapott két mindig értelmezhető kontextus
   elemet: legutóbbi swing high / swing low szintet jobbra nyúló vonalakkal, és
   egy aktuális bias badge-et.
+- 2026-09-03: A Pine BOS/CHoCH logika figyelt swing szintekre lett átállítva,
+  hogy az új pivot-visszaigazolás ne takarhasson el egy ugyanazon baron történő
+  structure breaket. A semleges bias megerősített HH/HL vagy LH/LL swing
+  sorozatból is kap irányt.

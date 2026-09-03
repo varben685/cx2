@@ -33,6 +33,8 @@ var float lastSwingHighPrice = na
 var int lastSwingHighBar = na
 var float lastSwingLowPrice = na
 var int lastSwingLowBar = na
+var float previousSwingHighPrice = na
+var float previousSwingLowPrice = na
 var int brokenSwingHighBar = na
 var int brokenSwingLowBar = na
 var int marketBias = 0
@@ -44,7 +46,34 @@ var label biasBadge = na
 pivotHigh = ta.pivothigh(high, leftBars, rightBars)
 pivotLow = ta.pivotlow(low, leftBars, rightBars)
 
+watchedSwingHighPrice = lastSwingHighPrice
+watchedSwingHighBar = lastSwingHighBar
+watchedSwingLowPrice = lastSwingLowPrice
+watchedSwingLowBar = lastSwingLowBar
+
+bullishBreakPrice = useCloseConfirmation ? close : high
+bearishBreakPrice = useCloseConfirmation ? close : low
+
+bullishBos = not na(watchedSwingHighPrice) and bar_index > watchedSwingHighBar and bullishBreakPrice > watchedSwingHighPrice + breakBuffer and brokenSwingHighBar != watchedSwingHighBar
+bearishBos = not na(watchedSwingLowPrice) and bar_index > watchedSwingLowBar and bearishBreakPrice < watchedSwingLowPrice - breakBuffer and brokenSwingLowBar != watchedSwingLowBar
+
+bullishChoch = bullishBos and marketBias == -1
+bearishChoch = bearishBos and marketBias == 1
+
+if bullishBos
+    brokenSwingHighBar := watchedSwingHighBar
+    marketBias := 1
+    if (bullishChoch and showChochLabels) or (not bullishChoch and showBosLabels)
+        label.new(bar_index, high, bullishChoch ? "CHoCH" : "BOS", style=label.style_label_down, color=bullishChoch ? color.new(color.yellow, 0) : color.new(color.blue, 0), textcolor=color.black, size=size.small)
+
+if bearishBos
+    brokenSwingLowBar := watchedSwingLowBar
+    marketBias := -1
+    if (bearishChoch and showChochLabels) or (not bearishChoch and showBosLabels)
+        label.new(bar_index, low, bearishChoch ? "CHoCH" : "BOS", style=label.style_label_up, color=bearishChoch ? color.new(color.yellow, 0) : color.new(color.purple, 0), textcolor=color.white, size=size.small)
+
 if not na(pivotHigh)
+    previousSwingHighPrice := lastSwingHighPrice
     lastSwingHighPrice := pivotHigh
     lastSwingHighBar := bar_index - rightBars
     if showStructureLevels
@@ -55,6 +84,7 @@ if not na(pivotHigh)
         label.new(lastSwingHighBar, pivotHigh, "SH", style=label.style_label_down, color=color.new(color.red, 10), textcolor=color.white, size=size.tiny)
 
 if not na(pivotLow)
+    previousSwingLowPrice := lastSwingLowPrice
     lastSwingLowPrice := pivotLow
     lastSwingLowBar := bar_index - rightBars
     if showStructureLevels
@@ -64,26 +94,15 @@ if not na(pivotLow)
     if showSwings
         label.new(lastSwingLowBar, pivotLow, "SL", style=label.style_label_up, color=color.new(color.green, 10), textcolor=color.white, size=size.tiny)
 
-bullishBreakPrice = useCloseConfirmation ? close : high
-bearishBreakPrice = useCloseConfirmation ? close : low
+hasSwingSequence = not na(previousSwingHighPrice) and not na(previousSwingLowPrice) and not na(lastSwingHighPrice) and not na(lastSwingLowPrice)
+bullishSwingSequence = hasSwingSequence and lastSwingHighPrice > previousSwingHighPrice and lastSwingLowPrice > previousSwingLowPrice
+bearishSwingSequence = hasSwingSequence and lastSwingHighPrice < previousSwingHighPrice and lastSwingLowPrice < previousSwingLowPrice
 
-bullishBos = not na(lastSwingHighPrice) and bar_index > lastSwingHighBar and bullishBreakPrice > lastSwingHighPrice + breakBuffer and brokenSwingHighBar != lastSwingHighBar
-bearishBos = not na(lastSwingLowPrice) and bar_index > lastSwingLowBar and bearishBreakPrice < lastSwingLowPrice - breakBuffer and brokenSwingLowBar != lastSwingLowBar
-
-bullishChoch = bullishBos and marketBias == -1
-bearishChoch = bearishBos and marketBias == 1
-
-if bullishBos
-    brokenSwingHighBar := lastSwingHighBar
+if marketBias == 0 and bullishSwingSequence
     marketBias := 1
-    if (bullishChoch and showChochLabels) or (not bullishChoch and showBosLabels)
-        label.new(bar_index, high, bullishChoch ? "CHoCH" : "BOS", style=label.style_label_down, color=bullishChoch ? color.new(color.yellow, 0) : color.new(color.blue, 0), textcolor=color.black, size=size.small)
 
-if bearishBos
-    brokenSwingLowBar := lastSwingLowBar
+if marketBias == 0 and bearishSwingSequence
     marketBias := -1
-    if (bearishChoch and showChochLabels) or (not bearishChoch and showBosLabels)
-        label.new(bar_index, low, bearishChoch ? "CHoCH" : "BOS", style=label.style_label_up, color=bearishChoch ? color.new(color.yellow, 0) : color.new(color.purple, 0), textcolor=color.white, size=size.small)
 
 bullishFvg = low > high[2] and low - high[2] >= fvgMinSize
 bearishFvg = high < low[2] and low[2] - high >= fvgMinSize

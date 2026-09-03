@@ -27,6 +27,11 @@ Ezért az alapértelmezett nézet most balanced:
   vonalként látszik.
 - A jobb oldalon egy kis bias badge mutatja az aktuális `BULLISH`, `BEARISH`
   vagy `NEUTRAL` állapotot.
+- A BOS/CHoCH logika a bar elején ismert, figyelt swing szinteket használja,
+  és csak ezután dolgozza fel az újonnan megerősített pivotokat.
+- A semleges bias megerősített swing-sorozatból is képes irányt találni:
+  magasabb high + magasabb low esetén `BULLISH`, alacsonyabb high + alacsonyabb
+  low esetén `BEARISH`.
 
 ## 2. Miért erre van szükség?
 
@@ -48,6 +53,8 @@ mezőket kell pontosítani.
   visszakapcsolhatók az indikátor beállításaiban.
 - Ha BOS/CHoCH épp nincs a látható chart szakaszon, a legutóbbi struktúraszintek
   akkor is mutatják, milyen törést figyel az indikátor.
+- A bias bootstrap nem jelent kereskedési setupot önmagában. Csak kontextust ad,
+  hogy a későbbi ellentétes structure break már CHoCH-ként értelmezhető legyen.
 
 ## 4. Repainting védelem
 
@@ -57,6 +64,12 @@ pivotgyertyára kerül, de csak késve válik ismertté.
 
 Ez ugyanaz a szemlélet, mint a backend domain modellben: nem kezelünk pivotot
 ismertként a megerősítő gyertyák lezárása előtt.
+
+Fontos Pine-specifikus részlet: egy baron egyszerre történhet ármozgás és új
+pivot-visszaigazolás. Ezért a BOS vizsgálat először a bar elején ismert
+`watchedSwingHigh/Low` szinteken fut, és csak utána frissül a legutóbbi pivot.
+Így nem veszítünk el egy törést azért, mert ugyanazon a baron egy új pivot is
+megerősítést kapott.
 
 ## 5. Kapcsolódó fájlok
 
@@ -71,5 +84,5 @@ ismertként a megerősítő gyertyák lezárása előtt.
 ## 6. Következő lépés
 
 A következő Phase 3 szeletben TradingView editorban kell újra ellenőrizni a
-balanced alapnézetet, majd a tényleges alert payloadot összevetni a backend
-Pydantic contracttal.
+balanced alapnézetet és a bias bootstrap viselkedését, majd a tényleges alert
+payloadot összevetni a backend Pydantic contracttal.
