@@ -76,9 +76,14 @@ def test_ingestion_accepts_new_webhook_event() -> None:
     assert result.event_id == "BTCUSDT-1m-1720000000-bullish-choch"
     assert result.received_at == received_at
     assert result.first_received_at == received_at
+    assert result.setup_score.accepted is True
+    assert result.setup_score.score == 100.0
     assert repository.get_by_event_id(result.event_id) is not None
     assert audit_logger.events[0].event_type == AuditEventType.WEBHOOK_ACCEPTED
     assert audit_logger.events[0].metadata["event_id"] == result.event_id
+    assert audit_logger.events[0].metadata["setup_score"] == 100.0
+    assert audit_logger.events[0].metadata["setup_accepted"] is True
+    assert audit_logger.events[0].metadata["scoring_config_version"] == "rule-score-v1"
     assert "payload" not in audit_logger.events[0].metadata
 
 
@@ -101,9 +106,11 @@ def test_ingestion_marks_repeated_event_id_as_duplicate() -> None:
     assert second_result.status == WebhookIngestionStatus.DUPLICATE
     assert second_result.received_at == second_received_at
     assert second_result.first_received_at == first_received_at
+    assert second_result.setup_score.score == first_result.setup_score.score
     assert audit_logger.events[1].event_type == AuditEventType.WEBHOOK_DUPLICATE
     assert audit_logger.events[1].metadata["event_id"] == second_result.event_id
     assert audit_logger.events[1].metadata["first_received_at"] == first_received_at.isoformat()
+    assert audit_logger.events[1].metadata["setup_score"] == 100.0
     assert "payload" not in audit_logger.events[1].metadata
 
 

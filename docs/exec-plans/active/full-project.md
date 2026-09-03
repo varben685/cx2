@@ -118,8 +118,9 @@ ezért a Docker image build ebben a munkamenetben nem volt futtatható.
 - [x] Első elutasítási okok.
 - [x] Strategy és scoring configuration versioning.
 - [x] Első determinisztikus pozitív/negatív indokok.
-- [ ] TradingView webhook payload mappolása scoring inputra.
-- [ ] Scoring bekötése az ingestion flow mellé.
+- [x] TradingView webhook payload mappolása scoring inputra.
+- [x] Scoring bekötése az ingestion flow mellé.
+- [ ] Pontozott setup candidate belső séma előkészítése.
 
 ## Phase 5: Outcome és backtest
 
@@ -294,3 +295,6 @@ ezért a Docker image build ebben a munkamenetben nem volt futtatható.
 - 2026-09-03: Elindult a Phase 4 rule-based setup scoring. Létrejött az első
   domain scoring modul 0-100 ponttal, komponenspontokkal, config verzióval,
   pozitív/negatív indokokkal és hard reject okokkal.
+- 2026-09-03: A TradingView webhook payload már `SetupScoringInput` objektumra
+  mappelődik, az ingestion flow score-t számol, az API válasz `setupScore`
+  blokkot ad vissza, az audit metadata pedig payload nélkül rögzíti a score-t.

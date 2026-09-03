@@ -9,7 +9,9 @@ from smc_assistant.application.audit import (
     NoopAuditLogger,
     create_audit_event,
 )
+from smc_assistant.application.setup_scoring import score_tradingview_payload
 from smc_assistant.contracts.tradingview import TradingViewWebhookPayload
+from smc_assistant.domain.setup_scoring import SetupScore, SetupScoringConfig
 
 
 class WebhookIngestionStatus(StrEnum):
@@ -46,6 +48,7 @@ class WebhookIngestionResult:
     schema_version: str
     received_at: datetime
     first_received_at: datetime
+    setup_score: SetupScore
     message: str
 
 
@@ -54,9 +57,11 @@ class WebhookIngestionService:
         self,
         repository: WebhookEventRepository,
         audit_logger: AuditLogger | None = None,
+        scoring_config: SetupScoringConfig | None = None,
     ) -> None:
         self._repository = repository
         self._audit_logger = audit_logger or NoopAuditLogger()
+        self._scoring_config = scoring_config
 
     def ingest_tradingview(
         self,
@@ -65,6 +70,7 @@ class WebhookIngestionService:
         received_at: datetime | None = None,
     ) -> WebhookIngestionResult:
         event_received_at = received_at or datetime.now(UTC)
+        setup_score = score_tradingview_payload(payload, self._scoring_config)
         record = WebhookEventRecord(
             event_id=payload.event_id,
             event_type=payload.event_type,
@@ -84,6 +90,9 @@ class WebhookIngestionService:
                         "event_type": record.event_type,
                         "source": record.source,
                         "schema_version": record.schema_version,
+                        "setup_score": setup_score.score,
+                        "setup_accepted": setup_score.accepted,
+                        "scoring_config_version": setup_score.config_version,
                     },
                     occurred_at=record.received_at,
                 )
@@ -95,10 +104,13 @@ class WebhookIngestionService:
                 schema_version=record.schema_version,
                 received_at=record.received_at,
                 first_received_at=record.received_at,
+                setup_score=setup_score,
                 message="TradingView webhook payload accepted for processing.",
             )
 
         existing_record = save_result.record
+        existing_payload = TradingViewWebhookPayload.model_validate(existing_record.payload)
+        existing_setup_score = score_tradingview_payload(existing_payload, self._scoring_config)
         self._audit_logger.record(
             create_audit_event(
                 AuditEventType.WEBHOOK_DUPLICATE,
@@ -108,6 +120,9 @@ class WebhookIngestionService:
                     "source": existing_record.source,
                     "schema_version": existing_record.schema_version,
                     "first_received_at": existing_record.received_at.isoformat(),
+                    "setup_score": existing_setup_score.score,
+                    "setup_accepted": existing_setup_score.accepted,
+                    "scoring_config_version": existing_setup_score.config_version,
                 },
                 occurred_at=event_received_at,
             )
@@ -119,5 +134,6 @@ class WebhookIngestionService:
             schema_version=existing_record.schema_version,
             received_at=event_received_at,
             first_received_at=existing_record.received_at,
+            setup_score=existing_setup_score,
             message="TradingView webhook payload was already accepted.",
         )

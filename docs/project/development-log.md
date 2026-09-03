@@ -314,9 +314,24 @@ Phase 2 következő mérföldkő:
 - Célzott scoring Ruff és mypy ellenőrzés: sikeres.
 - Teljes backend ellenőrzés scoring alap után: `uv run pytest` 100 teszt
   sikeres, `uv run ruff check .` sikeres, `uv run mypy src` sikeres.
+- Létrejött a TradingView webhook payload -> `SetupScoringInput` application
+  mapper.
+- A webhook ingestion flow már score-t számol a valid setup candidate payloadra.
+- Az API válasz `setupScore` blokkot ad vissza komponenspontokkal,
+  config verzióval, pozitív/negatív indokokkal és reject okokkal.
+- Duplikált `eventId` esetén a score az elsőként eltárolt payloadból számolódik,
+  nem az ismételt beküldés tartalmából.
+- Az audit metadata tartalmazza a score-t, az accepted flaget és a scoring config
+  verziót, de továbbra sem tartalmaz nyers payloadot.
+- Célzott scoring/ingestion/API ellenőrzés:
+  `uv run pytest tests/test_setup_scoring_mapping.py tests/test_webhook_ingestion.py tests/test_tradingview_webhook_api.py`
+  9 teszt sikeres.
+- Célzott scoring ingestion Ruff és mypy ellenőrzés: sikeres.
+- Teljes backend ellenőrzés scoring ingestion után: `uv run pytest` 102 teszt
+  sikeres, `uv run ruff check .` sikeres, `uv run mypy src` sikeres.
 
 ### Következő konkrét lépés
 
-1. TradingView webhook payload mappolása belső `SetupScoringInput` objektumra.
-2. Scoring bekötése az ingestion flow mellé.
-3. Pontozott setup candidate belső séma előkészítése.
+1. Pontozott setup candidate belső séma előkészítése.
+2. Setup score persistence stratégia eldöntése.
+3. Setup lekérdező API első verziójának megtervezése.

@@ -34,6 +34,11 @@ hogy a payload contract szerint érvényes és feldolgozásra átadható. Az
 `eventId` alapján az endpoint idempotensen kezeli az ismételt beküldést; az első
 beküldés `ACCEPTED`, az ismételt beküldés `DUPLICATE` státuszt kap.
 
+A válasz `setupScore` blokkja az aktuális determinisztikus scoring configgal
+számolt eredményt tartalmazza. Duplikált `eventId` esetén a score az elsőként
+eltárolt payloadból számolódik, nem az ismételt beküldés esetleges eltérő
+tartalmából.
+
 ```json
 {
   "status": "ACCEPTED",
@@ -42,6 +47,16 @@ beküldés `ACCEPTED`, az ismételt beküldés `DUPLICATE` státuszt kap.
   "schemaVersion": "1.0",
   "receivedAt": "2026-09-03T10:00:00Z",
   "firstReceivedAt": "2026-09-03T10:00:00Z",
+  "setupScore": {
+    "score": 100.0,
+    "accepted": true,
+    "strategyVersion": "smc-rce-v1",
+    "configVersion": "rule-score-v1",
+    "components": [],
+    "rejectionReasons": [],
+    "positiveReasons": [],
+    "negativeReasons": []
+  },
   "message": "TradingView webhook payload accepted for processing."
 }
 ```
@@ -56,6 +71,16 @@ Ismételt `eventId` esetén:
   "schemaVersion": "1.0",
   "receivedAt": "2026-09-03T10:00:30Z",
   "firstReceivedAt": "2026-09-03T10:00:00Z",
+  "setupScore": {
+    "score": 100.0,
+    "accepted": true,
+    "strategyVersion": "smc-rce-v1",
+    "configVersion": "rule-score-v1",
+    "components": [],
+    "rejectionReasons": [],
+    "positiveReasons": [],
+    "negativeReasons": []
+  },
   "message": "TradingView webhook payload was already accepted."
 }
 ```
