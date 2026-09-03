@@ -25,14 +25,24 @@ def test_pine_prototype_declares_expected_visual_components() -> None:
 def test_pine_prototype_uses_clean_defaults() -> None:
     source = PINE_PROTOTYPE.read_text(encoding="utf-8")
 
-    assert 'leftBars = input.int(5, "Left bars"' in source
-    assert 'rightBars = input.int(5, "Right bars"' in source
+    assert 'leftBars = input.int(3, "Left bars"' in source
+    assert 'rightBars = input.int(3, "Right bars"' in source
     assert 'showSwings = input.bool(false, "Show swings")' in source
-    assert 'showBosLabels = input.bool(false, "Show BOS labels")' in source
+    assert 'showBosLabels = input.bool(true, "Show BOS labels")' in source
     assert 'showChochLabels = input.bool(true, "Show CHoCH labels")' in source
-    assert 'showOnlySetupFvgs = input.bool(true, "Only setup FVGs")' in source
+    assert 'showOnlySetupFvgs = input.bool(false, "Only setup FVGs")' in source
     assert 'showSweeps = input.bool(false, "Show liquidity sweeps")' in source
     assert 'showDisplacement = input.bool(false, "Show displacement")' in source
+    assert 'maxVisibleFvgs = input.int(8, "Max visible FVGs"' in source
+
+
+def test_pine_prototype_caps_visible_fvg_boxes() -> None:
+    source = PINE_PROTOTYPE.read_text(encoding="utf-8")
+
+    assert "var box[] fvgBoxes = array.new_box()" in source
+    assert "array.push(fvgBoxes" in source
+    assert "array.size(fvgBoxes) > maxVisibleFvgs" in source
+    assert "box.delete(array.shift(fvgBoxes))" in source
 
 
 def test_pine_alert_payload_contains_backend_contract_keys() -> None:

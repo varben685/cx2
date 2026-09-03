@@ -247,6 +247,10 @@ Phase 2 következő mérföldkő:
   indikátor clean alapbeállításra váltott: 5/5 pivot ablak, swing/BOS/sweep/
   displacement debug elemek alapból kikapcsolva, FVG-ből alapból csak setuphoz
   kapcsolódó zóna.
+- Újabb TradingView képernyőkép alapján a clean nézet túl üres lett. Az
+  indikátor balanced alapbeállításra váltott: 3/3 pivot ablak, BOS/CHoCH label
+  alapból bekapcsolva, sweep/displacement/swing debug elemek kikapcsolva, FVG
+  boxokból egyszerre legfeljebb 8 látszik.
 
 ### Nem ellenőrzött vagy részben nyitott
 

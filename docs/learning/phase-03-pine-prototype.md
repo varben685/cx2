@@ -16,12 +16,13 @@ Ez még nem végleges stratégia, hanem vizuális és alert alap:
 - egyszerű FVG equilibrium entry, stop loss, take profit és risk-reward számítás.
 
 Az első TradingView próba túl zajosnak bizonyult, mert minden debug marker
-látszott egyszerre. Ezért az alapértelmezett nézet most signal-first:
+látszott egyszerre. A túl szigorú clean nézet viszont szinte mindent elrejtett.
+Ezért az alapértelmezett nézet most balanced:
 
-- `leftBars/rightBars = 5/5`, kevésbé érzékeny pivotokkal;
-- swing label, BOS label, sweep label és displacement marker alapból kikapcsolva;
-- CHoCH label alapból bekapcsolva;
-- FVG boxból alapból csak a setuphoz kapcsolódó zóna látszik.
+- `leftBars/rightBars = 3/3`, közepesen érzékeny pivotokkal;
+- swing label, sweep label és displacement marker alapból kikapcsolva;
+- BOS és CHoCH label alapból bekapcsolva;
+- FVG boxok alapból látszanak, de csak az utolsó 8 marad a charton.
 
 ## 2. Miért erre van szükség?
 

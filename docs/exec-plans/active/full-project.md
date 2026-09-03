@@ -272,3 +272,7 @@ ezért a Docker image build ebben a munkamenetben nem volt futtatható.
 - 2026-09-03: TradingView képernyőkép alapján a prototípus túl zajos volt, ezért
   clean alapnézetre váltott: 5/5 pivot ablak, kikapcsolt swing/BOS/sweep/
   displacement debug elemek, és setuphoz kötött FVG boxok.
+- 2026-09-03: A clean Pine alapnézet túl üresnek bizonyult, ezért balanced
+  alapbeállításra váltott: 3/3 pivot ablak, BOS/CHoCH label alapból bekapcsolva,
+  sweep/displacement/swing debug elemek kikapcsolva, és legfeljebb 8 látható
+  FVG box.
