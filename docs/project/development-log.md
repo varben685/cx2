@@ -240,6 +240,9 @@ Phase 2 következő mérföldkő:
   `uv run pytest tests/test_tradingview_pine_prototype.py` 4 teszt sikeres.
 - Teljes backend ellenőrzés Pine prototípus után: `uv run pytest` 83 teszt
   sikeres, `uv run ruff check .` sikeres, `uv run mypy src` sikeres.
+- TradingView editor visszajelzés alapján a több soros Pine függvényhívások
+  egy soros formára lettek alakítva, mert `Mismatched input 'end of line without
+  line continuation' expecting ')'` hibát okozhatnak.
 
 ### Nem ellenőrzött vagy részben nyitott
 

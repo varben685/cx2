@@ -1,11 +1,5 @@
 //@version=5
-indicator(
-     "SMC Assistant Prototype",
-     shorttitle="SMC Assistant",
-     overlay=true,
-     max_labels_count=500,
-     max_boxes_count=100
-)
+indicator("SMC Assistant Prototype", shorttitle="SMC Assistant", overlay=true, max_labels_count=500, max_boxes_count=100)
 
 leftBars = input.int(2, "Left bars", minval=1, maxval=20)
 rightBars = input.int(2, "Right bars", minval=1, maxval=20)
@@ -44,29 +38,13 @@ if not na(pivotHigh)
     lastSwingHighPrice := pivotHigh
     lastSwingHighBar := bar_index - rightBars
     if showSwings
-        label.new(
-             lastSwingHighBar,
-             pivotHigh,
-             "SH",
-             style=label.style_label_down,
-             color=color.new(color.red, 10),
-             textcolor=color.white,
-             size=size.tiny
-        )
+        label.new(lastSwingHighBar, pivotHigh, "SH", style=label.style_label_down, color=color.new(color.red, 10), textcolor=color.white, size=size.tiny)
 
 if not na(pivotLow)
     lastSwingLowPrice := pivotLow
     lastSwingLowBar := bar_index - rightBars
     if showSwings
-        label.new(
-             lastSwingLowBar,
-             pivotLow,
-             "SL",
-             style=label.style_label_up,
-             color=color.new(color.green, 10),
-             textcolor=color.white,
-             size=size.tiny
-        )
+        label.new(lastSwingLowBar, pivotLow, "SL", style=label.style_label_up, color=color.new(color.green, 10), textcolor=color.white, size=size.tiny)
 
 bullishBreakPrice = useCloseConfirmation ? close : high
 bearishBreakPrice = useCloseConfirmation ? close : low
@@ -81,77 +59,31 @@ if bullishBos
     brokenSwingHighBar := lastSwingHighBar
     marketBias := 1
     if showStructure
-        label.new(
-             bar_index,
-             high,
-             bullishChoch ? "CHoCH" : "BOS",
-             style=label.style_label_down,
-             color=bullishChoch ? color.new(color.yellow, 0) : color.new(color.blue, 0),
-             textcolor=color.black,
-             size=size.small
-        )
+        label.new(bar_index, high, bullishChoch ? "CHoCH" : "BOS", style=label.style_label_down, color=bullishChoch ? color.new(color.yellow, 0) : color.new(color.blue, 0), textcolor=color.black, size=size.small)
 
 if bearishBos
     brokenSwingLowBar := lastSwingLowBar
     marketBias := -1
     if showStructure
-        label.new(
-             bar_index,
-             low,
-             bearishChoch ? "CHoCH" : "BOS",
-             style=label.style_label_up,
-             color=bearishChoch ? color.new(color.yellow, 0) : color.new(color.purple, 0),
-             textcolor=color.white,
-             size=size.small
-        )
+        label.new(bar_index, low, bearishChoch ? "CHoCH" : "BOS", style=label.style_label_up, color=bearishChoch ? color.new(color.yellow, 0) : color.new(color.purple, 0), textcolor=color.white, size=size.small)
 
 bullishFvg = low > high[2] and low - high[2] >= fvgMinSize
 bearishFvg = high < low[2] and low[2] - high >= fvgMinSize
 
 if showFvgs and bullishFvg
-    box.new(
-         left=bar_index - 2,
-         top=low,
-         right=bar_index + 20,
-         bottom=high[2],
-         bgcolor=color.new(color.teal, 82),
-         border_color=color.new(color.teal, 35)
-    )
+    box.new(left=bar_index - 2, top=low, right=bar_index + 20, bottom=high[2], bgcolor=color.new(color.teal, 82), border_color=color.new(color.teal, 35))
 
 if showFvgs and bearishFvg
-    box.new(
-         left=bar_index - 2,
-         top=low[2],
-         right=bar_index + 20,
-         bottom=high,
-         bgcolor=color.new(color.orange, 82),
-         border_color=color.new(color.orange, 35)
-    )
+    box.new(left=bar_index - 2, top=low[2], right=bar_index + 20, bottom=high, bgcolor=color.new(color.orange, 82), border_color=color.new(color.orange, 35))
 
 bullishSweep = not na(lastSwingLowPrice) and low < lastSwingLowPrice - sweepBuffer and close > lastSwingLowPrice
 bearishSweep = not na(lastSwingHighPrice) and high > lastSwingHighPrice + sweepBuffer and close < lastSwingHighPrice
 
 if showSweeps and bullishSweep
-    label.new(
-         bar_index,
-         low,
-         "Sweep",
-         style=label.style_label_up,
-         color=color.new(color.lime, 0),
-         textcolor=color.black,
-         size=size.tiny
-    )
+    label.new(bar_index, low, "Sweep", style=label.style_label_up, color=color.new(color.lime, 0), textcolor=color.black, size=size.tiny)
 
 if showSweeps and bearishSweep
-    label.new(
-         bar_index,
-         high,
-         "Sweep",
-         style=label.style_label_down,
-         color=color.new(color.red, 0),
-         textcolor=color.white,
-         size=size.tiny
-    )
+    label.new(bar_index, high, "Sweep", style=label.style_label_down, color=color.new(color.red, 0), textcolor=color.white, size=size.tiny)
 
 priorAtr = ta.atr(atrPeriod)[1]
 candleBody = math.abs(close - open)
@@ -164,22 +96,8 @@ displacementScore = (bodyAtrScore + bodyToRangeScore) / 2.0
 isBullishDisplacement = close > open and displacementScore >= displacementThreshold
 isBearishDisplacement = close < open and displacementScore >= displacementThreshold
 
-plotshape(
-     showDisplacement and isBullishDisplacement,
-     title="Bullish displacement",
-     style=shape.triangleup,
-     location=location.belowbar,
-     color=color.new(color.teal, 0),
-     size=size.tiny
-)
-plotshape(
-     showDisplacement and isBearishDisplacement,
-     title="Bearish displacement",
-     style=shape.triangledown,
-     location=location.abovebar,
-     color=color.new(color.orange, 0),
-     size=size.tiny
-)
+plotshape(showDisplacement and isBullishDisplacement, title="Bullish displacement", style=shape.triangleup, location=location.belowbar, color=color.new(color.teal, 0), size=size.tiny)
+plotshape(showDisplacement and isBearishDisplacement, title="Bearish displacement", style=shape.triangledown, location=location.abovebar, color=color.new(color.orange, 0), size=size.tiny)
 
 activeBullishSetup = bullishChoch and bullishFvg
 activeBearishSetup = bearishChoch and bearishFvg
@@ -197,21 +115,21 @@ setupRisk = math.abs(setupEntry - setupStopLoss)
 setupTakeProfit = activeBullishSetup ? setupEntry + setupRisk * 2.0 : activeBearishSetup ? setupEntry - setupRisk * 2.0 : na
 setupRiskReward = setupRisk > 0 ? math.abs(setupTakeProfit - setupEntry) / setupRisk : na
 
-alertPayload = '{"schemaVersion":"1.0",' +
-     '"eventId":"' + eventId + '",' +
-     '"eventType":"SETUP_CANDIDATE",' +
-     '"source":"TRADINGVIEW",' +
-     '"strategyVersion":"' + strategyVersion + '",' +
-     '"symbol":"' + syminfo.ticker + '",' +
-     '"exchange":"' + syminfo.prefix + '",' +
-     '"timeframe":"' + timeframe.period + '",' +
-     '"barOpenTime":"' + str.format_time(time, "yyyy-MM-dd'T'HH:mm:ss'Z'", "UTC") + '",' +
-     '"barCloseTime":"' + str.format_time(time_close, "yyyy-MM-dd'T'HH:mm:ss'Z'", "UTC") + '",' +
-     '"direction":"' + setupDirection + '",' +
-     '"marketStructure":{"htfTimeframe":"' + htfTimeframe + '","htfBias":"' + htfBias + '","bos":' + str.tostring(bullishBos or bearishBos) + ',"choch":' + str.tostring(bullishChoch or bearishChoch) + ',"liquiditySweep":' + str.tostring(bullishSweep or bearishSweep) + '},' +
-     '"fvg":{"lower":' + str.tostring(activeFvgLower) + ',"upper":' + str.tostring(activeFvgUpper) + ',"equilibrium":' + str.tostring(activeFvgEquilibrium) + ',"sizeAtrRatio":0.0,"mitigationPercent":0.0},' +
-     '"execution":{"entry":' + str.tostring(setupEntry) + ',"stopLoss":' + str.tostring(setupStopLoss) + ',"takeProfit":' + str.tostring(setupTakeProfit) + ',"riskReward":' + str.tostring(setupRiskReward) + '},' +
-     '"features":{"atr":' + str.tostring(priorAtr) + ',"relativeVolume":null,"displacementScore":' + str.tostring(displacementScore) + ',"session":"' + sessionName + '"}}'
+alertPayload = '{"schemaVersion":"1.0",'
+alertPayload := alertPayload + '"eventId":"' + eventId + '",'
+alertPayload := alertPayload + '"eventType":"SETUP_CANDIDATE",'
+alertPayload := alertPayload + '"source":"TRADINGVIEW",'
+alertPayload := alertPayload + '"strategyVersion":"' + strategyVersion + '",'
+alertPayload := alertPayload + '"symbol":"' + syminfo.ticker + '",'
+alertPayload := alertPayload + '"exchange":"' + syminfo.prefix + '",'
+alertPayload := alertPayload + '"timeframe":"' + timeframe.period + '",'
+alertPayload := alertPayload + '"barOpenTime":"' + str.format_time(time, "yyyy-MM-dd'T'HH:mm:ss'Z'", "UTC") + '",'
+alertPayload := alertPayload + '"barCloseTime":"' + str.format_time(time_close, "yyyy-MM-dd'T'HH:mm:ss'Z'", "UTC") + '",'
+alertPayload := alertPayload + '"direction":"' + setupDirection + '",'
+alertPayload := alertPayload + '"marketStructure":{"htfTimeframe":"' + htfTimeframe + '","htfBias":"' + htfBias + '","bos":' + str.tostring(bullishBos or bearishBos) + ',"choch":' + str.tostring(bullishChoch or bearishChoch) + ',"liquiditySweep":' + str.tostring(bullishSweep or bearishSweep) + '},'
+alertPayload := alertPayload + '"fvg":{"lower":' + str.tostring(activeFvgLower) + ',"upper":' + str.tostring(activeFvgUpper) + ',"equilibrium":' + str.tostring(activeFvgEquilibrium) + ',"sizeAtrRatio":0.0,"mitigationPercent":0.0},'
+alertPayload := alertPayload + '"execution":{"entry":' + str.tostring(setupEntry) + ',"stopLoss":' + str.tostring(setupStopLoss) + ',"takeProfit":' + str.tostring(setupTakeProfit) + ',"riskReward":' + str.tostring(setupRiskReward) + '},'
+alertPayload := alertPayload + '"features":{"atr":' + str.tostring(priorAtr) + ',"relativeVolume":null,"displacementScore":' + str.tostring(displacementScore) + ',"session":"' + sessionName + '"}}'
 
 if setupCandidate
     alert(alertPayload, alert.freq_once_per_bar_close)

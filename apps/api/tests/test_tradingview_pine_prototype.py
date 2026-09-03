@@ -59,3 +59,17 @@ def test_pine_alert_payload_uses_non_placeholder_execution_values() -> None:
     assert "setupStopLoss" in source
     assert "setupTakeProfit" in source
     assert "setupRiskReward" in source
+
+
+def test_pine_prototype_avoids_multiline_calls_that_break_tradingview() -> None:
+    source = PINE_PROTOTYPE.read_text(encoding="utf-8")
+
+    fragile_multiline_calls = [
+        "indicator(\n",
+        "label.new(\n",
+        "box.new(\n",
+        "plotshape(\n",
+    ]
+
+    for fragile_call in fragile_multiline_calls:
+        assert fragile_call not in source
