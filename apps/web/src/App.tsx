@@ -3,9 +3,13 @@ import {
   Alert,
   Button,
   ConfigProvider,
+  Descriptions,
+  Divider,
+  Drawer,
   Empty,
   Input,
   Layout,
+  Progress,
   Segmented,
   Space,
   Spin,
@@ -15,81 +19,124 @@ import {
   Typography,
 } from "antd";
 import type { ColumnsType } from "antd/es/table";
-import { Activity, RefreshCw, Search } from "lucide-react";
+import { Activity, Eye, RefreshCw, Search } from "lucide-react";
 import { useMemo, useState } from "react";
 
-import { fetchHealth, fetchSetupCandidates, type SetupCandidate } from "./api";
+import {
+  fetchHealth,
+  fetchSetupCandidate,
+  fetchSetupCandidates,
+  type SetupCandidate,
+  type SetupScoreComponent,
+} from "./api";
 
 const { Content, Header } = Layout;
 
 type AcceptedFilter = "ALL" | "ACCEPTED" | "REJECTED";
 
-const setupColumns: ColumnsType<SetupCandidate> = [
+const componentColumns: ColumnsType<SetupScoreComponent> = [
   {
-    title: "Symbol",
-    dataIndex: "symbol",
-    key: "symbol",
-    render: (symbol: string, record) => (
-      <Space direction="vertical" size={0}>
-        <Typography.Text strong>{symbol}</Typography.Text>
-        <Typography.Text type="secondary">{`${record.exchange} / ${record.timeframe}`}</Typography.Text>
-      </Space>
-    ),
-  },
-  {
-    title: "Direction",
-    dataIndex: "direction",
-    key: "direction",
-    render: (direction: SetupCandidate["direction"]) => (
-      <Tag color={direction === "LONG" ? "green" : "red"}>{direction}</Tag>
-    ),
-  },
-  {
-    title: "Bias",
-    dataIndex: "htfBias",
-    key: "htfBias",
-    render: (bias: SetupCandidate["htfBias"]) => {
-      const color = bias === "BULLISH" ? "cyan" : bias === "BEARISH" ? "orange" : "default";
-      return <Tag color={color}>{bias}</Tag>;
-    },
+    title: "Component",
+    dataIndex: "name",
+    key: "name",
   },
   {
     title: "Score",
     dataIndex: "score",
     key: "score",
-    sorter: (a, b) => a.score - b.score,
-    render: (score: number, record) => (
-      <Space size={8}>
-        <Typography.Text strong>{score.toFixed(1)}</Typography.Text>
-        <Tag color={record.accepted ? "blue" : "volcano"}>
-          {record.accepted ? "ACCEPTED" : "REJECTED"}
-        </Tag>
-      </Space>
-    ),
+    render: (score: number, component) => `${score.toFixed(1)} / ${component.maxScore.toFixed(1)}`,
   },
   {
-    title: "Reasons",
-    dataIndex: "rejectionReasons",
-    key: "rejectionReasons",
-    render: (rejectionReasons: string[], record) => (
-      <Typography.Text type={rejectionReasons.length > 0 ? "danger" : "secondary"}>
-        {rejectionReasons.length > 0
-          ? rejectionReasons.join(", ")
-          : record.positiveReasons.slice(0, 2).join(", ")}
-      </Typography.Text>
-    ),
-  },
-  {
-    title: "Received",
-    dataIndex: "receivedAt",
-    key: "receivedAt",
-    render: (receivedAt: string) => new Date(receivedAt).toLocaleString(),
+    title: "Reason",
+    dataIndex: "reason",
+    key: "reason",
   },
 ];
+
+function createSetupColumns(onOpenDetails: (setupId: string) => void): ColumnsType<SetupCandidate> {
+  return [
+    {
+      title: "Symbol",
+      dataIndex: "symbol",
+      key: "symbol",
+      render: (symbol: string, record) => (
+        <Space direction="vertical" size={0}>
+          <Typography.Text strong>{symbol}</Typography.Text>
+          <Typography.Text type="secondary">{`${record.exchange} / ${record.timeframe}`}</Typography.Text>
+        </Space>
+      ),
+    },
+    {
+      title: "Direction",
+      dataIndex: "direction",
+      key: "direction",
+      render: (direction: SetupCandidate["direction"]) => (
+        <Tag color={direction === "LONG" ? "green" : "red"}>{direction}</Tag>
+      ),
+    },
+    {
+      title: "Bias",
+      dataIndex: "htfBias",
+      key: "htfBias",
+      render: (bias: SetupCandidate["htfBias"]) => {
+        const color = bias === "BULLISH" ? "cyan" : bias === "BEARISH" ? "orange" : "default";
+        return <Tag color={color}>{bias}</Tag>;
+      },
+    },
+    {
+      title: "Score",
+      dataIndex: "score",
+      key: "score",
+      sorter: (a, b) => a.score - b.score,
+      render: (score: number, record) => (
+        <Space size={8}>
+          <Typography.Text strong>{score.toFixed(1)}</Typography.Text>
+          <Tag color={record.accepted ? "blue" : "volcano"}>
+            {record.accepted ? "ACCEPTED" : "REJECTED"}
+          </Tag>
+        </Space>
+      ),
+    },
+    {
+      title: "Reasons",
+      dataIndex: "rejectionReasons",
+      key: "rejectionReasons",
+      render: (rejectionReasons: string[], record) => (
+        <Typography.Text type={rejectionReasons.length > 0 ? "danger" : "secondary"}>
+          {rejectionReasons.length > 0
+            ? rejectionReasons.join(", ")
+            : record.positiveReasons.slice(0, 2).join(", ")}
+        </Typography.Text>
+      ),
+    },
+    {
+      title: "Received",
+      dataIndex: "receivedAt",
+      key: "receivedAt",
+      render: (receivedAt: string) => new Date(receivedAt).toLocaleString(),
+    },
+    {
+      title: "",
+      key: "actions",
+      width: 56,
+      render: (_, record) => (
+        <Button
+          icon={<Eye size={16} />}
+          onClick={(event) => {
+            event.stopPropagation();
+            onOpenDetails(record.setupId);
+          }}
+          aria-label="Setup részletek"
+        />
+      ),
+    },
+  ];
+}
 
 export function App() {
   const [symbolFilter, setSymbolFilter] = useState("");
   const [acceptedFilter, setAcceptedFilter] = useState<AcceptedFilter>("ALL");
+  const [selectedSetupId, setSelectedSetupId] = useState<string | null>(null);
   const acceptedQueryValue = useMemo(() => {
     if (acceptedFilter === "ACCEPTED") {
       return true;
@@ -118,6 +165,18 @@ export function App() {
       }),
     retry: 1,
   });
+
+  const selectedSetupQuery = useQuery({
+    queryKey: ["setup", selectedSetupId],
+    queryFn: () => fetchSetupCandidate(selectedSetupId ?? ""),
+    enabled: selectedSetupId !== null,
+    retry: 1,
+  });
+
+  const setupColumns = useMemo(
+    () => createSetupColumns(setSelectedSetupId),
+    [],
+  );
 
   return (
     <ConfigProvider
@@ -222,11 +281,107 @@ export function App() {
               dataSource={setupsQuery.data?.items ?? []}
               pagination={false}
               scroll={{ x: 920 }}
-              locale={{ emptyText: <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="Nincs setup" /> }}
+              onRow={(record) => ({
+                onClick: () => setSelectedSetupId(record.setupId),
+              })}
+              locale={{
+                emptyText: <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="Nincs setup" />,
+              }}
             />
           </section>
         </Content>
+        <Drawer
+          width={560}
+          open={selectedSetupId !== null}
+          onClose={() => setSelectedSetupId(null)}
+          title="Setup részletek"
+        >
+          {selectedSetupQuery.isLoading ? <Spin aria-label="Setup részletek lekérése" /> : null}
+
+          {selectedSetupQuery.isError ? (
+            <Alert
+              type="error"
+              showIcon
+              message="A setup részletei nem érhetők el."
+              description="Ellenőrizd, hogy a kiválasztott setup még létezik-e."
+            />
+          ) : null}
+
+          {selectedSetupQuery.data ? <SetupDetails setup={selectedSetupQuery.data} /> : null}
+        </Drawer>
       </Layout>
     </ConfigProvider>
+  );
+}
+
+function SetupDetails({ setup }: { setup: SetupCandidate }) {
+  return (
+    <div className="setup-detail">
+      <div className="setup-detail-title">
+        <div>
+          <Typography.Title level={3}>{setup.symbol}</Typography.Title>
+          <Typography.Text type="secondary">{setup.setupId}</Typography.Text>
+        </div>
+        <Space size={8}>
+          <Tag color={setup.direction === "LONG" ? "green" : "red"}>{setup.direction}</Tag>
+          <Tag color={setup.accepted ? "blue" : "volcano"}>
+            {setup.accepted ? "ACCEPTED" : "REJECTED"}
+          </Tag>
+        </Space>
+      </div>
+
+      <div className="setup-detail-score">
+        <Progress percent={setup.score} strokeColor={setup.accepted ? "#1677ff" : "#cf1322"} />
+      </div>
+
+      <Descriptions column={1} size="small" bordered>
+        <Descriptions.Item label="Exchange">{setup.exchange}</Descriptions.Item>
+        <Descriptions.Item label="Timeframe">{setup.timeframe}</Descriptions.Item>
+        <Descriptions.Item label="HTF bias">{setup.htfBias}</Descriptions.Item>
+        <Descriptions.Item label="Strategy">{setup.strategyVersion}</Descriptions.Item>
+        <Descriptions.Item label="Scoring config">{setup.scoringConfigVersion}</Descriptions.Item>
+        <Descriptions.Item label="Bar close">
+          {new Date(setup.barCloseTime).toLocaleString()}
+        </Descriptions.Item>
+        <Descriptions.Item label="Received">
+          {new Date(setup.receivedAt).toLocaleString()}
+        </Descriptions.Item>
+      </Descriptions>
+
+      <Divider orientation="left">Components</Divider>
+      <Table<SetupScoreComponent>
+        rowKey="name"
+        columns={componentColumns}
+        dataSource={setup.components}
+        pagination={false}
+        size="small"
+      />
+
+      <Divider orientation="left">Reasons</Divider>
+      <div className="setup-reason-grid">
+        <ReasonList title="Positive" reasons={setup.positiveReasons} />
+        <ReasonList title="Negative" reasons={setup.negativeReasons} />
+        <ReasonList title="Reject" reasons={setup.rejectionReasons} />
+      </div>
+    </div>
+  );
+}
+
+function ReasonList({ title, reasons }: { title: string; reasons: string[] }) {
+  return (
+    <div className="setup-reason-list">
+      <Typography.Text strong>{title}</Typography.Text>
+      {reasons.length > 0 ? (
+        <ul>
+          {reasons.map((reason) => (
+            <li key={reason}>
+              <Typography.Text>{reason}</Typography.Text>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <Typography.Text type="secondary">-</Typography.Text>
+      )}
+    </div>
   );
 }

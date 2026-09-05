@@ -73,6 +73,51 @@ body {
   width: 180px;
 }
 
+.setups-panel .ant-table-row {
+  cursor: pointer;
+}
+
+.setup-detail {
+  display: grid;
+  gap: 18px;
+}
+
+.setup-detail-title {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.setup-detail-title h3.ant-typography {
+  margin: 0 0 4px;
+  font-size: 22px;
+  line-height: 1.25;
+}
+
+.setup-detail-score {
+  padding-top: 4px;
+}
+
+.setup-reason-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.setup-reason-list {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+}
+
+.setup-reason-list ul {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding-left: 18px;
+}
+
 .status-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -100,6 +145,10 @@ body {
 
   .status-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .setup-reason-grid {
+    grid-template-columns: 1fr;
   }
 }
 

@@ -73,11 +73,23 @@ export async function fetchSetupCandidates(
   }
 
   const queryString = searchParams.toString();
-  const response = await fetch(`${apiBaseUrl}/api/v1/setups${queryString ? `?${queryString}` : ""}`);
+  const response = await fetch(
+    `${apiBaseUrl}/api/v1/setups${queryString ? `?${queryString}` : ""}`,
+  );
 
   if (!response.ok) {
     throw new Error(`Setup query failed with status ${response.status}`);
   }
 
   return response.json() as Promise<SetupCandidateList>;
+}
+
+export async function fetchSetupCandidate(setupId: string): Promise<SetupCandidate> {
+  const response = await fetch(`${apiBaseUrl}/api/v1/setups/${setupId}`);
+
+  if (!response.ok) {
+    throw new Error(`Setup detail query failed with status ${response.status}`);
+  }
+
+  return response.json() as Promise<SetupCandidate>;
 }

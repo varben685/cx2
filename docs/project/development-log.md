@@ -378,9 +378,16 @@ Phase 2 következő mérföldkő:
   3. minta TradingView webhook beküldése;
   4. `GET /api/v1/setups` válasz: 1 darab `BTCUSDT` setup,
      `setupScore.score = 100.0`, `accepted = true`.
+- Elkészült a frontend setup részletező nézet első verziója.
+- A setup táblázat sorra kattintással és külön részletek ikongombbal is nyitja
+  a részletező drawert.
+- A részletező nézet megjeleníti az alap setup metaadatokat, score progresst,
+  komponenspontokat, pozitív/negatív indokokat és reject okokat.
+- Frontend részletező ellenőrzés: `npm run test` 3 teszt sikeres,
+  `npm run lint` sikeres, `npm run typecheck` sikeres, `npm run build` sikeres.
 
 ### Következő konkrét lépés
 
-1. Frontend setup részletező nézet első verziója.
-2. Frontend üres/adat/hiba állapotok finomítása valós API mellett.
-3. Postgres alapú end-to-end smoke teszt Dockerrel, ha a Docker daemon fut.
+1. Frontend üres/adat/hiba állapotok finomítása valós API mellett.
+2. Postgres alapú end-to-end smoke teszt Dockerrel, ha a Docker daemon fut.
+3. Phase 5 előkészítés: outcome/backtest inputok pontosítása.

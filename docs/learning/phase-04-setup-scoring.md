@@ -70,6 +70,9 @@ az AI magyarázati réteg auditálhatóságához.
 - A dashboardon symbol input és accepted/rejected szegmentált szűrő van.
 - A lokális memory repository-s smoke teszt igazolta, hogy minta webhook
   beküldése után a setup lista ugyanazt a pontozott setupot látja.
+- Elkészült a frontend setup részletező drawer első verziója. Sorról és külön
+  részletek gombbal is megnyitható, és megjeleníti a metaadatokat, score
+  progresst, komponenspontokat és indokokat.
 
 ## 4. Kapcsolódó fájlok
 
@@ -93,6 +96,6 @@ az AI magyarázati réteg auditálhatóságához.
 
 ## 5. Következő lépés
 
-A következő Phase 4 szeletben a frontend setup részletező nézet első verzióját
-érdemes elkészíteni, hogy a komponenspontok és indokok ne csak a táblázatban,
-hanem egy fókuszált nézetben is olvashatók legyenek.
+A következő Phase 4 szeletben a frontend üres/adat/hiba állapotokat érdemes
+finomítani valós API mellett. Ezután a Phase 5 outcome/backtest inputjai
+következhetnek.
