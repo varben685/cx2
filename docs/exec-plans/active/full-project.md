@@ -133,7 +133,7 @@ ezért a Docker image build ebben a munkamenetben nem volt futtatható.
 
 - [ ] OHLCV CSV import.
 - [ ] MarketDataProvider interfész.
-- [ ] Triple-barrier outcome engine.
+- [x] Triple-barrier outcome engine.
 - [ ] Commission és slippage.
 - [ ] MFE/MAE számítás.
 - [ ] Backtest analytics.
@@ -331,3 +331,8 @@ ezért a Docker image build ebben a munkamenetben nem volt futtatható.
   A setup panel darabszámot és megjelenített elem számot mutat, hiba esetén
   pedig újrapróbálás gombot ad. Ellenőrzés: frontend teszt/lint/typecheck/build
   sikeres, majd a Docker `web` service újraépítve és HTTP smoke-kal ellenőrizve.
+- 2026-09-05: Elindult a Phase 5 outcome/backtest fázis. Elkészült az első
+  conservative triple-barrier outcome engine validált trade tervvel, entry
+  timeouttal, vertikális barrierrel, stop-first intrabar szabállyal és R-alapú
+  kimenettel. Ellenőrzés: célzott outcome teszt, teljes backend regresszió,
+  Ruff és mypy sikeres.

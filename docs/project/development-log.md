@@ -415,3 +415,41 @@ Phase 2 következő mérföldkő:
 1. Phase 5 előkészítés: outcome/backtest inputok pontosítása.
 2. Docker build context karcsúsítása `.dockerignore` fájllal.
 3. Outcome engine első domain modellje és tesztjei.
+
+## 2026-09-05 Phase 5 állapot
+
+### Elkészült
+
+- Elindult az outcome és backtest fázis.
+- Létrejött az első outcome domain modul:
+  `apps/api/src/smc_assistant/domain/outcomes.py`.
+- Létrejött a validált `TradePlan` modell long és short irány szerinti
+  entry/stop/take profit sorrenddel.
+- Létrejött az `OutcomeConfig` maximális tartási gyertyaszámmal és entry timeout
+  ablakkal.
+- Létrejött az első conservative triple-barrier engine:
+  `evaluate_triple_barrier_outcome`.
+- A kimenet `WIN`, `LOSS`, `TIMEOUT` és `NOT_TRIGGERED` eredményeket ad, exit
+  okkal, exit árral, entry/exit idővel, bars-to-entry és bars-held értékekkel.
+- Az intrabar bizonytalanság első szabálya konzervatív: ha ugyanazon gyertyában
+  stop és target is érinthető, a stop számít előbbinek.
+- Létrejött a Phase 5 learning dokumentum:
+  `docs/learning/phase-05-outcome-backtest.md`.
+- Létrejött az outcome stratégiai dokumentum:
+  `docs/strategy/outcomes.md`.
+
+### Ellenőrzött kapuk
+
+- Célzott outcome ellenőrzés: `uv run pytest tests/test_outcomes.py` 7 teszt
+  sikeres.
+- Célzott outcome Ruff ellenőrzés: sikeres.
+- Backend type check: `uv run mypy src` sikeres.
+- Teljes backend regresszió: `uv run pytest` 124 teszt sikeres, 1 ismert
+  Starlette deprecation warninggal.
+- Teljes backend Ruff ellenőrzés: `uv run ruff check .` sikeres.
+
+### Következő konkrét lépés
+
+1. OHLCV CSV import első verziója.
+2. `MarketDataProvider` interfész.
+3. Outcome engine futtatása importált market data szeleteken.
