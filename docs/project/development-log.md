@@ -437,16 +437,25 @@ Phase 2 következő mérföldkő:
   `docs/learning/phase-05-outcome-backtest.md`.
 - Létrejött az outcome stratégiai dokumentum:
   `docs/strategy/outcomes.md`.
+- Javítva lett a lokális frontend/API CORS eltérés: a backend alapértelmezésben
+  már a `http://localhost:5173` és a `http://127.0.0.1:5173` originről is
+  engedélyezi a kéréseket.
+- A Docker Compose átadja a `CORS_ORIGINS` környezeti változót az API
+  konténernek, így `.env`-ből is állítható marad.
 
 ### Ellenőrzött kapuk
 
 - Célzott outcome ellenőrzés: `uv run pytest tests/test_outcomes.py` 7 teszt
   sikeres.
+- Célzott health/CORS ellenőrzés: `uv run pytest tests/test_health.py` 4 teszt
+  sikeres.
 - Célzott outcome Ruff ellenőrzés: sikeres.
 - Backend type check: `uv run mypy src` sikeres.
-- Teljes backend regresszió: `uv run pytest` 124 teszt sikeres, 1 ismert
+- Teljes backend regresszió: `uv run pytest` 126 teszt sikeres, 1 ismert
   Starlette deprecation warninggal.
 - Teljes backend Ruff ellenőrzés: `uv run ruff check .` sikeres.
+- Docker CORS smoke: `Origin: http://127.0.0.1:5173` mellett a `/health` és
+  `/api/v1/setups` válaszban megjelent az `access-control-allow-origin` header.
 
 ### Következő konkrét lépés
 

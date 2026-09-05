@@ -24,6 +24,7 @@ services:
       DATABASE_URL: postgresql+psycopg://smc_assistant:change-me-local-only@postgres:5432/smc_assistant
       WEBHOOK_EVENT_REPOSITORY: postgres
       LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      CORS_ORIGINS: '${CORS_ORIGINS:-["http://localhost:5173","http://127.0.0.1:5173"]}'
     ports:
       - "${API_PORT:-8000}:8000"
     depends_on:

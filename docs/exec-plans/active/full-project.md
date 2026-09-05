@@ -336,3 +336,7 @@ ezért a Docker image build ebben a munkamenetben nem volt futtatható.
   timeouttal, vertikális barrierrel, stop-first intrabar szabállyal és R-alapú
   kimenettel. Ellenőrzés: célzott outcome teszt, teljes backend regresszió,
   Ruff és mypy sikeres.
+- 2026-09-05: Javítva lett a lokális CORS eltérés, ami `127.0.0.1:5173`
+  frontend origin mellett böngészőben blokkolta a sikeres API válaszokat. A
+  backend alapértelmezett CORS listája és a Docker Compose API env átadása már
+  tartalmazza a `localhost:5173` és `127.0.0.1:5173` origint is.
