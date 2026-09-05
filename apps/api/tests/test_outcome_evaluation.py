@@ -123,6 +123,29 @@ def test_evaluates_tradingview_outcome_with_market_data_provider() -> None:
     assert evaluation.outcome.realized_r == 2.0
 
 
+def test_evaluates_tradingview_outcome_with_commission_and_slippage_config() -> None:
+    provider = CapturingMarketDataProvider(
+        (
+            make_candle(0, high=101.0, low=99.0),
+            make_candle(1, high=111.0, low=100.0),
+        )
+    )
+
+    evaluation = evaluate_tradingview_outcome(
+        valid_payload(),
+        provider,
+        OutcomeConfig(
+            max_holding_bars=5,
+            entry_timeout_bars=2,
+            commission_bps_per_side=10.0,
+            slippage_bps_per_side=5.0,
+        ),
+    )
+
+    assert evaluation.outcome.realized_r == 2.0
+    assert evaluation.outcome.net_realized_r == 1.937
+
+
 def test_evaluates_tradingview_outcome_against_imported_csv_market_data(tmp_path) -> None:
     csv_path = tmp_path / "btc.csv"
     csv_path.write_text(

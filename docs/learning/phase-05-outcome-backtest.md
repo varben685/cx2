@@ -25,6 +25,14 @@ Elkészült az első outcome evaluation application réteg:
 - market data lekérés symbol, timeframe és a setup gyertya záróideje alapján;
 - triple-barrier outcome futtatás importált gyertyákon.
 
+Elkészült az első commission/slippage modell:
+
+- bps-alapú oldalankénti commission;
+- bps-alapú oldalankénti slippage;
+- bruttó `realized_r`;
+- nettó `net_realized_r`;
+- részletes `TradeCostEstimate`.
+
 ## 2. Fontos döntések
 
 - Az engine csak lezárt, jövőbeli OHLCV gyertyákból dolgozik.
@@ -42,6 +50,10 @@ Elkészült az első outcome evaluation application réteg:
 - A provider csak időrendben rendezett gyertyákat fogad el.
 - Az első outcome evaluation a setup `barCloseTime` értékétől induló market
   data szeletet kér, hogy ne használjon a setup gyertya előtti adatot.
+- A commission és slippage első verziója egyszerű round-trip becslés, amely az
+  entry és exit notional összegére alkalmazott bps költséget R-re vetíti.
+- A bruttó R mező megmarad, hogy később tisztán össze lehessen hasonlítani a
+  költségek előtti és utáni backtest eredményeket.
 
 ## 3. Ellenőrzés
 
@@ -49,11 +61,13 @@ Elkészült az első outcome evaluation application réteg:
 - Célzott CSV market data teszt: `uv run pytest tests/test_csv_market_data.py`.
 - Célzott outcome evaluation teszt:
   `uv run pytest tests/test_outcome_evaluation.py`.
+- Célzott commission/slippage ellenőrzés az outcome és outcome evaluation
+  tesztekben.
 - Teljes backend regresszió: `uv run pytest`.
 - Statikus ellenőrzés: `uv run ruff check .`, `uv run mypy src`.
 
 ## 4. Következő lépés
 
-A következő Phase 5 szeletben érdemes outcome rekord persistence-t és
-commission/slippage beállításokat bevezetni, hogy a backtest eredmények már
-adatbázisban is auditálhatók legyenek.
+A következő Phase 5 szeletben érdemes MFE/MAE számítást és outcome rekord
+persistence-t bevezetni, hogy a backtest eredmények már adatbázisban is
+auditálhatók legyenek.

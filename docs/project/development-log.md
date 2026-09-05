@@ -461,6 +461,13 @@ Phase 2 következő mérföldkő:
   triple-barrier outcome engine-t.
 - A flow CSV providerrel is tesztelve van, így az outcome engine már importált
   OHLCV adaton is futtatható.
+- Létrejött az első commission/slippage modell az outcome engine-ben.
+- Az outcome megtartja a bruttó `realized_r` értéket, és mellé nettó
+  `net_realized_r` értéket ad.
+- A `TradeCostEstimate` külön mutatja a commission, slippage, teljes költség és
+  R-ben kifejezett költség becslését.
+- Az első költségmodell oldalankénti bps-alapú commissiont és slippage-et
+  használ, az entry és exit notional összegéből számolva.
 
 ### Ellenőrzött kapuk
 
@@ -474,9 +481,12 @@ Phase 2 következő mérföldkő:
 - Célzott outcome evaluation ellenőrzés:
   `uv run pytest tests/test_outcome_evaluation.py tests/test_csv_market_data.py tests/test_outcomes.py`
   20 teszt sikeres.
+- Célzott commission/slippage ellenőrzés:
+  `uv run pytest tests/test_outcomes.py tests/test_outcome_evaluation.py`
+  13 teszt sikeres.
 - Célzott outcome Ruff ellenőrzés: sikeres.
 - Backend type check: `uv run mypy src` sikeres.
-- Teljes backend regresszió: `uv run pytest` 139 teszt sikeres, 1 ismert
+- Teljes backend regresszió: `uv run pytest` 142 teszt sikeres, 1 ismert
   Starlette deprecation warninggal.
 - Teljes backend Ruff ellenőrzés: `uv run ruff check .` sikeres.
 - Docker CORS smoke: `Origin: http://127.0.0.1:5173` mellett a `/health` és
@@ -484,6 +494,6 @@ Phase 2 következő mérföldkő:
 
 ### Következő konkrét lépés
 
-1. Commission és slippage modell előkészítése.
-2. MFE/MAE számítás bevezetése az outcome mellé.
-3. Outcome rekord persistence előkészítése.
+1. MFE/MAE számítás bevezetése az outcome mellé.
+2. Outcome rekord persistence előkészítése.
+3. Backtest analytics első aggregációi.

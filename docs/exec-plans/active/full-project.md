@@ -135,7 +135,7 @@ ezért a Docker image build ebben a munkamenetben nem volt futtatható.
 - [x] MarketDataProvider interfész.
 - [x] Triple-barrier outcome engine.
 - [x] Outcome engine futtatása importált market data szeleteken.
-- [ ] Commission és slippage.
+- [x] Commission és slippage.
 - [ ] MFE/MAE számítás.
 - [ ] Backtest analytics.
 
@@ -353,3 +353,8 @@ ezért a Docker image build ebben a munkamenetben nem volt futtatható.
   tölti be a setup utáni gyertyákat, majd a triple-barrier engine ezeken fut.
   Ellenőrzés: célzott outcome/provider tesztek, 139 backend teszt, Ruff és mypy
   sikeres.
+- 2026-09-05: Elkészült az első commission/slippage modell az outcome engine-ben.
+  Az outcome megőrzi a bruttó `realized_r` értéket, mellé `net_realized_r` és
+  részletes `TradeCostEstimate` kerül. A költségmodell oldalankénti bps-alapú
+  commissiont és slippage-et számol round-trip notional alapján. Ellenőrzés:
+  célzott outcome/evaluation tesztek, 142 backend teszt, Ruff és mypy sikeres.

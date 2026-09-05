@@ -48,6 +48,8 @@ class TradePlan:
 class OutcomeConfig:
     max_holding_bars: int = 30
     entry_timeout_bars: int = 5
+    commission_bps_per_side: float = 0.0
+    slippage_bps_per_side: float = 0.0
 
     def __post_init__(self) -> None:
         if self.max_holding_bars <= 0:
@@ -56,12 +58,28 @@ class OutcomeConfig:
         if self.entry_timeout_bars <= 0:
             raise ValueError("entry_timeout_bars must be greater than zero.")
 
+        if self.commission_bps_per_side < 0:
+            raise ValueError("commission_bps_per_side must be non-negative.")
+
+        if self.slippage_bps_per_side < 0:
+            raise ValueError("slippage_bps_per_side must be non-negative.")
+
+
+@dataclass(frozen=True, slots=True)
+class TradeCostEstimate:
+    commission_amount: float
+    slippage_amount: float
+    total_amount: float
+    cost_r: float
+
 
 @dataclass(frozen=True, slots=True)
 class TradeOutcome:
     label: TradeOutcomeLabel
     exit_reason: OutcomeExitReason
     realized_r: float | None
+    net_realized_r: float | None
+    costs: TradeCostEstimate | None
     entry_time: datetime | None
     exit_time: datetime | None
     exit_price: float | None
@@ -86,6 +104,8 @@ def evaluate_triple_barrier_outcome(
             label=TradeOutcomeLabel.NOT_TRIGGERED,
             exit_reason=OutcomeExitReason.ENTRY_NOT_TRIGGERED,
             realized_r=None,
+            net_realized_r=None,
+            costs=None,
             entry_time=None,
             exit_time=None,
             exit_price=None,
@@ -101,10 +121,14 @@ def evaluate_triple_barrier_outcome(
         barrier = _resolve_barrier_hit(plan, candle)
         if barrier is not None:
             label, exit_reason, exit_price = barrier
+            realized_r = _calculate_realized_r(plan, exit_price)
+            costs = _estimate_trade_costs(plan, exit_price, outcome_config)
             return TradeOutcome(
                 label=label,
                 exit_reason=exit_reason,
-                realized_r=_calculate_realized_r(plan, exit_price),
+                realized_r=realized_r,
+                net_realized_r=round(realized_r - costs.cost_r, 4),
+                costs=costs,
                 entry_time=entry_candle.close_time,
                 exit_time=candle.close_time,
                 exit_price=exit_price,
@@ -113,10 +137,14 @@ def evaluate_triple_barrier_outcome(
             )
 
     timeout_candle = evaluation_candles[-1]
+    realized_r = _calculate_realized_r(plan, timeout_candle.close)
+    costs = _estimate_trade_costs(plan, timeout_candle.close, outcome_config)
     return TradeOutcome(
         label=TradeOutcomeLabel.TIMEOUT,
         exit_reason=OutcomeExitReason.VERTICAL_BARRIER_HIT,
-        realized_r=_calculate_realized_r(plan, timeout_candle.close),
+        realized_r=realized_r,
+        net_realized_r=round(realized_r - costs.cost_r, 4),
+        costs=costs,
         entry_time=entry_candle.close_time,
         exit_time=timeout_candle.close_time,
         exit_price=timeout_candle.close,
@@ -177,3 +205,25 @@ def _calculate_realized_r(plan: TradePlan, exit_price: float) -> float:
         profit_or_loss = plan.entry_price - exit_price
 
     return round(calculate_realized_r(profit_or_loss, plan.initial_risk), 4)
+
+
+def _estimate_trade_costs(
+    plan: TradePlan,
+    exit_price: float,
+    config: OutcomeConfig,
+) -> TradeCostEstimate:
+    entry_notional = plan.entry_price
+    exit_notional = exit_price
+    commission_amount = (
+        (entry_notional + exit_notional) * config.commission_bps_per_side / 10_000
+    )
+    slippage_amount = (
+        (entry_notional + exit_notional) * config.slippage_bps_per_side / 10_000
+    )
+    total_amount = commission_amount + slippage_amount
+    return TradeCostEstimate(
+        commission_amount=round(commission_amount, 8),
+        slippage_amount=round(slippage_amount, 8),
+        total_amount=round(total_amount, 8),
+        cost_r=round(total_amount / plan.initial_risk, 4),
+    )

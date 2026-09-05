@@ -50,6 +50,10 @@ def test_long_outcome_wins_when_take_profit_is_hit_after_entry() -> None:
     assert outcome.exit_reason == OutcomeExitReason.TAKE_PROFIT_HIT
     assert outcome.realized_r == 2.0
     assert outcome.exit_price == 110.0
+    assert outcome.net_realized_r == 2.0
+    assert outcome.costs is not None
+    assert outcome.costs.total_amount == 0.0
+    assert outcome.costs.cost_r == 0.0
     assert outcome.bars_to_entry == 1
     assert outcome.bars_held == 2
 
@@ -71,6 +75,7 @@ def test_short_outcome_loses_when_stop_loss_is_hit_after_entry() -> None:
     assert outcome.label == TradeOutcomeLabel.LOSS
     assert outcome.exit_reason == OutcomeExitReason.STOP_LOSS_HIT
     assert outcome.realized_r == -1.0
+    assert outcome.net_realized_r == -1.0
     assert outcome.exit_price == 105.0
 
 
@@ -132,6 +137,8 @@ def test_outcome_is_not_triggered_when_entry_is_not_touched_before_timeout() -> 
     assert outcome.realized_r is None
     assert outcome.entry_time is None
     assert outcome.exit_time is None
+    assert outcome.net_realized_r is None
+    assert outcome.costs is None
 
 
 def test_trade_plan_validates_directional_price_order() -> None:
@@ -163,3 +170,40 @@ def test_outcome_rejects_non_chronological_future_candles() -> None:
             ),
             [make_candle(1), make_candle(0)],
         )
+
+
+def test_outcome_applies_commission_and_slippage_costs_to_net_r() -> None:
+    outcome = evaluate_triple_barrier_outcome(
+        TradePlan(
+            direction=TradeDirection.LONG,
+            entry_price=100.0,
+            stop_loss=95.0,
+            take_profit=110.0,
+        ),
+        [
+            make_candle(0, high=101.0, low=99.0),
+            make_candle(1, high=111.0, low=100.0),
+        ],
+        OutcomeConfig(
+            max_holding_bars=5,
+            entry_timeout_bars=2,
+            commission_bps_per_side=10.0,
+            slippage_bps_per_side=5.0,
+        ),
+    )
+
+    assert outcome.realized_r == 2.0
+    assert outcome.net_realized_r == 1.937
+    assert outcome.costs is not None
+    assert outcome.costs.commission_amount == 0.21
+    assert outcome.costs.slippage_amount == 0.105
+    assert outcome.costs.total_amount == 0.315
+    assert outcome.costs.cost_r == 0.063
+
+
+def test_outcome_config_rejects_negative_costs() -> None:
+    with pytest.raises(ValueError, match="commission_bps_per_side"):
+        OutcomeConfig(commission_bps_per_side=-0.01)
+
+    with pytest.raises(ValueError, match="slippage_bps_per_side"):
+        OutcomeConfig(slippage_bps_per_side=-0.01)

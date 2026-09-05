@@ -44,6 +44,27 @@ A `realized_r` az entry és stop közötti kezdeti kockázathoz viszonyít:
 
 Stop loss esetén ez `-1.0`, 2R take profit esetén `2.0`.
 
+## Commission és slippage
+
+Az outcome engine külön tartja a bruttó és nettó R értéket:
+
+- `realized_r`: költségek előtti eredmény;
+- `net_realized_r`: commission és slippage után becsült eredmény;
+- `costs.commission_amount`: round-trip commission becslés;
+- `costs.slippage_amount`: round-trip slippage becslés;
+- `costs.cost_r`: teljes költség R-ben kifejezve.
+
+Az első modell bps-alapú és oldalankénti:
+
+- `commission_bps_per_side`;
+- `slippage_bps_per_side`.
+
+A becslés egy egységnyi pozícióra számol: az entry és exit ár notional összegére
+alkalmazza az oldalankénti bps értékeket, majd ezt osztja a kezdeti
+kockázattal. Ez egyszerű, determinisztikus alap a backtesthez; később
+instrumentum-specifikus fee schedule és order type szerinti slippage modell
+válthatja.
+
 ## Market data input
 
 Az első backtest input réteg OHLCV CSV-ből tud `Candle` objektumokat építeni.
