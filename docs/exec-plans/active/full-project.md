@@ -131,8 +131,8 @@ ezért a Docker image build ebben a munkamenetben nem volt futtatható.
 
 ## Phase 5: Outcome és backtest
 
-- [ ] OHLCV CSV import.
-- [ ] MarketDataProvider interfész.
+- [x] OHLCV CSV import.
+- [x] MarketDataProvider interfész.
 - [x] Triple-barrier outcome engine.
 - [ ] Commission és slippage.
 - [ ] MFE/MAE számítás.
@@ -340,3 +340,9 @@ ezért a Docker image build ebben a munkamenetben nem volt futtatható.
   frontend origin mellett böngészőben blokkolta a sikeres API válaszokat. A
   backend alapértelmezett CORS listája és a Docker Compose API env átadása már
   tartalmazza a `localhost:5173` és `127.0.0.1:5173` origint is.
+- 2026-09-05: Elkészült az első OHLCV CSV import és `MarketDataProvider`
+  interfész. A CSV adapter `time`/`timestamp`/`open_time`, opcionális
+  `close_time`, OHLC, opcionális volume, symbol és timeframe oszlopokból épít
+  UTC `Candle` sorozatot, támogat symbol/timeframe/időablak szűrést, és
+  timeframe alapján tud close időt inferálni. Ellenőrzés: 136 backend teszt,
+  Ruff és mypy sikeres.

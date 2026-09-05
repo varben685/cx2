@@ -12,6 +12,13 @@ Az első szelet egy conservative triple-barrier engine:
 - `TradeOutcome` auditálható kimeneti mezőkkel;
 - `evaluate_triple_barrier_outcome` függvény.
 
+Elkészült az első market data input réteg is:
+
+- `MarketDataQuery`;
+- `MarketDataProvider` protocol;
+- `CsvMarketDataProvider`;
+- timeframe alapú `close_time` inferálás.
+
 ## 2. Fontos döntések
 
 - Az engine csak lezárt, jövőbeli OHLCV gyertyákból dolgozik.
@@ -24,16 +31,19 @@ Az első szelet egy conservative triple-barrier engine:
   stop számít előbbinek.
 - Vertikális barrier esetén az exit ár az utolsó vizsgált gyertya záróára.
 - A `realized_r` ugyanarra az R-alapú logikára épül, mint a korábbi risk modul.
+- A CSV provider csak UTC időbélyegeket fogad el, hogy a backtest ne keverjen
+  lokális és tőzsdei időzónákat.
+- A provider csak időrendben rendezett gyertyákat fogad el.
 
 ## 3. Ellenőrzés
 
 - Célzott outcome teszt: `uv run pytest tests/test_outcomes.py`.
+- Célzott CSV market data teszt: `uv run pytest tests/test_csv_market_data.py`.
 - Teljes backend regresszió: `uv run pytest`.
 - Statikus ellenőrzés: `uv run ruff check .`, `uv run mypy src`.
 
 ## 4. Következő lépés
 
-A következő Phase 5 szeletben érdemes bevezetni az OHLCV CSV importot és a
-`MarketDataProvider` interfészt, hogy az outcome engine ne csak kézzel
-összeállított tesztgyertyákon, hanem importált piaci adaton is futtatható
-legyen.
+A következő Phase 5 szeletben érdemes összekötni a `MarketDataProvider`
+interfészt az outcome engine-nel, hogy egy setup candidate trade tervéből és
+egy importált OHLCV idősorból automatikusan outcome rekord készüljön.

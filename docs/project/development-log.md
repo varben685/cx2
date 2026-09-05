@@ -412,9 +412,9 @@ Phase 2 következő mérföldkő:
 
 ### Következő konkrét lépés
 
-1. Phase 5 előkészítés: outcome/backtest inputok pontosítása.
+1. Phase 5 folytatás: outcome engine és market data provider összekötése.
 2. Docker build context karcsúsítása `.dockerignore` fájllal.
-3. Outcome engine első domain modellje és tesztjei.
+3. Commission, slippage és MFE/MAE modell előkészítése.
 
 ## 2026-09-05 Phase 5 állapot
 
@@ -442,6 +442,17 @@ Phase 2 következő mérföldkő:
   engedélyezi a kéréseket.
 - A Docker Compose átadja a `CORS_ORIGINS` környezeti változót az API
   konténernek, így `.env`-ből is állítható marad.
+- Létrejött az első market data input réteg:
+  `apps/api/src/smc_assistant/application/market_data.py`.
+- Létrejött a `MarketDataProvider` protocol és a `MarketDataQuery` szűrő modell
+  symbol, timeframe, start és end idővel.
+- Létrejött az első OHLCV CSV adapter:
+  `apps/api/src/smc_assistant/infrastructure/csv_market_data.py`.
+- A CSV provider `time`, `timestamp` vagy `open_time` oszlopból olvas open
+  időt, opcionális `close_time` nélkül pedig timeframe alapján inferál záróidőt.
+- A CSV provider támogat opcionális `symbol` és `timeframe` oszlop szerinti
+  szűrést, valamint UTC időablak szűrést.
+- A CSV provider elutasítja a nem UTC és nem időrendben rendezett adatot.
 
 ### Ellenőrzött kapuk
 
@@ -449,9 +460,12 @@ Phase 2 következő mérföldkő:
   sikeres.
 - Célzott health/CORS ellenőrzés: `uv run pytest tests/test_health.py` 4 teszt
   sikeres.
+- Célzott CSV market data ellenőrzés:
+  `uv run pytest tests/test_csv_market_data.py tests/test_outcomes.py`
+  17 teszt sikeres.
 - Célzott outcome Ruff ellenőrzés: sikeres.
 - Backend type check: `uv run mypy src` sikeres.
-- Teljes backend regresszió: `uv run pytest` 126 teszt sikeres, 1 ismert
+- Teljes backend regresszió: `uv run pytest` 136 teszt sikeres, 1 ismert
   Starlette deprecation warninggal.
 - Teljes backend Ruff ellenőrzés: `uv run ruff check .` sikeres.
 - Docker CORS smoke: `Origin: http://127.0.0.1:5173` mellett a `/health` és
@@ -459,6 +473,6 @@ Phase 2 következő mérföldkő:
 
 ### Következő konkrét lépés
 
-1. OHLCV CSV import első verziója.
-2. `MarketDataProvider` interfész.
-3. Outcome engine futtatása importált market data szeleteken.
+1. Outcome engine futtatása importált market data szeleteken.
+2. Setup candidate execution blokkból `TradePlan` építése.
+3. Commission, slippage és MFE/MAE modell előkészítése.

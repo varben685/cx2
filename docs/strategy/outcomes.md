@@ -43,3 +43,17 @@ A `realized_r` az entry és stop közötti kezdeti kockázathoz viszonyít:
 - short: `(entry_price - exit_price) / initial_risk`.
 
 Stop loss esetén ez `-1.0`, 2R take profit esetén `2.0`.
+
+## Market data input
+
+Az első backtest input réteg OHLCV CSV-ből tud `Candle` objektumokat építeni.
+Támogatott alap oszlopok:
+
+- `time`, `timestamp` vagy `open_time`;
+- opcionális `close_time`;
+- `open`, `high`, `low`, `close`;
+- opcionális `volume`;
+- opcionális `symbol` és `timeframe` szűréshez.
+
+Ha nincs `close_time`, akkor a provider a query vagy a provider
+alapértelmezett timeframe értékéből számolja ki a gyertya záróidejét.
