@@ -453,6 +453,14 @@ Phase 2 következő mérföldkő:
 - A CSV provider támogat opcionális `symbol` és `timeframe` oszlop szerinti
   szűrést, valamint UTC időablak szűrést.
 - A CSV provider elutasítja a nem UTC és nem időrendben rendezett adatot.
+- Létrejött az első outcome evaluation application réteg:
+  `apps/api/src/smc_assistant/application/outcome_evaluation.py`.
+- A TradingView payload `execution` blokkjából `TradePlan` készül.
+- Az evaluation flow a payload `symbol`, `timeframe` és `barCloseTime` mezői
+  alapján kér jövőbeli market data szeletet, majd ezen futtatja a
+  triple-barrier outcome engine-t.
+- A flow CSV providerrel is tesztelve van, így az outcome engine már importált
+  OHLCV adaton is futtatható.
 
 ### Ellenőrzött kapuk
 
@@ -463,9 +471,12 @@ Phase 2 következő mérföldkő:
 - Célzott CSV market data ellenőrzés:
   `uv run pytest tests/test_csv_market_data.py tests/test_outcomes.py`
   17 teszt sikeres.
+- Célzott outcome evaluation ellenőrzés:
+  `uv run pytest tests/test_outcome_evaluation.py tests/test_csv_market_data.py tests/test_outcomes.py`
+  20 teszt sikeres.
 - Célzott outcome Ruff ellenőrzés: sikeres.
 - Backend type check: `uv run mypy src` sikeres.
-- Teljes backend regresszió: `uv run pytest` 136 teszt sikeres, 1 ismert
+- Teljes backend regresszió: `uv run pytest` 139 teszt sikeres, 1 ismert
   Starlette deprecation warninggal.
 - Teljes backend Ruff ellenőrzés: `uv run ruff check .` sikeres.
 - Docker CORS smoke: `Origin: http://127.0.0.1:5173` mellett a `/health` és
@@ -473,6 +484,6 @@ Phase 2 következő mérföldkő:
 
 ### Következő konkrét lépés
 
-1. Outcome engine futtatása importált market data szeleteken.
-2. Setup candidate execution blokkból `TradePlan` építése.
-3. Commission, slippage és MFE/MAE modell előkészítése.
+1. Commission és slippage modell előkészítése.
+2. MFE/MAE számítás bevezetése az outcome mellé.
+3. Outcome rekord persistence előkészítése.

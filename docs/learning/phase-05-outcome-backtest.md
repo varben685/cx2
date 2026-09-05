@@ -19,6 +19,12 @@ Elkészült az első market data input réteg is:
 - `CsvMarketDataProvider`;
 - timeframe alapú `close_time` inferálás.
 
+Elkészült az első outcome evaluation application réteg:
+
+- TradingView payload `execution` blokkból `TradePlan` építés;
+- market data lekérés symbol, timeframe és a setup gyertya záróideje alapján;
+- triple-barrier outcome futtatás importált gyertyákon.
+
 ## 2. Fontos döntések
 
 - Az engine csak lezárt, jövőbeli OHLCV gyertyákból dolgozik.
@@ -34,16 +40,20 @@ Elkészült az első market data input réteg is:
 - A CSV provider csak UTC időbélyegeket fogad el, hogy a backtest ne keverjen
   lokális és tőzsdei időzónákat.
 - A provider csak időrendben rendezett gyertyákat fogad el.
+- Az első outcome evaluation a setup `barCloseTime` értékétől induló market
+  data szeletet kér, hogy ne használjon a setup gyertya előtti adatot.
 
 ## 3. Ellenőrzés
 
 - Célzott outcome teszt: `uv run pytest tests/test_outcomes.py`.
 - Célzott CSV market data teszt: `uv run pytest tests/test_csv_market_data.py`.
+- Célzott outcome evaluation teszt:
+  `uv run pytest tests/test_outcome_evaluation.py`.
 - Teljes backend regresszió: `uv run pytest`.
 - Statikus ellenőrzés: `uv run ruff check .`, `uv run mypy src`.
 
 ## 4. Következő lépés
 
-A következő Phase 5 szeletben érdemes összekötni a `MarketDataProvider`
-interfészt az outcome engine-nel, hogy egy setup candidate trade tervéből és
-egy importált OHLCV idősorból automatikusan outcome rekord készüljön.
+A következő Phase 5 szeletben érdemes outcome rekord persistence-t és
+commission/slippage beállításokat bevezetni, hogy a backtest eredmények már
+adatbázisban is auditálhatók legyenek.

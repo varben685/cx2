@@ -134,6 +134,7 @@ ezért a Docker image build ebben a munkamenetben nem volt futtatható.
 - [x] OHLCV CSV import.
 - [x] MarketDataProvider interfész.
 - [x] Triple-barrier outcome engine.
+- [x] Outcome engine futtatása importált market data szeleteken.
 - [ ] Commission és slippage.
 - [ ] MFE/MAE számítás.
 - [ ] Backtest analytics.
@@ -346,3 +347,9 @@ ezért a Docker image build ebben a munkamenetben nem volt futtatható.
   UTC `Candle` sorozatot, támogat symbol/timeframe/időablak szűrést, és
   timeframe alapján tud close időt inferálni. Ellenőrzés: 136 backend teszt,
   Ruff és mypy sikeres.
+- 2026-09-05: Elkészült az első outcome evaluation application réteg. A
+  TradingView webhook payload `execution` blokkjából `TradePlan` készül, a
+  `MarketDataProvider` a payload symbol/timeframe/barCloseTime mezői alapján
+  tölti be a setup utáni gyertyákat, majd a triple-barrier engine ezeken fut.
+  Ellenőrzés: célzott outcome/provider tesztek, 139 backend teszt, Ruff és mypy
+  sikeres.

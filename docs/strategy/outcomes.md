@@ -57,3 +57,16 @@ Támogatott alap oszlopok:
 
 Ha nincs `close_time`, akkor a provider a query vagy a provider
 alapértelmezett timeframe értékéből számolja ki a gyertya záróidejét.
+
+## Setup outcome evaluation
+
+A TradingView payload `execution` blokkja adja az első `TradePlan` forrást:
+
+- `direction`;
+- `entry`;
+- `stopLoss`;
+- `takeProfit`.
+
+Az evaluation réteg a payload `symbol`, `timeframe` és `barCloseTime` mezőiből
+épít market data queryt. A backtest szelet így a setup gyertya lezárása után
+indul, és az outcome engine már csak jövőbeli gyertyákon fut.
