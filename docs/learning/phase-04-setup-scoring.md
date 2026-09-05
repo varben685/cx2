@@ -73,6 +73,8 @@ az AI magyarázati réteg auditálhatóságához.
 - Elkészült a frontend setup részletező drawer első verziója. Sorról és külön
   részletek gombbal is megnyitható, és megjeleníti a metaadatokat, score
   progresst, komponenspontokat és indokokat.
+- A Docker Compose alapú Postgres smoke teszt igazolta, hogy a webhook ->
+  scoring -> setup persistence -> setup API lánc konténerben is működik.
 
 ## 4. Kapcsolódó fájlok
 
@@ -94,7 +96,18 @@ az AI magyarázati réteg auditálhatóságához.
 - `tradingview/indicators/smc_assistant_prototype.pine`
 - `apps/api/src/smc_assistant/contracts/tradingview.py`
 
-## 5. Következő lépés
+## 5. Ellenőrzött smoke
+
+- Docker Compose stack: `postgres`, `api`, `web` futott.
+- API health: `GET /health` `ok` választ adott.
+- Frontend: `http://127.0.0.1:5173/` 200 HTTP választ adott.
+- Minta webhook: `BTCUSDT-1-20260905-2124-docker-LONG` `ACCEPTED` státuszt
+  kapott, `100.0` score-ral.
+- Setup API: a lista és a részletező végpont is visszaadta ugyanazt a setupot.
+- Adatbázis: a rekord megjelent a `webhook_events` és `setup_candidates`
+  táblában.
+
+## 6. Következő lépés
 
 A következő Phase 4 szeletben a frontend üres/adat/hiba állapotokat érdemes
 finomítani valós API mellett. Ezután a Phase 5 outcome/backtest inputjai

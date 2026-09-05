@@ -383,11 +383,24 @@ Phase 2 következő mérföldkő:
   a részletező drawert.
 - A részletező nézet megjeleníti az alap setup metaadatokat, score progresst,
   komponenspontokat, pozitív/negatív indokokat és reject okokat.
+- Sikeres Docker Compose alapú Postgres smoke teszt:
+  - a `postgres`, `api` és `web` service futott;
+  - az API `/health` `ok` választ adott;
+  - a frontend HTTP 200 választ adott;
+  - egy minta TradingView webhook `ACCEPTED` státuszt és `100.0` score-t kapott;
+  - a setup lista és részletező API visszaadta a setupot;
+  - a setup közvetlenül a `webhook_events` és `setup_candidates` táblákban is
+    ellenőrizhető volt.
 - Frontend részletező ellenőrzés: `npm run test` 3 teszt sikeres,
   `npm run lint` sikeres, `npm run typecheck` sikeres, `npm run build` sikeres.
+- Docker Compose Postgres smoke ellenőrzés: `docker compose up --build -d
+  postgres api web` sikeres; `GET /health` sikeres; `GET /api/v1/setups` és
+  `GET /api/v1/setups/{setup_id}` sikeres; közvetlen Postgres lekérdezésben
+  1 webhook event és 1 accepted setup candidate rekord látszott a teszt
+  `eventId` értékére.
 
 ### Következő konkrét lépés
 
 1. Frontend üres/adat/hiba állapotok finomítása valós API mellett.
-2. Postgres alapú end-to-end smoke teszt Dockerrel, ha a Docker daemon fut.
-3. Phase 5 előkészítés: outcome/backtest inputok pontosítása.
+2. Phase 5 előkészítés: outcome/backtest inputok pontosítása.
+3. Docker build context karcsúsítása `.dockerignore` fájllal.

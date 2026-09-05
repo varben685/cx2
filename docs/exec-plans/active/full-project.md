@@ -126,6 +126,7 @@ ezért a Docker image build ebben a munkamenetben nem volt futtatható.
 - [x] Frontend setup lista első verziója.
 - [x] Lokális webhook -> setup lista smoke teszt.
 - [x] Frontend setup részletező nézet első verziója.
+- [x] Postgres alapú end-to-end smoke teszt Dockerrel.
 - [ ] Frontend üres/adat/hiba állapotok finomítása valós API mellett.
 
 ## Phase 5: Outcome és backtest
@@ -319,3 +320,9 @@ ezért a Docker image build ebben a munkamenetben nem volt futtatható.
 - 2026-09-05: Elkészült a frontend setup részletező drawer. A kiválasztott
   setup metaadatai, score-ja, komponenspontjai és indokai külön nézetben
   olvashatók.
+- 2026-09-05: Sikeres Docker Compose alapú Postgres smoke teszt. A
+  `postgres`, `api` és `web` service futott, az API `/health` és a frontend
+  HTTP válasza rendben volt, egy minta TradingView webhook `ACCEPTED`
+  státuszt kapott, a setup lista/részletező API ugyanazt a `BTCUSDT` setupot
+  adta vissza, és a rekord közvetlenül a `webhook_events`, illetve
+  `setup_candidates` táblákban is megjelent.
