@@ -468,6 +468,11 @@ Phase 2 következő mérföldkő:
   R-ben kifejezett költség becslését.
 - Az első költségmodell oldalankénti bps-alapú commissiont és slippage-et
   használ, az entry és exit notional összegéből számolva.
+- Létrejött az első MFE/MAE számítás az outcome engine-ben.
+- Az outcome `TradeExcursion` blokkja mutatja a maximum favorable és maximum
+  adverse excursion értéket R-ben, valamint a hozzájuk tartozó árakat.
+- Az MFE/MAE számítás long és short irányra külön helyesen értelmezi a kedvező
+  és adverse oldalt; nem aktivált entry esetén nincs excursion.
 
 ### Ellenőrzött kapuk
 
@@ -484,9 +489,12 @@ Phase 2 következő mérföldkő:
 - Célzott commission/slippage ellenőrzés:
   `uv run pytest tests/test_outcomes.py tests/test_outcome_evaluation.py`
   13 teszt sikeres.
+- Célzott MFE/MAE ellenőrzés:
+  `uv run pytest tests/test_outcomes.py tests/test_outcome_evaluation.py`
+  14 teszt sikeres.
 - Célzott outcome Ruff ellenőrzés: sikeres.
 - Backend type check: `uv run mypy src` sikeres.
-- Teljes backend regresszió: `uv run pytest` 142 teszt sikeres, 1 ismert
+- Teljes backend regresszió: `uv run pytest` 143 teszt sikeres, 1 ismert
   Starlette deprecation warninggal.
 - Teljes backend Ruff ellenőrzés: `uv run ruff check .` sikeres.
 - Docker CORS smoke: `Origin: http://127.0.0.1:5173` mellett a `/health` és
@@ -494,6 +502,6 @@ Phase 2 következő mérföldkő:
 
 ### Következő konkrét lépés
 
-1. MFE/MAE számítás bevezetése az outcome mellé.
-2. Outcome rekord persistence előkészítése.
-3. Backtest analytics első aggregációi.
+1. Outcome rekord persistence előkészítése.
+2. Backtest analytics első aggregációi.
+3. Docker build context karcsúsítása `.dockerignore` fájllal.

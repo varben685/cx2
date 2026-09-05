@@ -136,7 +136,7 @@ ezért a Docker image build ebben a munkamenetben nem volt futtatható.
 - [x] Triple-barrier outcome engine.
 - [x] Outcome engine futtatása importált market data szeleteken.
 - [x] Commission és slippage.
-- [ ] MFE/MAE számítás.
+- [x] MFE/MAE számítás.
 - [ ] Backtest analytics.
 
 ## Phase 6: Frontend és journal
@@ -358,3 +358,8 @@ ezért a Docker image build ebben a munkamenetben nem volt futtatható.
   részletes `TradeCostEstimate` kerül. A költségmodell oldalankénti bps-alapú
   commissiont és slippage-et számol round-trip notional alapján. Ellenőrzés:
   célzott outcome/evaluation tesztek, 142 backend teszt, Ruff és mypy sikeres.
+- 2026-09-05: Elkészült az első MFE/MAE számítás. Az outcome `TradeExcursion`
+  blokkja R-ben és árban is rögzíti a maximum favorable és maximum adverse
+  excursion értékeket az aktiválás utáni, exitig vizsgált gyertyákból.
+  Ellenőrzés: célzott outcome/evaluation tesztek, 143 backend teszt, Ruff és
+  mypy sikeres.

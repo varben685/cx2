@@ -33,6 +33,14 @@ Elkészült az első commission/slippage modell:
 - nettó `net_realized_r`;
 - részletes `TradeCostEstimate`.
 
+Elkészült az első MFE/MAE számítás:
+
+- `TradeExcursion` modell;
+- maximum favorable excursion R-ben;
+- maximum adverse excursion R-ben;
+- irányhelyes long/short ármezők;
+- `NOT_TRIGGERED` esetben üres excursion.
+
 ## 2. Fontos döntések
 
 - Az engine csak lezárt, jövőbeli OHLCV gyertyákból dolgozik.
@@ -54,6 +62,10 @@ Elkészült az első commission/slippage modell:
   entry és exit notional összegére alkalmazott bps költséget R-re vetíti.
 - A bruttó R mező megmarad, hogy később tisztán össze lehessen hasonlítani a
   költségek előtti és utáni backtest eredményeket.
+- Az MFE/MAE számítás az entry aktiválódása utáni, exitig vizsgált gyertyákból
+  dolgozik. Így megmutatja, mennyit adott a piac a setup irányába és mennyire
+  ment ellene még akkor is, ha a végső outcome csak `WIN`, `LOSS` vagy
+  `TIMEOUT`.
 
 ## 3. Ellenőrzés
 
@@ -63,11 +75,12 @@ Elkészült az első commission/slippage modell:
   `uv run pytest tests/test_outcome_evaluation.py`.
 - Célzott commission/slippage ellenőrzés az outcome és outcome evaluation
   tesztekben.
+- Célzott MFE/MAE ellenőrzés az outcome tesztekben.
 - Teljes backend regresszió: `uv run pytest`.
 - Statikus ellenőrzés: `uv run ruff check .`, `uv run mypy src`.
 
 ## 4. Következő lépés
 
-A következő Phase 5 szeletben érdemes MFE/MAE számítást és outcome rekord
-persistence-t bevezetni, hogy a backtest eredmények már adatbázisban is
-auditálhatók legyenek.
+A következő Phase 5 szeletben érdemes outcome rekord persistence-t és az első
+backtest analytics aggregációkat bevezetni, hogy a backtest eredmények már
+adatbázisban is auditálhatók legyenek.

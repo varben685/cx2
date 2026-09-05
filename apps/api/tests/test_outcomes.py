@@ -54,6 +54,11 @@ def test_long_outcome_wins_when_take_profit_is_hit_after_entry() -> None:
     assert outcome.costs is not None
     assert outcome.costs.total_amount == 0.0
     assert outcome.costs.cost_r == 0.0
+    assert outcome.excursion is not None
+    assert outcome.excursion.mfe_r == 2.2
+    assert outcome.excursion.mae_r == -0.2
+    assert outcome.excursion.max_favorable_price == 111.0
+    assert outcome.excursion.max_adverse_price == 99.0
     assert outcome.bars_to_entry == 1
     assert outcome.bars_held == 2
 
@@ -77,6 +82,11 @@ def test_short_outcome_loses_when_stop_loss_is_hit_after_entry() -> None:
     assert outcome.realized_r == -1.0
     assert outcome.net_realized_r == -1.0
     assert outcome.exit_price == 105.0
+    assert outcome.excursion is not None
+    assert outcome.excursion.mfe_r == 1.0
+    assert outcome.excursion.mae_r == -1.2
+    assert outcome.excursion.max_favorable_price == 95.0
+    assert outcome.excursion.max_adverse_price == 106.0
 
 
 def test_outcome_uses_stop_first_when_both_barriers_are_hit_in_same_candle() -> None:
@@ -114,6 +124,9 @@ def test_outcome_times_out_at_vertical_barrier_close() -> None:
     assert outcome.exit_reason == OutcomeExitReason.VERTICAL_BARRIER_HIT
     assert outcome.exit_price == 103.0
     assert outcome.realized_r == 0.6
+    assert outcome.excursion is not None
+    assert outcome.excursion.mfe_r == 0.8
+    assert outcome.excursion.mae_r == -0.2
     assert outcome.bars_held == 2
 
 
@@ -139,6 +152,7 @@ def test_outcome_is_not_triggered_when_entry_is_not_touched_before_timeout() -> 
     assert outcome.exit_time is None
     assert outcome.net_realized_r is None
     assert outcome.costs is None
+    assert outcome.excursion is None
 
 
 def test_trade_plan_validates_directional_price_order() -> None:
@@ -207,3 +221,26 @@ def test_outcome_config_rejects_negative_costs() -> None:
 
     with pytest.raises(ValueError, match="slippage_bps_per_side"):
         OutcomeConfig(slippage_bps_per_side=-0.01)
+
+
+def test_short_outcome_tracks_mfe_and_mae_until_take_profit() -> None:
+    outcome = evaluate_triple_barrier_outcome(
+        TradePlan(
+            direction=TradeDirection.SHORT,
+            entry_price=100.0,
+            stop_loss=105.0,
+            take_profit=90.0,
+        ),
+        [
+            make_candle(0, high=101.0, low=99.0),
+            make_candle(1, high=102.0, low=89.0),
+        ],
+    )
+
+    assert outcome.label == TradeOutcomeLabel.WIN
+    assert outcome.realized_r == 2.0
+    assert outcome.excursion is not None
+    assert outcome.excursion.mfe_r == 2.2
+    assert outcome.excursion.mae_r == -0.4
+    assert outcome.excursion.max_favorable_price == 89.0
+    assert outcome.excursion.max_adverse_price == 102.0

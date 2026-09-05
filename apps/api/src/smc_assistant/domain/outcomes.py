@@ -74,12 +74,21 @@ class TradeCostEstimate:
 
 
 @dataclass(frozen=True, slots=True)
+class TradeExcursion:
+    mfe_r: float
+    mae_r: float
+    max_favorable_price: float
+    max_adverse_price: float
+
+
+@dataclass(frozen=True, slots=True)
 class TradeOutcome:
     label: TradeOutcomeLabel
     exit_reason: OutcomeExitReason
     realized_r: float | None
     net_realized_r: float | None
     costs: TradeCostEstimate | None
+    excursion: TradeExcursion | None
     entry_time: datetime | None
     exit_time: datetime | None
     exit_price: float | None
@@ -106,6 +115,7 @@ def evaluate_triple_barrier_outcome(
             realized_r=None,
             net_realized_r=None,
             costs=None,
+            excursion=None,
             entry_time=None,
             exit_time=None,
             exit_price=None,
@@ -123,12 +133,14 @@ def evaluate_triple_barrier_outcome(
             label, exit_reason, exit_price = barrier
             realized_r = _calculate_realized_r(plan, exit_price)
             costs = _estimate_trade_costs(plan, exit_price, outcome_config)
+            excursion = _calculate_excursion(plan, evaluation_candles[:held_index])
             return TradeOutcome(
                 label=label,
                 exit_reason=exit_reason,
                 realized_r=realized_r,
                 net_realized_r=round(realized_r - costs.cost_r, 4),
                 costs=costs,
+                excursion=excursion,
                 entry_time=entry_candle.close_time,
                 exit_time=candle.close_time,
                 exit_price=exit_price,
@@ -139,12 +151,14 @@ def evaluate_triple_barrier_outcome(
     timeout_candle = evaluation_candles[-1]
     realized_r = _calculate_realized_r(plan, timeout_candle.close)
     costs = _estimate_trade_costs(plan, timeout_candle.close, outcome_config)
+    excursion = _calculate_excursion(plan, evaluation_candles)
     return TradeOutcome(
         label=TradeOutcomeLabel.TIMEOUT,
         exit_reason=OutcomeExitReason.VERTICAL_BARRIER_HIT,
         realized_r=realized_r,
         net_realized_r=round(realized_r - costs.cost_r, 4),
         costs=costs,
+        excursion=excursion,
         entry_time=entry_candle.close_time,
         exit_time=timeout_candle.close_time,
         exit_price=timeout_candle.close,
@@ -226,4 +240,27 @@ def _estimate_trade_costs(
         slippage_amount=round(slippage_amount, 8),
         total_amount=round(total_amount, 8),
         cost_r=round(total_amount / plan.initial_risk, 4),
+    )
+
+
+def _calculate_excursion(
+    plan: TradePlan,
+    candles: Sequence[Candle],
+) -> TradeExcursion:
+    if plan.direction == TradeDirection.LONG:
+        max_favorable_price = max(candle.high for candle in candles)
+        max_adverse_price = min(candle.low for candle in candles)
+        mfe_r = (max_favorable_price - plan.entry_price) / plan.initial_risk
+        mae_r = (max_adverse_price - plan.entry_price) / plan.initial_risk
+    else:
+        max_favorable_price = min(candle.low for candle in candles)
+        max_adverse_price = max(candle.high for candle in candles)
+        mfe_r = (plan.entry_price - max_favorable_price) / plan.initial_risk
+        mae_r = (plan.entry_price - max_adverse_price) / plan.initial_risk
+
+    return TradeExcursion(
+        mfe_r=round(mfe_r, 4),
+        mae_r=round(mae_r, 4),
+        max_favorable_price=max_favorable_price,
+        max_adverse_price=max_adverse_price,
     )

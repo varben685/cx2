@@ -44,6 +44,23 @@ A `realized_r` az entry és stop közötti kezdeti kockázathoz viszonyít:
 
 Stop loss esetén ez `-1.0`, 2R take profit esetén `2.0`.
 
+## MFE és MAE
+
+Az outcome engine az aktivált trade útját is méri az exit vagy timeout
+gyertyáig:
+
+- `mfe_r`: maximum favorable excursion R-ben;
+- `mae_r`: maximum adverse excursion R-ben;
+- `max_favorable_price`: a trade irányában legkedvezőbb elért ár;
+- `max_adverse_price`: a trade irányával szembeni legkedvezőtlenebb elért ár.
+
+Long pozíciónál a high értékek adják a kedvező, a low értékek az adverse oldalt.
+Short pozíciónál ez fordítva értelmeződik: a low a kedvező ár, a high az adverse
+ár.
+
+Ha az entry nem aktiválódik, akkor nincs trade út, ezért az `excursion` értéke
+`null`.
+
 ## Commission és slippage
 
 Az outcome engine külön tartja a bruttó és nettó R értéket:
