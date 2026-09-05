@@ -34,6 +34,14 @@ const { Content, Header } = Layout;
 
 type AcceptedFilter = "ALL" | "ACCEPTED" | "REJECTED";
 
+function getSetupEmptyDescription(hasFilters: boolean): string {
+  if (hasFilters) {
+    return "Nincs találat a jelenlegi szűrőkkel.";
+  }
+
+  return "Még nincs beérkezett setup candidate.";
+}
+
 const componentColumns: ColumnsType<SetupScoreComponent> = [
   {
     title: "Component",
@@ -137,6 +145,8 @@ export function App() {
   const [symbolFilter, setSymbolFilter] = useState("");
   const [acceptedFilter, setAcceptedFilter] = useState<AcceptedFilter>("ALL");
   const [selectedSetupId, setSelectedSetupId] = useState<string | null>(null);
+  const normalizedSymbolFilter = symbolFilter.trim().toUpperCase();
+  const hasSetupFilters = normalizedSymbolFilter !== "" || acceptedFilter !== "ALL";
   const acceptedQueryValue = useMemo(() => {
     if (acceptedFilter === "ACCEPTED") {
       return true;
@@ -177,6 +187,23 @@ export function App() {
     () => createSetupColumns(setSelectedSetupId),
     [],
   );
+  const setupItems = setupsQuery.data?.items ?? [];
+  const setupCount = setupsQuery.data?.count ?? setupItems.length;
+  const setupEmptyDescription = getSetupEmptyDescription(hasSetupFilters);
+  const setupStatusColor = setupsQuery.isError
+    ? "red"
+    : setupsQuery.isFetching
+      ? "processing"
+      : setupCount > 0
+        ? "green"
+        : "default";
+  const setupStatusLabel = setupsQuery.isError
+    ? "API hiba"
+    : setupsQuery.isLoading
+      ? "Betöltés"
+      : setupsQuery.isFetching
+        ? "Frissítés"
+        : `${setupCount} setup`;
 
   return (
     <ConfigProvider
@@ -271,21 +298,49 @@ export function App() {
                 showIcon
                 message="A setup lista nem érhető el."
                 description="Ellenőrizd a backend kapcsolatot és a setup API útvonalat."
+                action={
+                  <Button
+                    size="small"
+                    icon={<RefreshCw size={14} />}
+                    onClick={() => void setupsQuery.refetch()}
+                  >
+                    Újrapróbálás
+                  </Button>
+                }
               />
             ) : null}
+
+            <div className="setup-state-bar">
+              <Space size={8} wrap>
+                <Tag color={setupStatusColor}>{setupStatusLabel}</Tag>
+                {hasSetupFilters ? <Tag>Szűrve</Tag> : null}
+              </Space>
+              {setupsQuery.data ? (
+                <Typography.Text type="secondary">
+                  {`Megjelenítve: ${setupItems.length} / ${setupCount}`}
+                </Typography.Text>
+              ) : null}
+            </div>
 
             <Table<SetupCandidate>
               rowKey="setupId"
               loading={setupsQuery.isLoading}
               columns={setupColumns}
-              dataSource={setupsQuery.data?.items ?? []}
+              dataSource={setupsQuery.isError ? [] : setupItems}
               pagination={false}
               scroll={{ x: 920 }}
               onRow={(record) => ({
                 onClick: () => setSelectedSetupId(record.setupId),
               })}
               locale={{
-                emptyText: <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="Nincs setup" />,
+                emptyText: (
+                  <Empty
+                    image={Empty.PRESENTED_IMAGE_SIMPLE}
+                    description={
+                      setupsQuery.isError ? "A setupok nem tölthetők be." : setupEmptyDescription
+                    }
+                  />
+                ),
               }}
             />
           </section>

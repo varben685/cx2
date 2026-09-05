@@ -127,7 +127,7 @@ ezért a Docker image build ebben a munkamenetben nem volt futtatható.
 - [x] Lokális webhook -> setup lista smoke teszt.
 - [x] Frontend setup részletező nézet első verziója.
 - [x] Postgres alapú end-to-end smoke teszt Dockerrel.
-- [ ] Frontend üres/adat/hiba állapotok finomítása valós API mellett.
+- [x] Frontend üres/adat/hiba állapotok finomítása valós API mellett.
 
 ## Phase 5: Outcome és backtest
 
@@ -326,3 +326,8 @@ ezért a Docker image build ebben a munkamenetben nem volt futtatható.
   státuszt kapott, a setup lista/részletező API ugyanazt a `BTCUSDT` setupot
   adta vissza, és a rekord közvetlenül a `webhook_events`, illetve
   `setup_candidates` táblákban is megjelent.
+- 2026-09-05: A frontend setup dashboard külön kezeli az első betöltést, a
+  háttérfrissítést, az üres adatbázist, a szűrt üres találatot és az API-hibát.
+  A setup panel darabszámot és megjelenített elem számot mutat, hiba esetén
+  pedig újrapróbálás gombot ad. Ellenőrzés: frontend teszt/lint/typecheck/build
+  sikeres, majd a Docker `web` service újraépítve és HTTP smoke-kal ellenőrizve.

@@ -391,6 +391,12 @@ Phase 2 következő mérföldkő:
   - a setup lista és részletező API visszaadta a setupot;
   - a setup közvetlenül a `webhook_events` és `setup_candidates` táblákban is
     ellenőrizhető volt.
+- A frontend setup dashboard üres/adat/hiba állapotai finomodtak:
+  - külön szöveg jelzi az üres adatbázist;
+  - külön szöveg jelzi, ha a szűrők miatt nincs találat;
+  - a setup API-hiba külön alertet és újrapróbálás gombot kapott;
+  - a panel állapotsávban mutatja a setup darabszámot, a szűrt állapotot és a
+    megjelenített elem számot.
 - Frontend részletező ellenőrzés: `npm run test` 3 teszt sikeres,
   `npm run lint` sikeres, `npm run typecheck` sikeres, `npm run build` sikeres.
 - Docker Compose Postgres smoke ellenőrzés: `docker compose up --build -d
@@ -398,9 +404,14 @@ Phase 2 következő mérföldkő:
   `GET /api/v1/setups/{setup_id}` sikeres; közvetlen Postgres lekérdezésben
   1 webhook event és 1 accepted setup candidate rekord látszott a teszt
   `eventId` értékére.
+- Frontend állapotkezelés ellenőrzés: `npm run test` 6 teszt sikeres,
+  `npm run lint` sikeres, `npm run typecheck` sikeres, `npm run build` sikeres.
+- Docker frontend frissítés: `docker compose up --build -d web` sikeres, utána
+  a `web`, `api` és `postgres` service futott, a frontend HTTP 200-at adott, az
+  API `/health` és a setup lista endpoint továbbra is működött.
 
 ### Következő konkrét lépés
 
-1. Frontend üres/adat/hiba állapotok finomítása valós API mellett.
-2. Phase 5 előkészítés: outcome/backtest inputok pontosítása.
-3. Docker build context karcsúsítása `.dockerignore` fájllal.
+1. Phase 5 előkészítés: outcome/backtest inputok pontosítása.
+2. Docker build context karcsúsítása `.dockerignore` fájllal.
+3. Outcome engine első domain modellje és tesztjei.

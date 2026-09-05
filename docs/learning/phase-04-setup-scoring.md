@@ -75,6 +75,9 @@ az AI magyarázati réteg auditálhatóságához.
   progresst, komponenspontokat és indokokat.
 - A Docker Compose alapú Postgres smoke teszt igazolta, hogy a webhook ->
   scoring -> setup persistence -> setup API lánc konténerben is működik.
+- A frontend setup dashboard már nem egyetlen generikus üres állapotot mutat:
+  külön kezeli a még üres adatbázist, a szűrők miatt üres listát, a háttérben
+  futó frissítést és az API-hibát.
 
 ## 4. Kapcsolódó fájlok
 
@@ -107,8 +110,18 @@ az AI magyarázati réteg auditálhatóságához.
 - Adatbázis: a rekord megjelent a `webhook_events` és `setup_candidates`
   táblában.
 
-## 6. Következő lépés
+## 6. Frontend állapotok
 
-A következő Phase 4 szeletben a frontend üres/adat/hiba állapotokat érdemes
-finomítani valós API mellett. Ezután a Phase 5 outcome/backtest inputjai
-következhetnek.
+- Üres adatbázis: "Még nincs beérkezett setup candidate."
+- Szűrt üres lista: "Nincs találat a jelenlegi szűrőkkel."
+- API-hiba: külön error alert és újrapróbálás gomb.
+- Állapotsáv: aktuális setup darabszám, szűrt állapot és megjelenített elem
+  szám.
+- Ellenőrzés: `npm run test`, `npm run lint`, `npm run typecheck`,
+  `npm run build`, Docker `web` service újraépítés és HTTP smoke.
+
+## 7. Következő lépés
+
+A következő lépésben a Phase 5 outcome/backtest inputjait érdemes pontosítani.
+Mellette érdemes külön technikai szeletként hozzáadni egy `.dockerignore`
+fájlt, hogy a Compose build context stabilan karcsú maradjon.

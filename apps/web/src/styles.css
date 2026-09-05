@@ -77,6 +77,14 @@ body {
   cursor: pointer;
 }
 
+.setup-state-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 32px;
+  gap: 12px;
+}
+
 .setup-detail {
   display: grid;
   gap: 18px;
@@ -137,6 +145,11 @@ body {
   .setups-actions {
     justify-content: flex-start;
     width: 100%;
+  }
+
+  .setup-state-bar {
+    align-items: flex-start;
+    flex-direction: column;
   }
 
   .symbol-filter {
