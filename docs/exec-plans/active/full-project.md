@@ -124,7 +124,8 @@ ezért a Docker image build ebben a munkamenetben nem volt futtatható.
 - [x] Setup candidate memory és SQL repository.
 - [x] Setup lekérdező API első verziója.
 - [x] Frontend setup lista első verziója.
-- [ ] Lokális webhook -> setup lista smoke teszt.
+- [x] Lokális webhook -> setup lista smoke teszt.
+- [ ] Frontend setup részletező nézet első verziója.
 
 ## Phase 5: Outcome és backtest
 
@@ -311,3 +312,6 @@ ezért a Docker image build ebben a munkamenetben nem volt futtatható.
 - 2026-09-04: Elkészült a frontend dashboard első setup listája. A React kliens
   a setup API-ból olvas, és szimbólum, irány, bias, score, státusz és indokok
   alapján jeleníti meg a pontozott setupokat.
+- 2026-09-04: Sikeres lokális end-to-end smoke memory repository módban:
+  minta TradingView webhook beküldése után a setup API és a frontend lista
+  ugyanazt a `BTCUSDT` setupot látja `100.0` score-ral.

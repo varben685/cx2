@@ -372,9 +372,15 @@ Phase 2 következő mérföldkő:
 - A korábbi `npm audit` findingben jelzett `nanoid` dependency `3.3.18`
   verzióra frissült a lockfile-ban. Az audit parancs registry válaszra várva
   kétszer beragadt, ezért kontrolláltan megszakításra került.
+- Lokális end-to-end smoke teszt sikeres memory repository módban:
+  1. backend indítás `http://127.0.0.1:8000`;
+  2. frontend indítás `http://127.0.0.1:5173`;
+  3. minta TradingView webhook beküldése;
+  4. `GET /api/v1/setups` válasz: 1 darab `BTCUSDT` setup,
+     `setupScore.score = 100.0`, `accepted = true`.
 
 ### Következő konkrét lépés
 
-1. Lokális end-to-end smoke teszt: webhook beküldés után setup megjelenik.
-2. Frontend setup részletező nézet első verziója.
-3. Frontend üres/adat/hiba állapotok finomítása valós API mellett.
+1. Frontend setup részletező nézet első verziója.
+2. Frontend üres/adat/hiba állapotok finomítása valós API mellett.
+3. Postgres alapú end-to-end smoke teszt Dockerrel, ha a Docker daemon fut.
