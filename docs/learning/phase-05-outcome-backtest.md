@@ -81,8 +81,9 @@ Elkészült az első MFE/MAE számítás:
 
 ## 4. Következő lépés
 
-Az első backtest analytics aggregációk: trade darabszámok, nettó expectancy,
-win rate és profit factor, futásonként elkülönítve.
+Backtest futtatási folyamat és outcome lekérdező API kialakítása, hogy a
+kiértékelés és a mentett futások kiválasztása HTTP-n keresztül is elérhető
+legyen. Ezt követi a dashboard megjelenítés.
 
 ## 5. Outcome persistence
 
@@ -170,3 +171,76 @@ finally:
 Nézd meg a `test_new_run_keeps_both_configurations` tesztet: azonos setup
 költségekkel `1.937R`, költségek nélkül `2R`. Miért kell új `run_id` a második
 értékeléshez, és mi történne az első futás azonosítójának újrafelhasználásakor?
+
+## 6. Backtest analytics
+
+Elkészült a tiszta `analytics/backtest.py` összesítő, a repositoryból teljes
+futást olvasó application függvény és a `GET /api/v1/analytics/summary` API.
+A HTTP mezőket és a pontos számítási szabályokat a
+`docs/contracts/backtest-analytics.md` dokumentálja.
+
+```mermaid
+flowchart LR
+    Request[runId és opcionális symbol] --> Repository[Teljes futás lekérése]
+    Repository --> Outcomes[Mentett outcome snapshotok]
+    Outcomes --> Summary[Nettó R alapú összesítés]
+    Summary --> Response[Analytics JSON válasz]
+```
+
+### Miért ezek a mutatók?
+
+A win rate megmutatja a pozitív nettó eredménnyel lezárt trade-ek arányát.
+Az expectancy a mintában megfigyelt átlagos nettó R trade-enként. A profit
+factor a pozitív R-ek összegét osztja a negatív R-ek abszolút összegével.
+Ezek külön szempontok: a találati arány önmagában nem írja le az eredményt.
+
+Példa: `+2R, -1R, +0.5R, -0.5R, 0R`. Öt trade-ből kettő nyerő, ezért a
+nettó win rate `40%`; összesen `+1R`, az expectancy `0.2R`, a profit factor
+`2.5 / 1.5 = 1.666667`. Három további nem aktiválódott setup esetén is
+ugyanezek a trade-mutatók maradnak, csak a setup darabszám emelkedik nyolcra.
+
+A `WIN` outcome címke a barrier alapján születik. Ha a költségek elviszik a
+nyereséget, a trade az analyticsben nettó vesztes lehet. Emiatt külön
+mutatjuk az eredeti címkék és a nettó eredményelőjelek darabszámát.
+
+### Technikai döntések
+
+A statisztika kötelező futásazonosítóhoz tartozik. A repository külön
+`list_for_run` metódust kapott, amely a teljes kiválasztást adja vissza.
+A `list_recent` 50-es alaplimitjét statisztikához használni csendesen
+kihagyná a régebbi eredményeket. Ezt 106 rekorddal külön teszteljük.
+
+Az első változat Pythonban számol, ugyanazzal a logikával minden adatbázison.
+Alternatíva az SQL aggregáció, ami nagy adatmennyiségnél hatékonyabb lehet.
+Jelenleg az egész kiválasztás memóriába töltődik, ezért nagy futásoknál később
+streaming vagy SQL összesítés indokolt. A `math.fsum` csökkenti a lebegőpontos
+összegzés hibáját; csak a kész mutatókat kerekítjük.
+
+A profit factor veszteség nélkül `null`, nem nulla és nem végtelen. A nulla
+érték azt jelentené, hogy volt veszteség, de nem volt nyereség. Lezárt trade
+nélkül a win rate és expectancy sem értelmezhető, ezért azok is `null`-ok.
+
+### Korlátok és folytatás
+
+Az API az eddig mentett eredményeket összesíti; nem állítja, hogy a futás
+minden tervezett setupját már kiértékeltük. Külön futásnyilvántartás még nincs.
+Egy futás egységes konfigurációja továbbra is a hívó felelőssége. A win rate
+0-1 skálán érkezik, százalékként a felületnek kell formáznia.
+
+Egyelőre nincs equity curve, drawdown vagy session szerinti bontás. A
+frontend még nem jeleníti meg az új API adatait.
+
+### Olvasás és gyakorlás
+
+Olvasási sorrend: `analytics/backtest.py`, `application/backtest_analytics.py`,
+`api/analytics.py`, majd `tests/test_backtest_analytics.py`.
+
+Az `apps/api` könyvtárban:
+
+```bash
+uv run pytest tests/test_backtest_analytics.py tests/test_analytics_api.py
+```
+
+Gyakorlófeladat: a fenti öt trade mellé adj egy `-0.1R` nettó eredményű,
+eredetileg `WIN` címkéjű trade-et. Hogyan változik a nettó win rate és az
+expectancy? Miért nem elég megszámolni a `WIN` címkéket?

@@ -4,8 +4,10 @@ from datetime import UTC, datetime, timedelta
 from uuid import UUID, uuid4
 
 import pytest
+from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.pool import StaticPool
 from sqlalchemy.schema import CreateSchema, DropSchema
 from test_outcome_evaluation import CapturingMarketDataProvider, make_candle, valid_payload
 
@@ -14,6 +16,7 @@ from smc_assistant.application.outcome_records import (
     OutcomeRecord,
     evaluate_and_save_tradingview_outcome,
 )
+from smc_assistant.config import Settings
 from smc_assistant.domain.enums import TradeDirection, TradeOutcomeLabel
 from smc_assistant.domain.outcomes import (
     OutcomeConfig,
@@ -23,6 +26,7 @@ from smc_assistant.domain.outcomes import (
 from smc_assistant.infrastructure.database import initialize_database_schema
 from smc_assistant.infrastructure.in_memory_outcomes import InMemoryOutcomeRepository
 from smc_assistant.infrastructure.sql_outcomes import SQLOutcomeRepository
+from smc_assistant.main import create_app
 
 BACKENDS = ["memory", "sqlite"]
 if os.environ.get("TEST_POSTGRES_URL"):
@@ -49,7 +53,11 @@ def repository(request):
                 connection.execute(DropSchema(schema, cascade=True))
             engine.dispose()
     else:
-        engine = create_engine("sqlite+pysqlite:///:memory:")
+        engine = create_engine(
+            "sqlite+pysqlite:///:memory:",
+            connect_args={"check_same_thread": False},
+            poolclass=StaticPool,
+        )
         try:
             initialize_database_schema(engine)
             yield SQLOutcomeRepository(engine)
@@ -262,3 +270,36 @@ def test_rejects_naive_record_timestamp():
     with pytest.raises(ValueError, match="timezone-aware"):
         replace(record, evaluated_at=datetime(2026, 1, 1))
     assert record.bar_close_time == datetime(2026, 1, 1, 12, 1, tzinfo=UTC)
+
+
+def test_full_run_analytics_is_not_truncated_by_recent_list_limit(repository):
+    first = save_example(repository).record
+    for index in range(104):
+        repository.save_if_absent(
+            replace(
+                first,
+                outcome_id=uuid4(),
+                evaluation=replace(first.evaluation, event_id=f"event-{index}"),
+            )
+        )
+    other_symbol = replace(
+        first,
+        outcome_id=uuid4(),
+        evaluation=replace(first.evaluation, event_id="eth-event", symbol="ETHUSDT"),
+    )
+    repository.save_if_absent(other_symbol)
+    save_example(repository)
+
+    assert len(repository.list_recent()) == 50
+    assert len(repository.list_for_run(first.run_id)) == 106
+    assert repository.list_for_run(first.run_id, symbol="ETHUSDT") == [other_symbol]
+    assert repository.list_for_run(uuid4()) == []
+    assert repository.list_for_run(first.run_id, symbol="missing") == []
+
+    app = create_app(Settings(webhook_event_repository="memory"))
+    app.state.outcome_repository = repository
+    with TestClient(app) as client:
+        response = client.get("/api/v1/analytics/summary", params={"runId": str(first.run_id)})
+    assert response.status_code == 200
+    assert response.json()["statistics"]["totalSetups"] == 106
+    assert response.json()["statistics"]["totalNetR"] == 205.322

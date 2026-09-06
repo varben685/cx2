@@ -63,6 +63,9 @@ class OutcomeRepository(Protocol):
     ) -> list[OutcomeRecord]:
         pass
 
+    def list_for_run(self, run_id: UUID, *, symbol: str | None = None) -> list[OutcomeRecord]:
+        pass
+
 
 def evaluate_and_save_tradingview_outcome(
     payload: TradingViewWebhookPayload,

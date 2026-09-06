@@ -31,6 +31,18 @@ class InMemoryOutcomeRepository:
             outcome_id = self._keys.get((run_id, event_id))
             return self._records.get(outcome_id) if outcome_id is not None else None
 
+    def list_for_run(self, run_id: UUID, *, symbol: str | None = None) -> list[OutcomeRecord]:
+        with self._lock:
+            return sorted(
+                (
+                    record
+                    for record in self._records.values()
+                    if record.run_id == run_id
+                    and (symbol is None or record.evaluation.symbol == symbol)
+                ),
+                key=lambda record: record.outcome_id,
+            )
+
     def list_recent(
         self,
         *,

@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 
 from smc_assistant.application.audit import AuditLogger
+from smc_assistant.application.outcome_records import OutcomeRepository
 from smc_assistant.application.setup_candidates import SetupCandidateRepository
 from smc_assistant.application.webhook_ingestion import WebhookIngestionService
 from smc_assistant.config import Settings
@@ -8,12 +9,14 @@ from smc_assistant.infrastructure.database import (
     create_database_engine,
     initialize_database_schema,
 )
+from smc_assistant.infrastructure.in_memory_outcomes import InMemoryOutcomeRepository
 from smc_assistant.infrastructure.in_memory_setup_candidates import (
     InMemorySetupCandidateRepository,
 )
 from smc_assistant.infrastructure.in_memory_webhook_events import (
     InMemoryWebhookEventRepository,
 )
+from smc_assistant.infrastructure.sql_outcomes import SQLOutcomeRepository
 from smc_assistant.infrastructure.sql_setup_candidates import SQLSetupCandidateRepository
 from smc_assistant.infrastructure.sql_webhook_events import SQLWebhookEventRepository
 
@@ -22,6 +25,7 @@ from smc_assistant.infrastructure.sql_webhook_events import SQLWebhookEventRepos
 class WebhookIngestionServices:
     webhook_ingestion_service: WebhookIngestionService
     setup_candidate_repository: SetupCandidateRepository
+    outcome_repository: OutcomeRepository
 
 
 def create_webhook_ingestion_service(
@@ -49,6 +53,7 @@ def create_webhook_ingestion_services(
                 setup_candidate_repository=setup_candidate_repository,
             ),
             setup_candidate_repository=setup_candidate_repository,
+            outcome_repository=SQLOutcomeRepository(engine),
         )
 
     setup_candidate_repository = InMemorySetupCandidateRepository()
@@ -59,4 +64,5 @@ def create_webhook_ingestion_services(
             setup_candidate_repository=setup_candidate_repository,
         ),
         setup_candidate_repository=setup_candidate_repository,
+        outcome_repository=InMemoryOutcomeRepository(),
     )

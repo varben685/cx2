@@ -76,3 +76,12 @@ class SQLOutcomeRepository:
         with self._engine.connect() as connection:
             snapshots = connection.execute(query).scalars().all()
         return [_record_adapter.validate_python(snapshot) for snapshot in snapshots]
+
+    def list_for_run(self, run_id: UUID, *, symbol: str | None = None) -> list[OutcomeRecord]:
+        query = select(outcome_records.c.snapshot).where(outcome_records.c.run_id == run_id)
+        if symbol is not None:
+            query = query.where(outcome_records.c.symbol == symbol)
+        query = query.order_by(outcome_records.c.outcome_id)
+        with self._engine.connect() as connection:
+            snapshots = connection.execute(query).scalars().all()
+        return [_record_adapter.validate_python(snapshot) for snapshot in snapshots]

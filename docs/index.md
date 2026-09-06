@@ -13,6 +13,8 @@ Ez a könyvtár az `smc-ai-trading-assistant` működésének hiteles forrása.
 - [Phase 02 learning](learning/phase-02-webhook-contract.md): TradingView webhook contract.
 - [Phase 03 learning](learning/phase-03-pine-prototype.md): Pine Script prototípus.
 - [Phase 04 learning](learning/phase-04-setup-scoring.md): rule-based setup scoring.
+- [Phase 05 learning](learning/phase-05-outcome-backtest.md): outcome, persistence és analytics.
+- [Backtest analytics API](contracts/backtest-analytics.md): mutatók és lekérdezési szabályok.
 - [Szintetikus OHLCV példák](strategy/synthetic-examples.md): Phase 1 integrált mini chart.
 
 ## Területek

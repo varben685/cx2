@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 
+from smc_assistant.api.analytics import router as analytics_router
 from smc_assistant.api.errors import validation_exception_handler
 from smc_assistant.api.health import router as health_router
 from smc_assistant.api.setups import router as setups_router
@@ -41,10 +42,12 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.state.setup_candidate_repository = (
         webhook_ingestion_services.setup_candidate_repository
     )
+    app.state.outcome_repository = webhook_ingestion_services.outcome_repository
     app.add_exception_handler(RequestValidationError, validation_exception_handler)
     app.include_router(health_router)
     app.include_router(webhooks_router)
     app.include_router(setups_router)
+    app.include_router(analytics_router)
     return app
 
 

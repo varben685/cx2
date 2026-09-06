@@ -550,3 +550,52 @@ Phase 2 következő mérföldkő:
    profit factor, a külön futások eredményeinek elkülönítésével.
 2. Az outcome és analytics adatok API-, majd frontend-megjelenítése.
 3. Docker build context karcsúsítása és Alembic átállás.
+
+## 2026-09-06 Phase 5: backtest analytics
+
+### Elkészült
+
+- Tiszta Python analytics modul: setup és lezárt trade darabszámok, outcome
+  címkék, nettó nyerők/vesztők/nullszaldók, nettó win rate, összesített R,
+  nettó expectancy és R-alapú profit factor.
+- A TIMEOUT eredmények nettó előjelük szerint szerepelnek a trade-mutatókban;
+  NOT_TRIGGERED, CANCELLED és INVALIDATED csak a setup darabszámokba számít.
+- Teljes futást lekérő `list_for_run` repository metódus, listalimit nélkül.
+- `GET /api/v1/analytics/summary` kötelező `runId` és opcionális `symbol`
+  paraméterrel; típusos camelCase válasz, üres kiválasztás kezelése.
+- Az API az alkalmazás memory/postgres beállításához igazodó outcome
+  repositoryt használja, SQL módban a meglévő közös engine-nel.
+- Learning dokumentum, API contract, backend leírás és ExecPlan frissítve.
+
+### Ellenőrzés
+
+- Teljes backend `uv run pytest`: 191 sikeres teszt.
+- A végső számítási módosítás után célzott analytics/API ellenőrzés:
+  17 sikeres teszt.
+- Külön PostgreSQL repository/API ellenőrzés: 14 sikeres teszt elkülönített
+  sémákban. A 106 rekordos futás mindegyik eredménye szerepelt az API összegében.
+- `uv run ruff check .` és `uv run mypy src`: sikeres, 46 forrásfájl.
+- Egy ismert Starlette TestClient deprecation warning továbbra is jelen van.
+- Docker API újraépítve; tényleges HTTP + PostgreSQL + CORS smoke sikeres.
+  Egy ideiglenes futásból `1.937R` nettó eredmény és expectancy érkezett,
+  a smoke után csak a saját tesztfutás rekordjait eltávolítottuk.
+
+### Döntések és korlátok
+
+- Nincs külön futásnyilvántartás: ismeretlen futásazonosítóra üres statisztika
+  érkezik, nem 404. A válasz nem jelzi a futás teljes feldolgozottságát.
+- A mutatók költségek utáni, R-alapú megfigyelt eredményekből készülnek.
+  A nettó win rate eltérhet a WIN barrier címkék arányától.
+- Nincs lezárt trade: win rate és expectancy `null`. Nincs nettó veszteség:
+  profit factor `null`, nem JSON Infinity.
+- Az első összesítő a teljes kiválasztást memóriába tölti. Nagy adatállomány,
+  equity curve, drawdown és session bontás későbbi fejlesztés.
+- Új frontend nézet és automatikus outcome kiértékelés ebben a lépésben nem
+  készült. Az API kipróbálható a `http://localhost:8000/docs` oldalon.
+
+### Következő konkrét lépés
+
+1. Backtest futtatási folyamat és outcome lekérdező API: futás indítása,
+   eredmények mentése, majd visszakeresés és összesítés ugyanazon azonosítóval.
+2. A mentett futások és statisztikák frontend megjelenítése.
+3. További analytics (equity curve, drawdown), Alembic és Docker context rendbetétele.

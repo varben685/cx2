@@ -138,7 +138,9 @@ ezért a Docker image build ebben a munkamenetben nem volt futtatható.
 - [x] Commission és slippage.
 - [x] MFE/MAE számítás.
 - [x] Outcome snapshot persistence, idempotens futás/esemény kulccsal.
-- [ ] Backtest analytics.
+- [x] Backtest analytics alapok: darabszámok, nettó win rate, expectancy és profit factor.
+- [x] Futásonkénti analytics summary API.
+- [ ] Backtest futtatási folyamat és outcome lekérdező API.
 
 ## Phase 6: Frontend és journal
 
@@ -374,3 +376,13 @@ ezért a Docker image build ebben a munkamenetben nem volt futtatható.
   A lokális PostgreSQL-en az új tábla létrejött. Az adapterek a meglévő
   create_all mintát követik; Alembic és automatikus élő kiértékelés továbbra
   is nyitott. Döntés: ADR-0002. Következő lépés: backtest analytics.
+- 2026-09-06: Elkészültek a nettó R-alapú backtest analytics alapok és a
+  `GET /api/v1/analytics/summary` végpont. Kötelező `runId` különíti el a
+  futásokat; opcionális symbol szűrés támogatott. A repository teljes futást
+  olvas, így az 50-es listalimit nem torzít. Az inaktív setupok nem kerülnek
+  a trade-mutatók nevezőjébe; üres minta és nulla veszteség explicit null
+  értékekkel jelenik meg. Ellenőrzés: 191 backend teszt, 14 PostgreSQL teszt,
+  Ruff és mypy sikeres. Végső analytics/API ellenőrzés: 17 teszt sikeres.
+  Docker API frissítve, valódi HTTP/PostgreSQL/CORS smoke sikeres. A következő
+  Phase 5 feladat explicit bekerült a tervbe: backtest futtatási folyamat és
+  outcome lekérdező API, az eddigi Python hívások felhasználhatóvá tételéhez.
