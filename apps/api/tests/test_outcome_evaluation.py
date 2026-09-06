@@ -170,3 +170,23 @@ def test_evaluates_tradingview_outcome_against_imported_csv_market_data(tmp_path
     assert evaluation.candles_loaded == 2
     assert evaluation.outcome.label == TradeOutcomeLabel.WIN
     assert evaluation.outcome.exit_price == 110.0
+
+
+def test_evaluation_fingerprints_loaded_candles_and_keeps_config() -> None:
+    config = OutcomeConfig(commission_bps_per_side=10)
+    candles = (make_candle(0), make_candle(1, high=111))
+    first = evaluate_tradingview_outcome(
+        valid_payload(), CapturingMarketDataProvider(candles), config
+    )
+    repeated = evaluate_tradingview_outcome(
+        valid_payload(), CapturingMarketDataProvider(candles), config
+    )
+    changed = evaluate_tradingview_outcome(
+        valid_payload(),
+        CapturingMarketDataProvider((make_candle(0), make_candle(1, high=112))),
+        config,
+    )
+
+    assert first == repeated
+    assert first.config == config
+    assert first.market_data_sha256 != changed.market_data_sha256

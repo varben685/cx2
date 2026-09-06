@@ -108,3 +108,31 @@ A TradingView payload `execution` blokkja adja az első `TradePlan` forrást:
 Az evaluation réteg a payload `symbol`, `timeframe` és `barCloseTime` mezőiből
 épít market data queryt. A backtest szelet így a setup gyertya lezárása után
 indul, és az outcome engine már csak jövőbeli gyertyákon fut.
+
+## Tartós outcome rekordok
+
+Az `evaluate_and_save_tradingview_outcome` application függvény a kiértékelést
+egy `OutcomeRepository` adapteren keresztül menti. In-memory és SQLAlchemy
+(PostgreSQL/SQLite) adapter is rendelkezésre áll.
+
+Minden rekord UUID `outcome_id` és `run_id` azonosítót kap. A hívó adja meg a
+futásazonosítót: ugyanazon futás és `event_id` ismétlése az első eredményt adja
+vissza, újraszámítás és felülírás nélkül. Más konfigurációval vagy frissített
+adatsorral történő új értékeléshez új `run_id` szükséges.
+
+A snapshot tartalmazza a trade tervet, teljes outcome-ot, költségeket,
+MFE/MAE értékeket, tényleges konfigurációt, stratégia- és engine-verziót,
+exchange-et, setup-záróidőt, UTC kiértékelési időt, gyertyaszámot és a betöltött
+gyertyasor SHA-256 lenyomatát. A lenyomat adategyezőséget ellenőriz; a forrás
+CSV megőrzését nem helyettesíti.
+
+A mentési folyamat `IncompleteOutcomeError` hibát ad, ha a `NOT_TRIGGERED`
+eredményhez még nem telt le az entry ablak, vagy a `TIMEOUT` eredményhez még
+nincs meg a teljes tartási gyertyaszám. Ilyenkor nem jön létre rekord, és
+ugyanazzal a futásazonosítóval később újra lehet próbálni. Korábban elért stop
+vagy target esetén már végleges eredmény menthető. Ez a védelem a mentési
+use case része; a közvetlen domain engine továbbra is a kapott adatsor
+végéig értékel. A gyertyaszám önmagában nem ellenőrzi az adatfolyam hézagait.
+
+A tárolás jelenleg explicit application hívás: a webhook fogadása és a
+dashboard még nem indít automatikus outcome értékelést.

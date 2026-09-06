@@ -137,6 +137,7 @@ ezért a Docker image build ebben a munkamenetben nem volt futtatható.
 - [x] Outcome engine futtatása importált market data szeleteken.
 - [x] Commission és slippage.
 - [x] MFE/MAE számítás.
+- [x] Outcome snapshot persistence, idempotens futás/esemény kulccsal.
 - [ ] Backtest analytics.
 
 ## Phase 6: Frontend és journal
@@ -363,3 +364,13 @@ ezért a Docker image build ebben a munkamenetben nem volt futtatható.
   excursion értékeket az aktiválás utáni, exitig vizsgált gyertyákból.
   Ellenőrzés: célzott outcome/evaluation tesztek, 143 backend teszt, Ruff és
   mypy sikeres.
+- 2026-09-06: Elkészült az outcome rekord persistence és az explicit
+  evaluate-and-save application folyamat. A UUID futásazonosítóhoz kapcsolt
+  snapshot megőrzi a tervet, konfigurációt, költségeket, MFE/MAE értékeket,
+  verziókat és az input gyertyák lenyomatát. Az ismételt futás/esemény az első
+  mentést adja vissza; a hiányos megfigyelési ablak mentése hibával leáll.
+  In-memory, SQLite és PostgreSQL adapterellenőrzés elkészült. Kapuk:
+  172 backend teszt, 13 külön PostgreSQL teszt, Ruff és mypy sikeres.
+  A lokális PostgreSQL-en az új tábla létrejött. Az adapterek a meglévő
+  create_all mintát követik; Alembic és automatikus élő kiértékelés továbbra
+  is nyitott. Döntés: ADR-0002. Következő lépés: backtest analytics.

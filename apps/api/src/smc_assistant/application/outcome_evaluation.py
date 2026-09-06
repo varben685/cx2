@@ -1,8 +1,12 @@
 from dataclasses import dataclass
 from datetime import UTC
+from hashlib import sha256
+
+from pydantic import TypeAdapter
 
 from smc_assistant.application.market_data import MarketDataProvider, MarketDataQuery
 from smc_assistant.contracts.tradingview import TradingViewWebhookPayload
+from smc_assistant.domain.candles import Candle
 from smc_assistant.domain.outcomes import (
     OutcomeConfig,
     TradeOutcome,
@@ -19,6 +23,8 @@ class TradingViewOutcomeEvaluation:
     trade_plan: TradePlan
     outcome: TradeOutcome
     candles_loaded: int
+    config: OutcomeConfig
+    market_data_sha256: str
 
 
 def trade_plan_from_tradingview_payload(payload: TradingViewWebhookPayload) -> TradePlan:
@@ -35,6 +41,7 @@ def evaluate_tradingview_outcome(
     market_data_provider: MarketDataProvider,
     config: OutcomeConfig | None = None,
 ) -> TradingViewOutcomeEvaluation:
+    outcome_config = config or OutcomeConfig()
     trade_plan = trade_plan_from_tradingview_payload(payload)
     future_candles = market_data_provider.load_candles(
         MarketDataQuery(
@@ -46,7 +53,7 @@ def evaluate_tradingview_outcome(
     outcome = evaluate_triple_barrier_outcome(
         trade_plan,
         future_candles,
-        config,
+        outcome_config,
     )
 
     return TradingViewOutcomeEvaluation(
@@ -56,4 +63,8 @@ def evaluate_tradingview_outcome(
         trade_plan=trade_plan,
         outcome=outcome,
         candles_loaded=len(future_candles),
+        config=outcome_config,
+        market_data_sha256=sha256(
+            TypeAdapter(tuple[Candle, ...]).dump_json(tuple(future_candles))
+        ).hexdigest(),
     )

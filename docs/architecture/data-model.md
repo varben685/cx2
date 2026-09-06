@@ -69,3 +69,32 @@ eseményhez.
 
 Az `event_id` unique constraint miatt ugyanaz a webhook esemény nem hoz létre
 több setup candidate rekordot.
+
+### `outcome_records`
+
+Egy offline kiértékelés megőrzött, típusosan visszaolvasható pillanatképe.
+
+| Oszlop | Típus | Megjegyzés |
+| --- | --- | --- |
+| `outcome_id` | UUID | Egy eredmény elsődleges kulcsa. |
+| `run_id` | UUID | A hívó által kijelölt backtest futás. |
+| `event_id` | string(200) | Az értékelt TradingView esemény azonosítója. |
+| `symbol` | string(40) | Instrumentum szerinti listaszűréshez. |
+| `label` | string(20) | Outcome címke. |
+| `evaluated_at` | timestamptz | A számítás befejezésének UTC ideje. |
+| `snapshot` | JSON/JSONB | Teljes `OutcomeRecord`, tervvel, configgal és eredménnyel. |
+
+A `(run_id, event_id)` unique constraint biztosítja az idempotenciát.
+Az `event_id` és az `evaluated_at` indexelt. A lista futásra, eseményre és
+szimbólumra szűrhető; sorrendje kiértékelési idő, majd UUID szerint csökkenő.
+
+Az `event_id` itt logikai kapcsolat, nem foreign key: az offline CSV-backtest
+webhook ingestion nélkül is használható. Ha az esemény már beérkezett, az
+azonosító összekapcsolható a meglévő setup rekorddal. A döntést az
+`ADR-0002-outcome-snapshots.md` dokumentálja.
+
+Az új tábla a meglévő `initialize_database_schema` / `metadata.create_all`
+útvonalon jön létre; a korábbi táblákat ez a változtatás nem alakítja át.
+Az Alembic bevezetése továbbra is nyitott infrastruktúra-feladat. A snapshot
+szerkezetének későbbi módosításakor a régi rekordok olvashatóságát migrációval
+vagy verziózott readerrel meg kell őrizni.

@@ -505,3 +505,48 @@ Phase 2 következő mérföldkő:
 1. Outcome rekord persistence előkészítése.
 2. Backtest analytics első aggregációi.
 3. Docker build context karcsúsítása `.dockerignore` fájllal.
+
+## 2026-09-06 Phase 5: outcome persistence
+
+### Elkészült
+
+- `OutcomeRecord`, `OutcomeSaveResult` és `OutcomeRepository` application
+  modellek, valamint `evaluate_and_save_tradingview_outcome` use case.
+- In-memory és SQLAlchemy repository: mentés, azonosító szerinti lekérés,
+  futás/esemény szerinti lekérés, szűrt és limitált lista.
+- `outcome_records` tábla UUID kulcsokkal, `(run_id, event_id)` unique
+  constrainttel és teljes JSONB snapshottal.
+- Megőrzött konfiguráció, stratégia- és engine-verzió, UTC időpontok,
+  trade terv, bruttó/nettó R, költségek, MFE/MAE és gyertya-input lenyomat.
+- A duplikált hívás az első rekordot adja vissza; új futás a régi eredményt
+  megtartva értékelhet más konfigurációval.
+- A mentési folyamat visszautasítja a hiányos adatsor alapján keletkező,
+  még nem végleges timeout vagy nem aktiválódott kimenetet.
+- ADR-0002, adatmodell, outcome stratégiai leírás és learning dokumentum
+  frissítve. Az eredeti brief továbbra is a projekt dokumentációjában él.
+
+### Ellenőrzés
+
+- `uv run pytest`: 172 sikeres teszt, 1 ismert Starlette deprecation warning.
+- Külön PostgreSQL repository futtatás: 13 sikeres teszt a futó Docker
+  adatbázis elkülönített, teszt végén eltávolított sémáiban.
+- `uv run ruff check .`: sikeres.
+- `uv run mypy src`: sikeres, 43 forrásfájl.
+- Módosított Python fájlok Ruff formázása megtörtént.
+- Lokális PostgreSQL `initialize_database_schema`: az `outcome_records`
+  tábla létrejött, a korábbi táblák megmaradtak.
+
+### Nyitott feladatok és korlátok
+
+- A persistence explicit application hívásból használható; outcome HTTP API,
+  dashboard megjelenítés és automatikus webhook utáni kiértékelés még nincs.
+- Az adatbázis a meglévő `create_all` mintát használja; Alembic még nyitott.
+- A forrás OHLCV-t a lenyomaton túl külön meg kell őrizni reprodukáláshoz.
+- A gyertyahézagok felismerése és az intrabar pontosítás későbbi feladat.
+
+### Következő konkrét lépés
+
+1. Backtest analytics: trade darabszámok, nettó expectancy, win rate és
+   profit factor, a külön futások eredményeinek elkülönítésével.
+2. Az outcome és analytics adatok API-, majd frontend-megjelenítése.
+3. Docker build context karcsúsítása és Alembic átállás.
