@@ -599,3 +599,52 @@ Phase 2 következő mérföldkő:
    eredmények mentése, majd visszakeresés és összesítés ugyanazon azonosítóval.
 2. A mentett futások és statisztikák frontend megjelenítése.
 3. További analytics (equity curve, drawdown), Alembic és Docker context rendbetétele.
+
+## 2026-09-07 Phase 5: backtest futtatási API
+
+### Elkészült
+
+- `POST /api/v1/backtests`: szinkron CSV-batch kiértékelés, legfeljebb
+  25 setup és 1 millió karakter CSV, egységes piac/stratégia/config.
+- Kliensoldali UUID és request fingerprint: új futás 201, változatlan
+  ismétlés 200, ütköző input 409, hibás/hiányos bemenet 422.
+- `backtest_runs` tábla a teljes inputtal, CSV-vel és outcome snapshotokkal.
+  SQL módban a futás és minden outcome közös tranzakcióban mentődik.
+- Memóriás backtest adapter a megosztott outcome tárolóval.
+- `GET /api/v1/backtests` és `GET /api/v1/backtests/{run_id}`.
+- `GET /api/v1/outcomes?runId=...` és `GET /api/v1/outcomes/{outcome_id}`.
+- Részletes camelCase outcome válasz trade tervvel, költségekkel és MFE/MAE-vel.
+- CSV szöveg olvasása fájlírás nélkül; szigorú fejléc/oszlopszám/idősorrend
+  ellenőrzés, nem véges számok tiltása, D/W záróidő-inferálás.
+- Végigfuttatható szintetikus minta: `examples/backtests/demo-request.json`.
+- API contract, learning dokumentum, adatmodell és ADR-0003 elkészült/frissült.
+
+### Ellenőrzés
+
+- `uv run pytest`: 229 sikeres, 2 környezet szerint kihagyott teszt.
+  Memory módban SQL rollback nem értelmezett, egyetlen megosztott SQLite
+  kapcsolaton párhuzamos tranzakciót nem tesztelünk; PostgreSQL-en mindkettő futott.
+- Külön PostgreSQL backtest/outcome tesztcsomag: 34 sikeres ellenőrzés,
+  ebből 20 az új batch workflowhoz tartozik. Átment a párhuzamos idempotencia
+  és a szándékos outcome insert hibával ellenőrzött teljes rollback.
+- Ruff és mypy sikeres, 52 típusellenőrzött forrásfájl.
+- Egy ismert Starlette TestClient deprecation warning megmaradt.
+- Docker API újraépítve. Tényleges HTTP/PostgreSQL smoke: 201/200/409,
+  futás/outcome visszaolvasás és analytics egyezés ellenőrizve; nettó `1.937R`.
+  Csak a saját ideiglenes smoke futás és annak outcome-jai lettek eltávolítva.
+
+### Korlátok
+
+- A batch a beküldött setupokat értékeli; automatikus CSV-ből történő
+  setupkeresés és közös tőke/pozíció szimuláció nincs.
+- A futás a HTTP-kérés alatt készül el; nagy batch, háttér-worker,
+  tartós RUNNING/FAILED állapot és lapozás későbbi feladat.
+- A forrás CSV az új HTTP-futások snapshotjában megmarad; a korábbi
+  közvetlen Python outcome sorok forrásmegőrzése továbbra is külső feladat.
+- Frontend indítási és megjelenítési nézet még nem készült.
+- Alembic, adatminőségi hézagellenőrzés, equity curve és drawdown továbbra is nyitott.
+
+### Következő konkrét lépés
+
+Phase 6 első frontend folyamata: backtest indítása a mintából/saját adatokból,
+mentett futások kiválasztása, statisztikák és outcome-részletek megjelenítése.

@@ -81,9 +81,8 @@ Elkészült az első MFE/MAE számítás:
 
 ## 4. Következő lépés
 
-Backtest futtatási folyamat és outcome lekérdező API kialakítása, hogy a
-kiértékelés és a mentett futások kiválasztása HTTP-n keresztül is elérhető
-legyen. Ezt követi a dashboard megjelenítés.
+Phase 6: a futások és outcome-ok frontend megjelenítése, a backtest indítási
+felület és a journal használható folyamatainak kialakítása.
 
 ## 5. Outcome persistence
 
@@ -222,10 +221,11 @@ nélkül a win rate és expectancy sem értelmezhető, ezért azok is `null`-ok.
 
 ### Korlátok és folytatás
 
-Az API az eddig mentett eredményeket összesíti; nem állítja, hogy a futás
-minden tervezett setupját már kiértékeltük. Külön futásnyilvántartás még nincs.
-Egy futás egységes konfigurációja továbbra is a hívó felelőssége. A win rate
-0-1 skálán érkezik, százalékként a felületnek kell formáznia.
+Az analytics API az eddig mentett eredményeket összesíti. A közvetlen Python
+mentésből származó régi soroknál nincs futásteljességi garancia. Az új HTTP
+backtest-folyamat (következő szakasz) egységes konfigurációt és teljes batch
+mentést biztosít. A win rate 0-1 skálán érkezik, százalékként a felületnek
+kell formáznia.
 
 Egyelőre nincs equity curve, drawdown vagy session szerinti bontás. A
 frontend még nem jeleníti meg az új API adatait.
@@ -244,3 +244,63 @@ uv run pytest tests/test_backtest_analytics.py tests/test_analytics_api.py
 Gyakorlófeladat: a fenti öt trade mellé adj egy `-0.1R` nettó eredményű,
 eredetileg `WIN` címkéjű trade-et. Hogyan változik a nettó win rate és az
 expectancy? Miért nem elég megszámolni a `WIN` címkéket?
+
+## 7. Backtest indítás és eredménylekérdezés
+
+Most már HTTP-n keresztül is elvégezhető a teljes offline kiértékelés:
+setupok és CSV beküldése, számítás, atomikus mentés, majd futás/outcome
+visszaolvasás és analytics. A végpontok és a pontos határok a
+`docs/contracts/backtests.md` dokumentumban találhatók.
+
+A `COMPLETED` azt jelenti, hogy a beküldött batch minden setupjának végleges
+outcome-ja elkészült és elmentődött. Nem jelenti a stratégia teljes piaci
+backtestjét: a CSV-ből itt nem detektálunk automatikusan új setupokat. Az
+átfedő trade terveket egymástól függetlenül értékeljük, közös tőke- vagy
+pozíciókorlát-szimuláció nélkül.
+
+Az atomikus mentés a legfontosabb új adatbázis-fogalom. Először minden
+számítás memóriában történik. Ha a harmadik setuphoz nincs elég adat, az
+első kettő eredménye sem kerül adatbázisba. Ha minden számítás sikerült, a
+run sor és az outcome sorok egy tranzakcióban íródnak: vagy mind megmarad,
+vagy egyik sem. Egy szándékosan hibáztatott adatbázisírás ezt külön teszteli.
+
+Az idempotencia itt a teljes kérésre vonatkozik. Ugyanazzal a runId-val és
+inputtal a retry az eredeti futást kapja, nem értékeli újra. Más CSV vagy
+config esetén 409 jön, mert a régi futás inputját nem írjuk felül. A SQL
+primary key és tranzakció párhuzamos kéréseknél is megvédi az egyszeri mentést.
+
+Az új run snapshot a teljes CSV-t és validált setupokat is tartalmazza.
+Ez a korábbi puszta gyertyalenyomathoz képest megőrzi az újrajátszáshoz
+szükséges bemenetet. A reprodukáláshoz az engine megfelelő kódverziója is kell.
+Az árak és időzítések továbbra is a már dokumentált OHLC feltételezéseket
+követik; tick-szintű belépési vagy kilépési sorrendet nem állítunk elő.
+
+### Alternatívák és korlátok
+
+A szinkron API korlátozott batch-ekre készült: 25 setup és 1 millió karakter
+CSV. Nagy futásokhoz később háttér-worker, állapotkövetés, lapozás és
+hatékonyabb inputtárolás kell. Jelenleg nincs tartós FAILED vagy RUNNING run.
+A sikertelen kérés HTTP hibával tér vissza és javítva újraküldhető.
+
+A CSV reader közös a fájlos importtal; az új HTTP útvonal `StringIO`-ból
+olvassa ugyanazokat az oszlopokat. Nem küldünk szerveroldali fájlútvonalat.
+Az instrumentumadat forrásának helyessége és az esetleges hiányzó gyertyák
+felismerése továbbra is külön adatminőségi feladat.
+
+### Kipróbálás és olvasási sorrend
+
+A repository gyökerében a `examples/backtests/demo-request.json` szintetikus
+minta egy POST-tal futtatható; a contract dokumentum tartalmazza a curl
+parancsot. Elvárt bruttó eredmény `2R`, nettó eredmény `1.937R`.
+
+Olvasási sorrend:
+
+1. `contracts/backtests.py`: kérés és inputkorlátok.
+2. `application/backtests.py`: teljes batch előkészítése és ismétléskezelés.
+3. `infrastructure/sql_backtests.py`: közös SQL tranzakció.
+4. `api/backtests.py`, `api/outcomes.py`: HTTP-válaszok és hibák.
+5. `tests/test_backtests_api.py`: end-to-end és hibás utak.
+
+Gyakorlófeladat: küldd be a mintát kétszer, majd változtasd a commissiont
+azonos runId mellett. Figyeld meg a 201, 200 és 409 válaszok különbségét.
+Utána új UUID-val is futtasd le a módosított konfigurációt.

@@ -1,0 +1,51 @@
+{
+  "runId": "c70c415f-95b7-4faa-bfca-f1a5b6a7d151",
+  "setups": [
+    {
+      "schemaVersion": "1.0",
+      "eventId": "synthetic-btc-long-demo-001",
+      "eventType": "SETUP_CANDIDATE",
+      "source": "TRADINGVIEW",
+      "strategyVersion": "smc-rce-v1",
+      "symbol": "BTCUSDT",
+      "exchange": "BINANCE",
+      "timeframe": "1",
+      "barOpenTime": "2026-01-01T12:00:00Z",
+      "barCloseTime": "2026-01-01T12:01:00Z",
+      "direction": "LONG",
+      "marketStructure": {
+        "htfTimeframe": "15",
+        "htfBias": "BULLISH",
+        "bos": true,
+        "choch": true,
+        "liquiditySweep": true
+      },
+      "fvg": {
+        "lower": 99.0,
+        "upper": 101.0,
+        "equilibrium": 100.0,
+        "sizeAtrRatio": 0.42,
+        "mitigationPercent": 0.0
+      },
+      "execution": {
+        "entry": 100.0,
+        "stopLoss": 95.0,
+        "takeProfit": 110.0,
+        "riskReward": 2.0
+      },
+      "features": {
+        "atr": null,
+        "relativeVolume": null,
+        "displacementScore": 0.81,
+        "session": "NEW_YORK"
+      }
+    }
+  ],
+  "candlesCsv": "symbol,timeframe,time,open,high,low,close,volume\nBTCUSDT,1,2026-01-01T12:01:00Z,100,101,99,100,1000\nBTCUSDT,1,2026-01-01T12:02:00Z,100,111,99,110,1000\n",
+  "config": {
+    "maxHoldingBars": 30,
+    "entryTimeoutBars": 5,
+    "commissionBpsPerSide": 10,
+    "slippageBpsPerSide": 5
+  }
+}

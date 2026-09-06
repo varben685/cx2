@@ -1,3 +1,4 @@
+from typing import Any
 from uuid import UUID
 
 from pydantic import TypeAdapter
@@ -10,6 +11,18 @@ from smc_assistant.infrastructure.webhook_event_schema import outcome_records
 _record_adapter = TypeAdapter(OutcomeRecord)
 
 
+def outcome_record_values(record: OutcomeRecord) -> dict[str, Any]:
+    return {
+        "outcome_id": record.outcome_id,
+        "run_id": record.run_id,
+        "event_id": record.evaluation.event_id,
+        "symbol": record.evaluation.symbol,
+        "label": record.evaluation.outcome.label.value,
+        "evaluated_at": record.evaluated_at,
+        "snapshot": _record_adapter.dump_python(record, mode="json"),
+    }
+
+
 class SQLOutcomeRepository:
     def __init__(self, engine: Engine) -> None:
         self._engine = engine
@@ -20,17 +33,7 @@ class SQLOutcomeRepository:
             return OutcomeSaveResult(record=existing, created=False)
         try:
             with self._engine.begin() as connection:
-                connection.execute(
-                    insert(outcome_records).values(
-                        outcome_id=record.outcome_id,
-                        run_id=record.run_id,
-                        event_id=record.evaluation.event_id,
-                        symbol=record.evaluation.symbol,
-                        label=record.evaluation.outcome.label.value,
-                        evaluated_at=record.evaluated_at,
-                        snapshot=_record_adapter.dump_python(record, mode="json"),
-                    )
-                )
+                connection.execute(insert(outcome_records).values(**outcome_record_values(record)))
         except IntegrityError:
             existing = self.get_by_run_event(record.run_id, record.evaluation.event_id)
             if existing is None:

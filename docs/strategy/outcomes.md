@@ -134,5 +134,7 @@ vagy target esetén már végleges eredmény menthető. Ez a védelem a mentési
 use case része; a közvetlen domain engine továbbra is a kapott adatsor
 végéig értékel. A gyertyaszám önmagában nem ellenőrzi az adatfolyam hézagait.
 
-A tárolás jelenleg explicit application hívás: a webhook fogadása és a
+A tárolás explicit application hívásból és a `POST /api/v1/backtests`
+batch-folyamatból érhető el. A HTTP-futás a teljes inputot és CSV-t is
+megőrzi, minden eredményt egy tranzakcióban ment. A webhook fogadása és a
 dashboard még nem indít automatikus outcome értékelést.

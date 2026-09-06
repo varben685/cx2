@@ -140,7 +140,7 @@ ezért a Docker image build ebben a munkamenetben nem volt futtatható.
 - [x] Outcome snapshot persistence, idempotens futás/esemény kulccsal.
 - [x] Backtest analytics alapok: darabszámok, nettó win rate, expectancy és profit factor.
 - [x] Futásonkénti analytics summary API.
-- [ ] Backtest futtatási folyamat és outcome lekérdező API.
+- [x] Backtest futtatási folyamat és outcome lekérdező API.
 
 ## Phase 6: Frontend és journal
 
@@ -386,3 +386,13 @@ ezért a Docker image build ebben a munkamenetben nem volt futtatható.
   Docker API frissítve, valódi HTTP/PostgreSQL/CORS smoke sikeres. A következő
   Phase 5 feladat explicit bekerült a tervbe: backtest futtatási folyamat és
   outcome lekérdező API, az eddigi Python hívások felhasználhatóvá tételéhez.
+- 2026-09-07: Elkészült a korlátozott, szinkron CSV-batch futtatási API,
+  a teljes inputot és outcome-okat megőrző backtest_runs snapshot, az atomikus
+  SQL mentés, a futáslista/részletező és outcome lista/részletező. Azonos
+  kérés újrafuttatásakor az első eredmény tér vissza, eltérő inputra 409,
+  hiányos adatra 422 és nincs részleges mentés. A szintetikus mintakérés
+  dokumentálva és tesztelve. Kapuk: 229 backend teszt sikeres, 2 feltételes
+  skip; 34 PostgreSQL teszt sikeres, Ruff és mypy sikeres. Docker API
+  frissítve, teljes POST/GET/analytics smoke sikeres. Következő lépés:
+  Phase 6 backtest indítás és eredménynézet a frontenden. A nagy futások,
+  háttér-worker, Alembic és további analytics nyitottak maradnak.

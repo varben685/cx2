@@ -9,9 +9,11 @@ pontos egyezéssel szűr, 1-40 karakter hosszú lehet. Hibás vagy hiányzó UUI
 illetve hibás szimbólumparaméter esetén a válasz `422`.
 
 A válasz a teljes kiválasztott futásra vonatkozik, nincs 50/100 rekordos
-listalimit. Nincs még külön backtest-run entitás: ismeretlen UUID vagy üres
-szimbólumszűrés esetén `200` és üres statisztika érkezik. Ez nem igazolja,
-hogy a futás létrejött vagy befejeződött; csak a már mentett rekordokat méri.
+listalimit. A korábbi közvetlen outcome rekordokkal való kompatibilitás miatt
+ismeretlen UUID vagy üres szimbólumszűrés esetén `200` és üres statisztika
+érkezik. Ez csak a mentett outcome-okat méri. A HTTP-n indított teljes futás
+meglétét a `GET /api/v1/backtests/{run_id}` ellenőrzi, amely ismeretlen futásra
+404-et ad. A futtatást a `backtests.md` dokumentálja.
 
 ## Válasz
 

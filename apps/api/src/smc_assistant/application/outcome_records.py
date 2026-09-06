@@ -79,6 +79,18 @@ def evaluate_and_save_tradingview_outcome(
     if existing is not None:
         return OutcomeSaveResult(record=existing, created=False)
 
+    return repository.save_if_absent(
+        evaluate_tradingview_record(payload, market_data_provider, run_id=run_id, config=config)
+    )
+
+
+def evaluate_tradingview_record(
+    payload: TradingViewWebhookPayload,
+    market_data_provider: MarketDataProvider,
+    *,
+    run_id: UUID,
+    config: OutcomeConfig | None = None,
+) -> OutcomeRecord:
     evaluation = evaluate_tradingview_outcome(payload, market_data_provider, config)
     outcome = evaluation.outcome
     if (
@@ -89,16 +101,14 @@ def evaluate_and_save_tradingview_outcome(
         and (outcome.bars_held or 0) < evaluation.config.max_holding_bars
     ):
         raise IncompleteOutcomeError("Not enough candles to persist a final outcome.")
-    return repository.save_if_absent(
-        OutcomeRecord(
-            outcome_id=uuid4(),
-            run_id=run_id,
-            schema_version=payload.schema_version,
-            strategy_version=payload.strategy_version,
-            engine_version=OUTCOME_ENGINE_VERSION,
-            exchange=payload.exchange,
-            bar_close_time=payload.bar_close_time.astimezone(UTC),
-            evaluated_at=datetime.now(UTC),
-            evaluation=evaluation,
-        )
+    return OutcomeRecord(
+        outcome_id=uuid4(),
+        run_id=run_id,
+        schema_version=payload.schema_version,
+        strategy_version=payload.strategy_version,
+        engine_version=OUTCOME_ENGINE_VERSION,
+        exchange=payload.exchange,
+        bar_close_time=payload.bar_close_time.astimezone(UTC),
+        evaluated_at=datetime.now(UTC),
+        evaluation=evaluation,
     )

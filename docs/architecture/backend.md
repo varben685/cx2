@@ -28,3 +28,15 @@ közös engine-t használó SQL repository. A módot a meglévő
 
 Az endpoint olvasásra szolgál. Nem indít backtestet és nem hoz létre
 eredményrekordot. Részletek: `docs/contracts/backtest-analytics.md`.
+
+## Backtest workflow
+
+Az új `POST /api/v1/backtests` végpont a JSON-ban kapott CSV-t és validált
+TradingView setupokat adja a batch application folyamatnak. A
+`evaluate_tradingview_record` mentés nélkül épít végleges outcome-ot, majd
+a backtest repository egyszerre menti a run és outcome sorokat.
+
+A service factory memory vagy PostgreSQL adaptert hoz létre a backtesthez
+is, az outcome repositoryval közös tárolón. A run lista/részletező és az
+outcome lista/részletező külön HTTP nézet, mindkettő camelCase modellekkel.
+API contract: `docs/contracts/backtests.md`. Tárolási döntés: ADR-0003.

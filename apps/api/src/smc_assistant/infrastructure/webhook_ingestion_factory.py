@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 
 from smc_assistant.application.audit import AuditLogger
+from smc_assistant.application.backtests import BacktestRepository
 from smc_assistant.application.outcome_records import OutcomeRepository
 from smc_assistant.application.setup_candidates import SetupCandidateRepository
 from smc_assistant.application.webhook_ingestion import WebhookIngestionService
@@ -9,6 +10,7 @@ from smc_assistant.infrastructure.database import (
     create_database_engine,
     initialize_database_schema,
 )
+from smc_assistant.infrastructure.in_memory_backtests import InMemoryBacktestRepository
 from smc_assistant.infrastructure.in_memory_outcomes import InMemoryOutcomeRepository
 from smc_assistant.infrastructure.in_memory_setup_candidates import (
     InMemorySetupCandidateRepository,
@@ -16,6 +18,7 @@ from smc_assistant.infrastructure.in_memory_setup_candidates import (
 from smc_assistant.infrastructure.in_memory_webhook_events import (
     InMemoryWebhookEventRepository,
 )
+from smc_assistant.infrastructure.sql_backtests import SQLBacktestRepository
 from smc_assistant.infrastructure.sql_outcomes import SQLOutcomeRepository
 from smc_assistant.infrastructure.sql_setup_candidates import SQLSetupCandidateRepository
 from smc_assistant.infrastructure.sql_webhook_events import SQLWebhookEventRepository
@@ -26,6 +29,7 @@ class WebhookIngestionServices:
     webhook_ingestion_service: WebhookIngestionService
     setup_candidate_repository: SetupCandidateRepository
     outcome_repository: OutcomeRepository
+    backtest_repository: BacktestRepository
 
 
 def create_webhook_ingestion_service(
@@ -54,9 +58,11 @@ def create_webhook_ingestion_services(
             ),
             setup_candidate_repository=setup_candidate_repository,
             outcome_repository=SQLOutcomeRepository(engine),
+            backtest_repository=SQLBacktestRepository(engine),
         )
 
     setup_candidate_repository = InMemorySetupCandidateRepository()
+    outcome_repository = InMemoryOutcomeRepository()
     return WebhookIngestionServices(
         webhook_ingestion_service=WebhookIngestionService(
             InMemoryWebhookEventRepository(),
@@ -64,5 +70,6 @@ def create_webhook_ingestion_services(
             setup_candidate_repository=setup_candidate_repository,
         ),
         setup_candidate_repository=setup_candidate_repository,
-        outcome_repository=InMemoryOutcomeRepository(),
+        outcome_repository=outcome_repository,
+        backtest_repository=InMemoryBacktestRepository(outcome_repository),
     )

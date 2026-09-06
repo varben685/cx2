@@ -2,7 +2,10 @@ import csv
 from collections.abc import Mapping
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
+from io import StringIO
+from math import isfinite
 from pathlib import Path
+from typing import TextIO
 
 from smc_assistant.application.market_data import MarketDataQuery
 from smc_assistant.domain.candles import Candle
@@ -24,12 +27,16 @@ class CsvCandleColumns:
 class CsvMarketDataProvider:
     def __init__(
         self,
-        path: str | Path,
+        path: str | Path | None = None,
         *,
+        csv_text: str | None = None,
         default_timeframe: str | None = None,
         columns: CsvCandleColumns | None = None,
     ) -> None:
-        self._path = Path(path)
+        if (path is None) == (csv_text is None):
+            raise ValueError("Provide exactly one CSV path or csv_text.")
+        self._path = Path(path) if path is not None else None
+        self._csv_text = csv_text
         self._default_timeframe = default_timeframe
         self._columns = columns or CsvCandleColumns()
 
@@ -37,12 +44,22 @@ class CsvMarketDataProvider:
         market_data_query = query or MarketDataQuery()
         candles: list[Candle] = []
 
-        with self._path.open(newline="", encoding="utf-8") as csv_file:
-            reader = csv.DictReader(csv_file)
+        source: TextIO
+        if self._csv_text is not None:
+            source = StringIO(self._csv_text, newline="")
+        else:
+            assert self._path is not None
+            source = self._path.open(newline="", encoding="utf-8")
+        with source as csv_file:
+            reader = csv.DictReader(csv_file, strict=True)
             if reader.fieldnames is None:
                 raise ValueError("CSV file must contain a header row.")
+            if len(reader.fieldnames) != len(set(reader.fieldnames)):
+                raise ValueError("CSV headers must be unique.")
 
             for row_number, row in enumerate(reader, start=2):
+                if None in row or any(value is None for value in row.values()):
+                    raise ValueError(f"CSV row {row_number}: column count must match the header.")
                 if not self._row_matches_query(row, market_data_query):
                     continue
 
@@ -146,6 +163,10 @@ def parse_timeframe_duration(timeframe: str) -> timedelta:
     normalized = timeframe.strip().upper()
     if normalized == "":
         raise ValueError("timeframe must not be empty.")
+    if normalized == "D":
+        return timedelta(days=1)
+    if normalized == "W":
+        return timedelta(days=7)
 
     if normalized.endswith("H"):
         return timedelta(hours=_parse_positive_int(normalized[:-1], timeframe))
@@ -161,8 +182,8 @@ def parse_timeframe_duration(timeframe: str) -> timedelta:
 
 def _ensure_chronological(candles: list[Candle]) -> None:
     for previous, current in zip(candles, candles[1:], strict=False):
-        if current.open_time < previous.open_time:
-            raise ValueError("CSV candles must be sorted by open_time.")
+        if current.open_time <= previous.open_time:
+            raise ValueError("CSV candles must be sorted by open_time with no duplicates.")
 
 
 def _parse_positive_int(value: str, original_timeframe: str) -> int:
@@ -187,9 +208,7 @@ def _get_first_value(
         if value is not None:
             return value
 
-    raise ValueError(
-        f"CSV row {row_number}: one of {', '.join(candidates)} columns is required."
-    )
+    raise ValueError(f"CSV row {row_number}: one of {', '.join(candidates)} columns is required.")
 
 
 def _get_required_value(row: Mapping[str, str], column: str, row_number: int) -> str:
@@ -226,6 +245,9 @@ def _parse_datetime(value: str, row_number: int, column: str) -> datetime:
 
 def _parse_float(value: str, row_number: int, column: str) -> float:
     try:
-        return float(value)
+        parsed = float(value)
     except ValueError as error:
         raise ValueError(f"CSV row {row_number}: {column} must be a number.") from error
+    if not isfinite(parsed):
+        raise ValueError(f"CSV row {row_number}: {column} must be finite.")
+    return parsed

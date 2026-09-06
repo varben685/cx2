@@ -26,6 +26,16 @@ class InMemoryOutcomeRepository:
         with self._lock:
             return self._records.get(outcome_id)
 
+    def save_new_run(self, run_id: UUID, records: tuple[OutcomeRecord, ...]) -> None:
+        with self._lock:
+            if any(record.run_id == run_id for record in self._records.values()):
+                raise ValueError("runId already has outcome records.")
+            if any(record.outcome_id in self._records for record in records):
+                raise ValueError("outcome_id already exists.")
+            for record in records:
+                self._records[record.outcome_id] = record
+                self._keys[(run_id, record.evaluation.event_id)] = record.outcome_id
+
     def get_by_run_event(self, run_id: UUID, event_id: str) -> OutcomeRecord | None:
         with self._lock:
             outcome_id = self._keys.get((run_id, event_id))

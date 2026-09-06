@@ -87,3 +87,12 @@ outcome_records = Table(
 
 Index("ix_outcome_records_event_id", outcome_records.c.event_id)
 Index("ix_outcome_records_evaluated_at", outcome_records.c.evaluated_at)
+
+backtest_runs = Table(
+    "backtest_runs",
+    metadata,
+    Column("run_id", Uuid, primary_key=True),
+    Column("completed_at", DateTime(timezone=True), nullable=False),
+    Column("snapshot", JSON().with_variant(JSONB(), "postgresql"), nullable=False),
+)
+Index("ix_backtest_runs_completed_at", backtest_runs.c.completed_at)

@@ -98,3 +98,23 @@ Az új tábla a meglévő `initialize_database_schema` / `metadata.create_all`
 Az Alembic bevezetése továbbra is nyitott infrastruktúra-feladat. A snapshot
 szerkezetének későbbi módosításakor a régi rekordok olvashatóságát migrációval
 vagy verziózott readerrel meg kell őrizni.
+
+### `backtest_runs`
+
+A HTTP-n indított, teljesen kiértékelt batch nyilvántartása.
+
+| Oszlop | Típus | Megjegyzés |
+| --- | --- | --- |
+| `run_id` | UUID | Elsődleges kulcs és kliensoldali ismétlési azonosító. |
+| `completed_at` | timestamptz | Indexelt befejezési idő, a listázás rendezéséhez. |
+| `snapshot` | JSON/JSONB | Típusos BacktestRun, teljes inputtal és outcome-okkal. |
+
+Egy snapshotban megmarad a kanonikus kérés SHA-256 lenyomata, a validált
+setupok, konfiguráció, eredeti CSV szöveg, kezdési/befejezési idő és a
+kiértékelt outcome sorozat. A CSV-t a normál API-válaszok nem adják vissza.
+
+A futássor és a kapcsolódó `outcome_records` sorok közös tranzakcióban
+mentődnek. Egyik táblában sem marad részleges eredmény, ha az írás meghiúsul.
+Későbbi részletes eredménylekérdezéshez az outcome_records használható, a
+backtest részletező statisztikája pedig a futás megőrzött outcome snapshotjából
+készül. Döntés: ADR-0003.
