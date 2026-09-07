@@ -29,6 +29,7 @@ import {
   type SetupCandidate,
   type SetupScoreComponent,
 } from "./api";
+import { BacktestsPanel } from "./BacktestsPanel";
 
 const { Content, Header } = Layout;
 
@@ -344,6 +345,7 @@ export function App() {
               }}
             />
           </section>
+          <BacktestsPanel />
         </Content>
         <Drawer
           width={560}

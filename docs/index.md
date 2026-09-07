@@ -14,6 +14,7 @@ Ez a könyvtár az `smc-ai-trading-assistant` működésének hiteles forrása.
 - [Phase 03 learning](learning/phase-03-pine-prototype.md): Pine Script prototípus.
 - [Phase 04 learning](learning/phase-04-setup-scoring.md): rule-based setup scoring.
 - [Phase 05 learning](learning/phase-05-outcome-backtest.md): outcome, persistence és analytics.
+- [Phase 06 learning](learning/phase-06-backtest-frontend.md): backtest futások és outcome-ok frontend folyamata.
 - [Backtest analytics API](contracts/backtest-analytics.md): mutatók és lekérdezési szabályok.
 - [Backtest futtatás](contracts/backtests.md): CSV-batch, mentés és outcome lekérdezés.
 - [Szintetikus OHLCV példák](strategy/synthetic-examples.md): Phase 1 integrált mini chart.

@@ -144,12 +144,14 @@ ezért a Docker image build ebben a munkamenetben nem volt futtatható.
 
 ## Phase 6: Frontend és journal
 
-- [ ] Dashboard.
-- [ ] Setup lista.
-- [ ] Setup részletező.
+- [x] Dashboard.
+- [x] Setup lista.
+- [x] Setup részletező.
+- [x] Backtest futáslista és új futás indítása.
+- [x] Backtest statisztikák és outcome részletező.
 - [ ] Journal.
 - [ ] Analytics.
-- [ ] Frontend tesztek.
+- [x] Frontend tesztek.
 
 ## Phase 7: Paper trading workflow
 
@@ -396,3 +398,11 @@ ezért a Docker image build ebben a munkamenetben nem volt futtatható.
   frissítve, teljes POST/GET/analytics smoke sikeres. Következő lépés:
   Phase 6 backtest indítás és eredménynézet a frontenden. A nagy futások,
   háttér-worker, Alembic és további analytics nyitottak maradnak.
+- 2026-09-07: Elkészült a Phase 6 első frontend folyamata. A dashboard listázza
+  a mentett backtest futásokat, megjeleníti az alapstatisztikákat és az outcome
+  részleteket, valamint szerkeszthető szintetikus JSON/CSV mintából új futást
+  indít. A reszponzív nézet asztali és 390 px-es mobil viewporton Playwrighttal
+  ellenőrzött; a széles táblák lokálisan görgethetők. A valódi memória módú
+  API-val a böngészőből indított mintafutás is sikeres. Frontend kapuk: 10
+  teszt, lint, typecheck és production build sikeres. Következő lépés: journal
+  domain, persistence és használható frontend munkafolyamat.

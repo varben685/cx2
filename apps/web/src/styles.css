@@ -8,6 +8,13 @@ body {
   color: #17202a;
 }
 
+html,
+body,
+#root {
+  width: 100%;
+  min-width: 0;
+}
+
 .app-shell {
   min-height: 100vh;
   background: #f4f6f8;
@@ -29,12 +36,16 @@ body {
 }
 
 .app-content {
-  width: min(1280px, 100%);
+  width: 100%;
+  max-width: 1280px;
+  min-width: 0;
+  margin: 0 auto;
   padding: 32px 24px;
 }
 
 .status-panel,
-.setups-panel {
+.setups-panel,
+.backtests-panel {
   display: grid;
   gap: 24px;
   padding: 24px;
@@ -43,7 +54,8 @@ body {
   border-radius: 8px;
 }
 
-.setups-panel {
+.setups-panel,
+.backtests-panel {
   margin-top: 24px;
 }
 
@@ -75,6 +87,90 @@ body {
 
 .setups-panel .ant-table-row {
   cursor: pointer;
+}
+
+.backtests-panel {
+  display: grid;
+  gap: 24px;
+}
+
+.status-panel,
+.setups-panel,
+.backtests-panel,
+.ant-table-wrapper {
+  min-width: 0;
+}
+
+.backtests-panel .ant-table-row {
+  cursor: pointer;
+}
+
+.backtests-panel .selected-row > td {
+  background: #edf5ff !important;
+}
+
+.run-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding-top: 4px;
+  border-top: 1px solid #e5e9ef;
+}
+
+.run-heading h3.ant-typography {
+  margin: 0;
+  font-size: 20px;
+  line-height: 1.25;
+}
+
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  border: 1px solid #d9dee6;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.metrics-grid .ant-statistic {
+  min-width: 0;
+  padding: 16px;
+  border-right: 1px solid #e5e9ef;
+}
+
+.metrics-grid .ant-statistic:last-child {
+  border-right: 0;
+}
+
+.metrics-grid .ant-statistic-content {
+  font-size: 20px;
+}
+
+.backtest-form,
+.outcome-detail {
+  display: grid;
+  gap: 18px;
+}
+
+.field-label {
+  display: grid;
+  gap: 7px;
+}
+
+.field-label textarea {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.config-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.numeric-input {
+  width: 100%;
 }
 
 .setup-state-bar {
@@ -160,6 +256,22 @@ body {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .run-heading {
+    flex-direction: column;
+  }
+
+  .metrics-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .metrics-grid .ant-statistic {
+    border-bottom: 1px solid #e5e9ef;
+  }
+
+  .config-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .setup-reason-grid {
     grid-template-columns: 1fr;
   }
@@ -168,5 +280,14 @@ body {
 @media (max-width: 480px) {
   .status-grid {
     grid-template-columns: 1fr;
+  }
+
+  .metrics-grid,
+  .config-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .metrics-grid .ant-statistic {
+    border-right: 0;
   }
 }

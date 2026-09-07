@@ -648,3 +648,48 @@ Phase 2 következő mérföldkő:
 
 Phase 6 első frontend folyamata: backtest indítása a mintából/saját adatokból,
 mentett futások kiválasztása, statisztikák és outcome-részletek megjelenítése.
+
+## 2026-09-07 Phase 6: backtest frontend
+
+### Elkészült
+
+- Mentett backtest futások listája és kiválasztása.
+- Futásonkénti closed trades, win rate, expectancy, total net R és profit
+  factor megjelenítés.
+- Outcome lista és részletező drawer trade tervvel, exit adatokkal,
+  költségekkel, MFE/MAE-vel és audit mezőkkel.
+- Új backtest modal szerkeszthető setup JSON, OHLCV CSV, futásazonosító és
+  outcome konfiguráció mezőkkel.
+- Használható szintetikus alapminta, kliensoldali JSON hiba és backend
+  validációs üzenetek kezelése.
+- Sikeres futtatás után automatikus futáslista- és outcome-cache frissítés.
+- Mobil túlcsordulás javítása; a széles táblák saját keretükben görgethetők.
+- Az Ant Design 5 hivatalos React 19 kompatibilitási patchének bekötése.
+
+### Ellenőrzés
+
+- `npm test -- --run`: 10 sikeres frontend teszt.
+- `npm run lint`: sikeres.
+- `npm run typecheck`: sikeres.
+- `npm run build`: sikeres.
+- Playwright + helyi Chrome vizuális ellenőrzés 1440x1000 és 390x844
+  viewporton, mockolt, contracthű API válaszokkal; oldalirányú body overflow
+  nincs.
+- Valódi FastAPI memória módban a böngészőből indított mintafutás 201 választ,
+  `TAKE_PROFIT_HIT` outcome-ot és `1.937R` nettó eredményt adott; a böngésző
+  konzolja hiba- és figyelmeztetésmentes.
+- A Docker daemon nem volt elérhető, ezért ebben a lépésben valódi
+  PostgreSQL/API konténeres smoke nem futott.
+
+### Korlátok
+
+- A Vite production build körülbelül 1,1 MB-os minifikált fő JavaScript
+  csomagra figyelmeztet. Ez nem blokkolja a működést, de route- vagy
+  komponensszintű code splitting később indokolt.
+- A backtest jelenleg szinkron, kézzel megadott JSON/CSV batch folyamat.
+- Nincs még equity curve, drawdown, lapozás vagy háttérben futó nagy backtest.
+
+### Következő konkrét lépés
+
+Phase 6 journal folyamat: típusos journal bejegyzés, outcome-hoz kapcsolás,
+PostgreSQL persistence, lista/részletező és első szerkesztő frontend.
