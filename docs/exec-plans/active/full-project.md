@@ -149,7 +149,7 @@ ezért a Docker image build ebben a munkamenetben nem volt futtatható.
 - [x] Setup részletező.
 - [x] Backtest futáslista és új futás indítása.
 - [x] Backtest statisztikák és outcome részletező.
-- [ ] Journal.
+- [x] Journal.
 - [ ] Analytics.
 - [x] Frontend tesztek.
 

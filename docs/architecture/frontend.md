@@ -6,11 +6,12 @@ Design biztosítja. Az ikonok a Lucide készletből érkeznek.
 Az Ant Design 5 React 19 kompatibilitási csomagja az alkalmazás belépési
 pontján töltődik be; a későbbi Ant Design 6 migráció ezt szükségtelenné teszi.
 
-Az aktuális dashboard három munkaterületből áll:
+Az aktuális dashboard négy munkaterületből áll:
 
 - backend kapcsolat és verzió;
 - pontozott setup lista, szűrés és részletező drawer;
-- backtest futáslista, összesítő mutatók, outcome lista és részletező drawer.
+- backtest futáslista, összesítő mutatók, outcome lista és részletező drawer;
+- döntési journal lista, létrehozó/szerkesztő modal és revíziótörténetes drawer.
 
 Az új backtest modal szerkeszthető szintetikus setup JSON-nal és OHLCV CSV-vel
 indul. A kliens a `POST /api/v1/backtests` végpontot hívja, majd siker esetén
@@ -21,4 +22,8 @@ A táblák kis képernyőn a saját keretükben vízszintesen görgethetők. A f
 tartalom és panelek `min-width: 0` beállítása megakadályozza, hogy a táblák
 minimális szélessége az egész oldalt széthúzza.
 
-Következő frontend területek: journal, bővebb analytics és strategy settings.
+A journal csak olyan setupot kínál fel új bejegyzéshez, amelyhez még nincs
+napló. Létrehozás és szerkesztés után a TanStack Query frissíti a listát, a
+részletezőt és a revíziókat. A mobil drawer legfeljebb a viewport szélessége.
+
+Következő frontend területek: bővebb analytics és strategy settings.

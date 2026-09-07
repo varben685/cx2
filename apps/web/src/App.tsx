@@ -30,6 +30,7 @@ import {
   type SetupScoreComponent,
 } from "./api";
 import { BacktestsPanel } from "./BacktestsPanel";
+import { JournalPanel } from "./JournalPanel";
 
 const { Content, Header } = Layout;
 
@@ -346,6 +347,7 @@ export function App() {
             />
           </section>
           <BacktestsPanel />
+          <JournalPanel />
         </Content>
         <Drawer
           width={560}

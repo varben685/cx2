@@ -6,6 +6,7 @@ from sqlalchemy import (
     Float,
     ForeignKey,
     Index,
+    Integer,
     MetaData,
     String,
     Table,
@@ -96,3 +97,48 @@ backtest_runs = Table(
     Column("snapshot", JSON().with_variant(JSONB(), "postgresql"), nullable=False),
 )
 Index("ix_backtest_runs_completed_at", backtest_runs.c.completed_at)
+
+journal_entries = Table(
+    "journal_entries",
+    metadata,
+    Column("journal_id", Uuid, primary_key=True),
+    Column(
+        "setup_id",
+        String(length=200),
+        ForeignKey("setup_candidates.setup_id"),
+        nullable=False,
+        unique=True,
+    ),
+    Column(
+        "outcome_id",
+        Uuid,
+        ForeignKey("outcome_records.outcome_id"),
+        nullable=True,
+    ),
+    Column("symbol", String(length=40), nullable=False),
+    Column("execution_status", String(length=20), nullable=False),
+    Column("revision", Integer, nullable=False),
+    Column("updated_at", DateTime(timezone=True), nullable=False),
+    Column("snapshot", JSON().with_variant(JSONB(), "postgresql"), nullable=False),
+)
+
+Index("ix_journal_entries_updated_at", journal_entries.c.updated_at)
+Index(
+    "ix_journal_entries_symbol_status",
+    journal_entries.c.symbol,
+    journal_entries.c.execution_status,
+)
+
+journal_entry_revisions = Table(
+    "journal_entry_revisions",
+    metadata,
+    Column(
+        "journal_id",
+        Uuid,
+        ForeignKey("journal_entries.journal_id"),
+        primary_key=True,
+    ),
+    Column("revision", Integer, primary_key=True),
+    Column("created_at", DateTime(timezone=True), nullable=False),
+    Column("snapshot", JSON().with_variant(JSONB(), "postgresql"), nullable=False),
+)

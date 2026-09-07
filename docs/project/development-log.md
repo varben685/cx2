@@ -693,3 +693,44 @@ mentett futások kiválasztása, statisztikák és outcome-részletek megjelení
 
 Phase 6 journal folyamat: típusos journal bejegyzés, outcome-hoz kapcsolás,
 PostgreSQL persistence, lista/részletező és első szerkesztő frontend.
+
+## 2026-09-08 Phase 6: verziózott trading journal
+
+### Elkészült
+
+- Egy setuphoz egy journal, immutable setup- és forrás-webhook snapshottal.
+- Opcionális outcome megadás, illetve automatikus legfrissebb outcome-kapcsolás.
+- Döntés, jegyzet, értékelés, címkék, screenshot hivatkozás és dokumentált
+  manuális felülbírálás.
+- Optimistic locking és append-only revíziótörténet memória, SQLite és
+  PostgreSQL repositoryval.
+- Létrehozó, lista, részletező, frissítő és revízió API.
+- Journal lista, létrehozó/szerkesztő modal, részletező drawer és előzmények.
+- API contract, adatmodell, learning dokumentum és ADR-0004.
+
+### Ellenőrzés
+
+- `uv run pytest`: 236 sikeres, 2 környezet szerint kihagyott teszt.
+- Külön valódi PostgreSQL journal tesztcsomag: 9 sikeres teszt.
+- Ruff és mypy sikeres, 58 típusellenőrzött forrásfájl.
+- `npm test -- --run`: 13 sikeres frontend teszt; lint, typecheck és production
+  build sikeres.
+- Docker HTTP/PostgreSQL smoke: webhook, backtest, automatikus outcome-kapcsolás,
+  journal create/update, `1.937R` eredmény és két revízió visszaolvasása sikeres.
+- Playwright + helyi Chrome ellenőrzés 1440x1000 és 390x844 viewporton;
+  konzol-/HTTP-hiba és oldalirányú body overflow nincs.
+
+### Korlátok
+
+- Nincs törlés, képfeltöltés, lapozás, jogosultsági réteg vagy későbbi outcome
+  újrakapcsolás.
+- A teljes setup/outcome kontextus minden revízióban ismétlődik.
+- Az adatbázisséma még `create_all` alapú; éles migrációhoz Alembic kell.
+- A production frontend bundle továbbra is körülbelül 1,1 MB, code splitting
+  később indokolt.
+
+### Következő konkrét lépés
+
+Phase 6 analytics: equity curve, maximum drawdown, győztes/vesztes sorozatok,
+session- és instrumentumbontás, valamint a felhasználói döntések összevetése a
+rendszer javaslataival.

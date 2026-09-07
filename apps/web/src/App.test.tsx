@@ -98,6 +98,13 @@ function stubFetch({
         });
       }
 
+      if (url.includes("/api/v1/journal")) {
+        return Promise.resolve({
+          ok: true,
+          json: async () => ({ count: 0, items: [] }),
+        });
+      }
+
       return Promise.resolve({
         ok: false,
         status: 404,

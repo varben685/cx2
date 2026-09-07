@@ -43,6 +43,9 @@ class WebhookEventRepository(Protocol):
     def save_if_absent(self, record: WebhookEventRecord) -> WebhookEventSaveResult:
         pass
 
+    def get_by_event_id(self, event_id: str) -> WebhookEventRecord | None:
+        pass
+
 
 @dataclass(frozen=True)
 class WebhookIngestionResult:

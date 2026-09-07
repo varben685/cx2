@@ -1,8 +1,8 @@
 # Data model
 
-Az első adatmodell részben már implementált adatbázis sémára épül. A
-`webhook_events` tábla SQLAlchemy metadata alapján jön létre; a későbbi
-fázisban ezt Alembic migrációkra kell cserélni.
+Az adatmodell implementált táblái SQLAlchemy metadata alapján jönnek létre.
+Éles telepítés előtt ezt az induláskori `create_all` folyamatot verziózott
+Alembic migrációkra kell cserélni.
 
 ```mermaid
 erDiagram
@@ -13,12 +13,14 @@ erDiagram
     TradePlan ||--o{ SimulatedTrade : simulates
     SimulatedTrade ||--o| TradeOutcome : resolves
     SetupCandidate ||--o{ JournalEntry : documents
+    JournalEntry ||--|{ JournalEntryRevision : versions
     StrategyVersion ||--o{ StrategyConfiguration : versions
     StrategyConfiguration ||--o{ SetupScore : scores
     ModelVersion ||--o{ ModelPrediction : predicts
 ```
 
-Később a többi üzleti entitás UUID elsődleges kulcsot és UTC időbélyeget kap.
+Az új belső üzleti entitások UUID elsődleges kulcsot és UTC időbélyeget kapnak;
+a külső esemény- és setupazonosítók a forrás contract stringjei maradnak.
 
 ## Implementált táblák
 
@@ -118,3 +120,27 @@ mentődnek. Egyik táblában sem marad részleges eredmény, ha az írás meghi�
 Későbbi részletes eredménylekérdezéshez az outcome_records használható, a
 backtest részletező statisztikája pedig a futás megőrzött outcome snapshotjából
 készül. Döntés: ADR-0003.
+
+### `journal_entries`
+
+Egy setup aktuális döntési naplója. A `setup_id` unique foreign key, ezért egy
+setuphoz legfeljebb egy bejegyzés tartozik. Az opcionális `outcome_id` a
+létrehozáskor kapcsolt eredményre mutat.
+
+| Oszlop | Típus | Megjegyzés |
+| --- | --- | --- |
+| `journal_id` | UUID | Elsődleges kulcs. |
+| `setup_id` | string(200) | Unique FK a setup candidate-re. |
+| `outcome_id` | UUID/null | Opcionális FK az outcome rekordra. |
+| `symbol` | string(40) | Lista- és analytics szűréshez. |
+| `execution_status` | string(20) | `NOT_RECORDED`, `TAKEN` vagy `SKIPPED`. |
+| `revision` | integer | Aktuális pozitív verzió. |
+| `updated_at` | timestamptz | Frissítési sorrend és audit idő. |
+| `snapshot` | JSON/JSONB | Teljes aktuális JournalEntry. |
+
+### `journal_entry_revisions`
+
+Csak hozzáfűzhető történet. A `(journal_id, revision)` összetett elsődleges
+kulcs minden verziót egyszerivé tesz. A `snapshot` az adott mentés teljes
+JournalEntry állapota, a `created_at` a verzió mentési ideje. Az aktuális sor és
+az új revízió egy tranzakcióban készül. Döntés: ADR-0004.

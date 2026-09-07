@@ -143,6 +143,63 @@ export type OutcomeList = {
   items: OutcomeRecord[];
 };
 
+export type JournalExecutionStatus = "NOT_RECORDED" | "TAKEN" | "SKIPPED";
+
+export type JournalEntry = {
+  journalId: string;
+  setupId: string;
+  outcomeId: string | null;
+  eventId: string;
+  symbol: string;
+  exchange: string;
+  timeframe: string;
+  direction: "LONG" | "SHORT" | string;
+  session: string;
+  strategyVersion: string;
+  signalTime: string;
+  outcomeLabel: string | null;
+  realizedR: number | null;
+  mfeR: number | null;
+  maeR: number | null;
+  executionStatus: JournalExecutionStatus;
+  userNote: string | null;
+  screenshotReference: string | null;
+  manualRating: number | null;
+  manualOverride: boolean;
+  overrideReason: string | null;
+  tags: string[];
+  revision: number;
+  createdAt: string;
+  updatedAt: string;
+  setupSnapshot?: Record<string, unknown>;
+  outcomeSnapshot?: Record<string, unknown> | null;
+};
+
+export type JournalList = {
+  count: number;
+  items: JournalEntry[];
+};
+
+export type JournalContent = {
+  executionStatus: JournalExecutionStatus;
+  userNote: string | null;
+  screenshotReference: string | null;
+  manualRating: number | null;
+  manualOverride: boolean;
+  overrideReason: string | null;
+  tags: string[];
+};
+
+export type JournalCreateRequest = JournalContent & {
+  setupId: string;
+  outcomeId?: string;
+};
+
+export type JournalUpdateRequest = JournalContent & {
+  journalId: string;
+  expectedRevision: number;
+};
+
 export class ApiError extends Error {
   constructor(
     message: string,
@@ -208,6 +265,17 @@ async function errorFromResponse(response: Response, fallback: string): Promise<
     const payload = (await response.json()) as { detail?: unknown };
     if (typeof payload.detail === "string") {
       message = payload.detail;
+    } else if (Array.isArray(payload.detail)) {
+      const validationMessages = payload.detail
+        .map((item) =>
+          typeof item === "object" && item !== null && "msg" in item
+            ? String(item.msg)
+            : null,
+        )
+        .filter((item): item is string => item !== null);
+      if (validationMessages.length > 0) {
+        message = validationMessages.join(" ");
+      }
     }
   } catch {
     // Keep the operation-specific fallback when the response is not JSON.
@@ -242,4 +310,54 @@ export async function fetchOutcomes(runId: string, limit = 100): Promise<Outcome
     throw await errorFromResponse(response, "Az outcome eredmények nem tölthetők be.");
   }
   return response.json() as Promise<OutcomeList>;
+}
+
+export async function fetchJournal(limit = 100): Promise<JournalList> {
+  const response = await fetch(`${apiBaseUrl}/api/v1/journal?limit=${limit}`);
+  if (!response.ok) {
+    throw await errorFromResponse(response, "A journal nem tölthető be.");
+  }
+  return response.json() as Promise<JournalList>;
+}
+
+export async function fetchJournalEntry(journalId: string): Promise<JournalEntry> {
+  const response = await fetch(`${apiBaseUrl}/api/v1/journal/${journalId}`);
+  if (!response.ok) {
+    throw await errorFromResponse(response, "A journal bejegyzés nem tölthető be.");
+  }
+  return response.json() as Promise<JournalEntry>;
+}
+
+export async function fetchJournalRevisions(journalId: string): Promise<JournalList> {
+  const response = await fetch(`${apiBaseUrl}/api/v1/journal/${journalId}/revisions`);
+  if (!response.ok) {
+    throw await errorFromResponse(response, "A journal előzmények nem tölthetők be.");
+  }
+  return response.json() as Promise<JournalList>;
+}
+
+export async function createJournalEntry(payload: JournalCreateRequest): Promise<JournalEntry> {
+  const { setupId, ...body } = payload;
+  const response = await fetch(`${apiBaseUrl}/api/v1/setups/${encodeURIComponent(setupId)}/journal`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  if (!response.ok) {
+    throw await errorFromResponse(response, "A journal bejegyzés nem menthető.");
+  }
+  return response.json() as Promise<JournalEntry>;
+}
+
+export async function updateJournalEntry(payload: JournalUpdateRequest): Promise<JournalEntry> {
+  const { journalId, ...body } = payload;
+  const response = await fetch(`${apiBaseUrl}/api/v1/journal/${journalId}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  if (!response.ok) {
+    throw await errorFromResponse(response, "A journal bejegyzés nem frissíthető.");
+  }
+  return response.json() as Promise<JournalEntry>;
 }

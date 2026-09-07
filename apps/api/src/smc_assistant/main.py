@@ -6,6 +6,7 @@ from smc_assistant.api.analytics import router as analytics_router
 from smc_assistant.api.backtests import router as backtests_router
 from smc_assistant.api.errors import validation_exception_handler
 from smc_assistant.api.health import router as health_router
+from smc_assistant.api.journal import router as journal_router
 from smc_assistant.api.outcomes import router as outcomes_router
 from smc_assistant.api.setups import router as setups_router
 from smc_assistant.api.webhooks import router as webhooks_router
@@ -41,11 +42,15 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.state.webhook_ingestion_service = (
         webhook_ingestion_services.webhook_ingestion_service
     )
+    app.state.webhook_event_repository = (
+        webhook_ingestion_services.webhook_event_repository
+    )
     app.state.setup_candidate_repository = (
         webhook_ingestion_services.setup_candidate_repository
     )
     app.state.outcome_repository = webhook_ingestion_services.outcome_repository
     app.state.backtest_repository = webhook_ingestion_services.backtest_repository
+    app.state.journal_repository = webhook_ingestion_services.journal_repository
     app.add_exception_handler(RequestValidationError, validation_exception_handler)
     app.include_router(health_router)
     app.include_router(webhooks_router)
@@ -53,6 +58,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(analytics_router)
     app.include_router(backtests_router)
     app.include_router(outcomes_router)
+    app.include_router(journal_router)
     return app
 
 

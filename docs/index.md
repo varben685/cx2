@@ -15,8 +15,10 @@ Ez a könyvtár az `smc-ai-trading-assistant` működésének hiteles forrása.
 - [Phase 04 learning](learning/phase-04-setup-scoring.md): rule-based setup scoring.
 - [Phase 05 learning](learning/phase-05-outcome-backtest.md): outcome, persistence és analytics.
 - [Phase 06 learning](learning/phase-06-backtest-frontend.md): backtest futások és outcome-ok frontend folyamata.
+- [Phase 06 journal](learning/phase-06-journal.md): verziózott döntési napló és frontend folyamat.
 - [Backtest analytics API](contracts/backtest-analytics.md): mutatók és lekérdezési szabályok.
 - [Backtest futtatás](contracts/backtests.md): CSV-batch, mentés és outcome lekérdezés.
+- [Trading journal API](contracts/journal.md): journal létrehozás, szerkesztés és revíziók.
 - [Szintetikus OHLCV példák](strategy/synthetic-examples.md): Phase 1 integrált mini chart.
 
 ## Területek
