@@ -16,6 +16,7 @@ Ez a könyvtár az `smc-ai-trading-assistant` működésének hiteles forrása.
 - [Phase 05 learning](learning/phase-05-outcome-backtest.md): outcome, persistence és analytics.
 - [Phase 06 learning](learning/phase-06-backtest-frontend.md): backtest futások és outcome-ok frontend folyamata.
 - [Phase 06 journal](learning/phase-06-journal.md): verziózott döntési napló és frontend folyamat.
+- [Phase 06 analytics](learning/phase-06-analytics.md): equity, drawdown, bontások és döntési összevetés.
 - [Backtest analytics API](contracts/backtest-analytics.md): mutatók és lekérdezési szabályok.
 - [Backtest futtatás](contracts/backtests.md): CSV-batch, mentés és outcome lekérdezés.
 - [Trading journal API](contracts/journal.md): journal létrehozás, szerkesztés és revíziók.

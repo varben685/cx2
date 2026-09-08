@@ -1,8 +1,14 @@
 # Backtest analytics API
 
-## Végpont
+## Végpontok
 
 `GET /api/v1/analytics/summary?runId=<UUID>&symbol=<opcionális instrumentum>`
+
+`GET /api/v1/analytics/report?runId=<UUID>`
+
+`GET /api/v1/analytics/by-session?runId=<UUID>`
+
+`GET /api/v1/analytics/by-score-bucket?runId=<UUID>`
 
 A `runId` kötelező, így külön futások eredményei nem keverednek. A `symbol`
 pontos egyezéssel szűr, 1-40 karakter hosszú lehet. Hibás vagy hiányzó UUID,
@@ -14,6 +20,10 @@ ismeretlen UUID vagy üres szimbólumszűrés esetén `200` és üres statisztik
 érkezik. Ez csak a mentett outcome-okat méri. A HTTP-n indított teljes futás
 meglétét a `GET /api/v1/backtests/{run_id}` ellenőrzi, amely ismeretlen futásra
 404-et ad. A futtatást a `backtests.md` dokumentálja.
+
+A `report` csak teljes, mentett backtest futáshoz érhető el; ismeretlen
+`runId` esetén 404-et ad. A másik két új végpont ugyanennek a jelentésnek a
+session-, illetve score-bucket részhalmazát adja `count` és `items` mezőkkel.
 
 ## Válasz
 
@@ -56,15 +66,54 @@ nem hagy figyelmen kívül.
 Az R-alapú mutatók nem számlapénznemben számolt eredmények: eltérő pozícióméret
 vagy kockáztatott pénzösszeg esetén a pénzalapú profit factor eltérhet.
 
+## Részletes teljesítményjelentés
+
+A `report` a korábbi `statistics` blokk mellett az alábbiakat tartalmazza:
+
+| Mező | Jelentés |
+| --- | --- |
+| `risk.averageWinR` | Pozitív nettó R eredmények átlaga. |
+| `risk.averageLossR` | Negatív nettó R eredmények előjeles átlaga. |
+| `risk.maximumDrawdownR` | Kumulált nettó R korábbi csúcsától mért legnagyobb visszaesés. |
+| `risk.longestWinningStreak` | Egymást követő pozitív nettó eredmények maximuma. |
+| `risk.longestLosingStreak` | Egymást követő negatív nettó eredmények maximuma. |
+| `equityCurve` | Trade-enként idő, nettó/kumulált R és drawdown. |
+| `bySession` | Trading session szerinti statisztika. |
+| `byInstrument` | Exchange és instrumentum szerinti statisztika. |
+| `byDirection` | LONG és SHORT szerinti statisztika. |
+| `byScoreBucket` | `0-49`, `50-69`, `70-84`, `85-100` score tartományok. |
+| `byStrategyVersion` | Strategy version szerinti statisztika. |
+| `bySetupComponent` | Komponens és `ZERO`/`PARTIAL`/`FULL` állapot szerinti statisztika. |
+| `decisions` | Journal döntések és a rule score javaslatának összevetése. |
+
+Az equity curve a lezárás időpontja, majd outcome UUID szerint rendezett.
+Nullszaldó megszakítja a nyerő és vesztes sorozatot. A görbe nem compounding
+számlaegyenleg, hanem fix kockázati egységek összege, ezért pénzügyi
+hozamgörbeként nem értelmezhető.
+
+A score-bucket és komponensbontás az immutable backtest inputból újraszámolt,
+a válasz `scoringConfigVersion` mezőjében megnevezett rule score-ra épül. A
+journal összevetésben a rendszerjavaslat követése az accepted+TAKEN vagy
+rejected+SKIPPED pár; a `NOT_RECORDED` sorok nem kerülnek az agreement rate
+nevezőjébe. A kihagyott setupok eredménye counterfactual backtest eredmény.
+
 ## Kipróbálás
 
-Futó Docker API mellett üres eredmény ellenőrzése:
+Futó Docker API mellett az összesítő üres eredménye ellenőrizhető egy ismeretlen
+azonosítóval:
 
 ```bash
 curl 'http://localhost:8000/api/v1/analytics/summary?runId=00000000-0000-0000-0000-000000000000'
 ```
 
-Valós mentett futáshoz a mentéskor használt `run_id` értéket add meg.
+Az összetett riport csak létező futáshoz érhető el; ismeretlen `runId` esetén
+`404` választ ad. Valós mentett futáshoz a mentéskor kapott `runId` értéket add
+meg:
+
+```bash
+curl 'http://localhost:8000/api/v1/analytics/report?runId=<RUN_ID>'
+```
+
 Interaktív lekérdezés: `http://localhost:8000/docs`, `analytics` csoport.
 
 A mentéstől a HTTP-válaszig tartó teszt az `apps/api` könyvtárból:

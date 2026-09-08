@@ -29,6 +29,7 @@ import {
   type BacktestRun,
   type OutcomeRecord,
 } from "./api";
+import { AnalyticsReportPanel } from "./AnalyticsReportPanel";
 import { createExampleBacktest } from "./backtestExample";
 
 const { TextArea } = Input;
@@ -231,6 +232,7 @@ export function BacktestsPanel() {
       setDraftError(null);
       await queryClient.invalidateQueries({ queryKey: ["backtests"] });
       await queryClient.invalidateQueries({ queryKey: ["outcomes", run.runId] });
+      await queryClient.invalidateQueries({ queryKey: ["analytics", run.runId] });
     },
   });
 
@@ -341,6 +343,8 @@ export function BacktestsPanel() {
             />
           </div>
 
+          <AnalyticsReportPanel runId={activeRun.runId} />
+
           {outcomesQuery.isError ? (
             <Alert
               type="error"
@@ -381,7 +385,7 @@ export function BacktestsPanel() {
       />
 
       <Drawer
-        width={560}
+        width="min(560px, 100vw)"
         open={selectedOutcomeId !== null}
         onClose={() => setSelectedOutcomeId(null)}
         title="Outcome részletek"

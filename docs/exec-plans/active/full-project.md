@@ -150,7 +150,7 @@ ezért a Docker image build ebben a munkamenetben nem volt futtatható.
 - [x] Backtest futáslista és új futás indítása.
 - [x] Backtest statisztikák és outcome részletező.
 - [x] Journal.
-- [ ] Analytics.
+- [x] Analytics.
 - [x] Frontend tesztek.
 
 ## Phase 7: Paper trading workflow
@@ -406,3 +406,9 @@ ezért a Docker image build ebben a munkamenetben nem volt futtatható.
   API-val a böngészőből indított mintafutás is sikeres. Frontend kapuk: 10
   teszt, lint, typecheck és production build sikeres. Következő lépés: journal
   domain, persistence és használható frontend munkafolyamat.
+- 2026-09-08: Lezárult a Phase 6 analytics. A futáshoz kötött részletes report
+  equity curve-öt, drawdownt, átlagokat, sorozatokat, hat bontást és journal
+  döntési összevetést ad. A dashboard reszponzív SVG görbét, KPI-kat és tabos
+  táblákat jelenít meg. Kapuk: 238 backend teszt, 13 frontend teszt, Ruff,
+  mypy, ESLint, typecheck és build sikeres; PostgreSQL HTTP smoke és desktop/
+  mobil Playwright ellenőrzés kész. Következő lépés: Phase 7 paper trading.

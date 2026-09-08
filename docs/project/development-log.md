@@ -734,3 +734,46 @@ PostgreSQL persistence, lista/részletező és első szerkesztő frontend.
 Phase 6 analytics: equity curve, maximum drawdown, győztes/vesztes sorozatok,
 session- és instrumentumbontás, valamint a felhasználói döntések összevetése a
 rendszer javaslataival.
+
+## 2026-09-08 Phase 6: részletes teljesítmény-analytics
+
+### Elkészült
+
+- Exit-idő szerint rendezett, kumulált nettó R equity curve.
+- Átlagos nyerő/vesztes R, maximum drawdown és leghosszabb nyerő/vesztes
+  sorozat.
+- Session, instrumentum, direction, score bucket, strategy version és setup
+  komponens szerinti bontás.
+- Journal döntések és determinisztikus rendszerjavaslat összevetése, a kihagyott
+  setupok counterfactual eredményével.
+- Teljes report, külön session és külön score-bucket REST végpont.
+- Reszponzív SVG grafikon, KPI-rács és tabos bontási táblák a dashboardon.
+- Frissített API contract, frontend architektúra, learning dokumentum és ADR-0005.
+
+### Ellenőrzés
+
+- `uv run pytest`: 238 sikeres, 2 környezet szerint kihagyott backend teszt.
+- Ruff és mypy sikeres, 60 típusellenőrzött forrásfájl.
+- PostgreSQL-t is tartalmazó célzott analytics/backtest kör: 60 sikeres, 2
+  adapterfüggő skip.
+- `npm test -- --run`: 13 sikeres frontend teszt; lint, typecheck és production
+  build sikeres.
+- Docker HTTP/PostgreSQL smoke: új backtest 201, analytics report 200,
+  `1.937R`, `NEW_YORK`, `85-100` bucket és equity pont helyesen érkezett.
+- Playwright + helyi Chrome ellenőrzés 1440x1000 és 390x844 viewporton;
+  nem üres grafikon, működő tab, konzol-/HTTP-hiba és body overflow nélkül.
+- A saját ideiglenes backtest/outcome rekordok eltávolítva.
+
+### Korlátok
+
+- Az equity curve fix R-alapú, nem pénzalapú vagy compounding számlaegyenleg.
+- Egy backtest egy instrumentumot tartalmaz, ezért az instrumentumbontás
+  futásonként jellemzően egysoros.
+- Nincs konfidenciaintervallum, benchmark, párhuzamos pozíció- vagy
+  portfóliószintű drawdown.
+- A production JavaScript bundle körülbelül 1,17 MB; code splitting indokolt.
+
+### Következő konkrét lépés
+
+Phase 7 paper trading workflow: élő setup-életciklus, automatikus outcome
+frissítés, értesítési adapter, napi és heti összesítő.

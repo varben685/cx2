@@ -3,7 +3,7 @@ import { fireEvent, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { BacktestRun, OutcomeRecord } from "./api";
+import type { BacktestRun, OutcomeRecord, PerformanceReport } from "./api";
 import { BacktestsPanel } from "./BacktestsPanel";
 
 const run: BacktestRun = {
@@ -78,6 +78,47 @@ const outcome: OutcomeRecord = {
   },
 };
 
+const report: PerformanceReport = {
+  runId: run.runId,
+  scoringConfigVersion: "rule-score-v1",
+  statistics: run.statistics,
+  risk: {
+    averageWinR: 1.937,
+    averageLossR: null,
+    maximumDrawdownR: 0,
+    longestWinningStreak: 1,
+    longestLosingStreak: 0,
+  },
+  equityCurve: [
+    {
+      sequence: 1,
+      eventId: outcome.eventId,
+      occurredAt: outcome.outcome.exitTime ?? outcome.evaluatedAt,
+      netR: 1.937,
+      cumulativeNetR: 1.937,
+      drawdownR: 0,
+    },
+  ],
+  bySession: [{ key: "NEW_YORK", label: "NEW_YORK", statistics: run.statistics }],
+  byInstrument: [{ key: "BINANCE:BTCUSDT", label: "BINANCE / BTCUSDT", statistics: run.statistics }],
+  byDirection: [{ key: "LONG", label: "LONG", statistics: run.statistics }],
+  byScoreBucket: [{ key: "85-100", label: "85-100", statistics: run.statistics }],
+  byStrategyVersion: [{ key: "smc-rce-v1", label: "smc-rce-v1", statistics: run.statistics }],
+  bySetupComponent: [{ component: "CHOCH", state: "FULL", statistics: run.statistics }],
+  decisions: {
+    journaledSetups: 0,
+    taken: 0,
+    skipped: 0,
+    notRecorded: 0,
+    followedRecommendation: 0,
+    overrodeRecommendation: 0,
+    manualOverrides: 0,
+    agreementRate: null,
+    takenStatistics: run.statistics,
+    skippedStatistics: run.statistics,
+  },
+};
+
 function renderPanel() {
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
@@ -95,6 +136,9 @@ function stubBacktestFetch(options: { initialRuns?: BacktestRun[]; createError?:
     const url = String(input);
     if (url.includes("/api/v1/outcomes?")) {
       return Promise.resolve({ ok: true, json: async () => ({ count: 1, items: [outcome] }) });
+    }
+    if (url.includes("/api/v1/analytics/report?")) {
+      return Promise.resolve({ ok: true, json: async () => report });
     }
     if (url.includes("/api/v1/backtests?") && init?.method !== "POST") {
       return Promise.resolve({ ok: true, json: async () => ({ count: runs.length, items: runs }) });
@@ -132,7 +176,12 @@ describe("BacktestsPanel", () => {
     expect(await screen.findByText("Backtest futások")).toBeInTheDocument();
     expect((await screen.findAllByText("BTCUSDT")).length).toBeGreaterThan(0);
     expect((await screen.findAllByText("1.937R")).length).toBeGreaterThanOrEqual(2);
-    expect(screen.getAllByText("100.0%")).toHaveLength(2);
+    expect(screen.getAllByText("100.0%").length).toBeGreaterThanOrEqual(2);
+    expect(await screen.findByText("Teljesítményelemzés")).toBeInTheDocument();
+    expect(screen.getByText("Maximum drawdown")).toBeInTheDocument();
+    expect(screen.getByRole("img", { name: "Kumulált nettó R equity görbe" })).toBeInTheDocument();
+    expect(screen.getByText("NEW_YORK")).toBeInTheDocument();
+    expect(screen.getByText("Ehhez a futáshoz még nincs journal döntés.")).toBeInTheDocument();
 
     await user.click(screen.getByLabelText("Outcome részletek"));
     const drawer = await screen.findByText("Outcome részletek");

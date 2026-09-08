@@ -190,6 +190,7 @@ export function JournalPanel() {
     setEditingEntry(null);
     await queryClient.invalidateQueries({ queryKey: ["journal"] });
     await queryClient.invalidateQueries({ queryKey: ["journal-revisions", entry.journalId] });
+    await queryClient.invalidateQueries({ queryKey: ["analytics"] });
   }
 
   const createMutation = useMutation({

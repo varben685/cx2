@@ -67,6 +67,63 @@ export type BacktestStatistics = {
   netProfitFactor: number | null;
 };
 
+export type RiskStatistics = {
+  averageWinR: number | null;
+  averageLossR: number | null;
+  maximumDrawdownR: number;
+  longestWinningStreak: number;
+  longestLosingStreak: number;
+};
+
+export type EquityPoint = {
+  sequence: number;
+  eventId: string;
+  occurredAt: string;
+  netR: number;
+  cumulativeNetR: number;
+  drawdownR: number;
+};
+
+export type AnalyticsBreakdown = {
+  key: string;
+  label: string;
+  statistics: BacktestStatistics;
+};
+
+export type ComponentBreakdown = {
+  component: string;
+  state: "ZERO" | "PARTIAL" | "FULL";
+  statistics: BacktestStatistics;
+};
+
+export type DecisionComparison = {
+  journaledSetups: number;
+  taken: number;
+  skipped: number;
+  notRecorded: number;
+  followedRecommendation: number;
+  overrodeRecommendation: number;
+  manualOverrides: number;
+  agreementRate: number | null;
+  takenStatistics: BacktestStatistics;
+  skippedStatistics: BacktestStatistics;
+};
+
+export type PerformanceReport = {
+  runId: string;
+  scoringConfigVersion: string;
+  statistics: BacktestStatistics;
+  risk: RiskStatistics;
+  equityCurve: EquityPoint[];
+  bySession: AnalyticsBreakdown[];
+  byInstrument: AnalyticsBreakdown[];
+  byDirection: AnalyticsBreakdown[];
+  byScoreBucket: AnalyticsBreakdown[];
+  byStrategyVersion: AnalyticsBreakdown[];
+  bySetupComponent: ComponentBreakdown[];
+  decisions: DecisionComparison;
+};
+
 export type BacktestRun = {
   runId: string;
   status: "COMPLETED";
@@ -310,6 +367,15 @@ export async function fetchOutcomes(runId: string, limit = 100): Promise<Outcome
     throw await errorFromResponse(response, "Az outcome eredmények nem tölthetők be.");
   }
   return response.json() as Promise<OutcomeList>;
+}
+
+export async function fetchPerformanceReport(runId: string): Promise<PerformanceReport> {
+  const searchParams = new URLSearchParams({ runId });
+  const response = await fetch(`${apiBaseUrl}/api/v1/analytics/report?${searchParams}`);
+  if (!response.ok) {
+    throw await errorFromResponse(response, "Az elemzés nem tölthető be.");
+  }
+  return response.json() as Promise<PerformanceReport>;
 }
 
 export async function fetchJournal(limit = 100): Promise<JournalList> {

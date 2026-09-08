@@ -26,4 +26,9 @@ A journal csak olyan setupot kínál fel új bejegyzéshez, amelyhez még nincs
 napló. Létrehozás és szerkesztés után a TanStack Query frissíti a listát, a
 részletezőt és a revíziókat. A mobil drawer legfeljebb a viewport szélessége.
 
-Következő frontend területek: bővebb analytics és strategy settings.
+A kiválasztott backtest futás alatt a teljesítményelemzés külön Query cache-t
+használ. Reszponzív SVG equity curve, stabil KPI-rács és tabokra bontott táblák
+mutatják a kockázatot és a csoportokat. Backtest vagy journal mutation után az
+érintett analytics cache érvénytelenedik.
+
+Következő frontend területek: paper trading workflow és strategy settings.

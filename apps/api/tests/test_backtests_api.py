@@ -71,6 +71,25 @@ def test_create_read_outcomes_and_analytics(client):
         ]
         == body["statistics"]
     )
+    report_response = client.get(
+        "/api/v1/analytics/report", params={"runId": payload["runId"]}
+    )
+    assert report_response.status_code == 200
+    report = report_response.json()
+    assert report["risk"]["averageWinR"] == 1.937
+    assert report["risk"]["maximumDrawdownR"] == 0
+    assert report["equityCurve"][0]["cumulativeNetR"] == 1.937
+    assert report["bySession"][0]["label"] == "NEW_YORK"
+    assert report["byScoreBucket"][0]["statistics"]["closedTrades"] == 1
+    assert report["decisions"]["journaledSetups"] == 0
+    by_session = client.get(
+        "/api/v1/analytics/by-session", params={"runId": payload["runId"]}
+    ).json()
+    assert by_session["items"] == report["bySession"]
+    by_score = client.get(
+        "/api/v1/analytics/by-score-bucket", params={"runId": payload["runId"]}
+    ).json()
+    assert by_score["items"] == report["byScoreBucket"]
     # A new SQL adapter must restore the complete typed input and result snapshot.
     stored = client.app.state.backtest_repository.get(UUID(payload["runId"]))
     assert stored.request.candles_csv == payload["candlesCsv"]
@@ -164,6 +183,10 @@ def test_unknown_ids_and_filters(client):
     assert client.get(f"/api/v1/outcomes/{uuid4()}").status_code == 404
     assert client.get("/api/v1/backtests/not-a-uuid").status_code == 422
     assert client.get("/api/v1/outcomes").status_code == 422
+    assert (
+        client.get("/api/v1/analytics/report", params={"runId": str(uuid4())}).status_code
+        == 404
+    )
     assert client.get("/api/v1/backtests", params={"limit": 0}).status_code == 422
 
 
