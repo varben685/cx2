@@ -184,7 +184,12 @@ describe("BacktestsPanel", () => {
     expect(screen.getByText("Ehhez a futáshoz még nincs journal döntés.")).toBeInTheDocument();
 
     await user.click(screen.getByLabelText("Outcome részletek"));
-    const drawer = await screen.findByText("Outcome részletek");
+    const drawer = (await screen.findAllByText("Outcome részletek")).find((element) =>
+      element.classList.contains("ant-drawer-title"),
+    );
+    if (!drawer) {
+      throw new Error("Outcome drawer title was not rendered.");
+    }
     const drawerRoot = drawer.closest(".ant-drawer-content") as HTMLElement;
     expect(within(drawerRoot).getByText("TAKE_PROFIT_HIT")).toBeInTheDocument();
     expect(within(drawerRoot).getByText("0.063R")).toBeInTheDocument();

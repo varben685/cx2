@@ -31,6 +31,7 @@ import {
 } from "./api";
 import { BacktestsPanel } from "./BacktestsPanel";
 import { JournalPanel } from "./JournalPanel";
+import { PaperTradingPanel } from "./PaperTradingPanel";
 
 const { Content, Header } = Layout;
 
@@ -346,11 +347,12 @@ export function App() {
               }}
             />
           </section>
+          <PaperTradingPanel setups={setupItems} />
           <BacktestsPanel />
           <JournalPanel />
         </Content>
         <Drawer
-          width={560}
+          width="min(560px, 100vw)"
           open={selectedSetupId !== null}
           onClose={() => setSelectedSetupId(null)}
           title="Setup részletek"

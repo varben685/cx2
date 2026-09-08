@@ -257,6 +257,67 @@ export type JournalUpdateRequest = JournalContent & {
   expectedRevision: number;
 };
 
+export type PaperTradeStatus = "PENDING" | "OPEN" | "CLOSED" | "CANCELLED";
+
+export type RiskDecision = {
+  approved: boolean;
+  policyVersion: string;
+  rejectionReasons: string[];
+  dailyLossR: number;
+  consecutiveLosses: number;
+  openPositions: number;
+};
+
+export type PaperTrade = {
+  tradeId: string;
+  setupId: string;
+  eventId: string;
+  symbol: string;
+  exchange: string;
+  timeframe: string;
+  direction: "LONG" | "SHORT" | string;
+  session: string;
+  strategyVersion: string;
+  status: PaperTradeStatus;
+  entryPrice: number;
+  stopLoss: number;
+  takeProfit: number;
+  plannedRiskReward: number;
+  accountBalance: number;
+  riskPercent: number;
+  riskAmount: number;
+  quantity: number;
+  openedAt: string | null;
+  closedAt: string | null;
+  exitPrice: number | null;
+  exitReason: string | null;
+  realizedPnl: number | null;
+  realizedR: number | null;
+  riskPolicyVersion: string;
+  createdAt: string;
+  updatedAt: string;
+  revision: number;
+  riskDecision?: RiskDecision;
+};
+
+export type PaperTradeList = {
+  count: number;
+  items: PaperTrade[];
+};
+
+export type PaperTradeEvent = {
+  tradeId: string;
+  sequence: number;
+  eventType: "CREATED" | "PRICE_OBSERVED" | "OPENED" | "CLOSED" | "CANCELLED";
+  occurredAt: string;
+  details: Record<string, unknown>;
+};
+
+export type PaperTradeEventList = {
+  count: number;
+  items: PaperTradeEvent[];
+};
+
 export class ApiError extends Error {
   constructor(
     message: string,
@@ -426,4 +487,72 @@ export async function updateJournalEntry(payload: JournalUpdateRequest): Promise
     throw await errorFromResponse(response, "A journal bejegyzés nem frissíthető.");
   }
   return response.json() as Promise<JournalEntry>;
+}
+
+export async function fetchPaperTrades(limit = 100): Promise<PaperTradeList> {
+  const response = await fetch(`${apiBaseUrl}/api/v1/paper-trades?limit=${limit}`);
+  if (!response.ok) {
+    throw await errorFromResponse(response, "A paper trade lista nem tölthető be.");
+  }
+  return response.json() as Promise<PaperTradeList>;
+}
+
+export async function fetchPaperTradeEvents(tradeId: string): Promise<PaperTradeEventList> {
+  const response = await fetch(`${apiBaseUrl}/api/v1/paper-trades/${tradeId}/events`);
+  if (!response.ok) {
+    throw await errorFromResponse(response, "A végrehajtási napló nem tölthető be.");
+  }
+  return response.json() as Promise<PaperTradeEventList>;
+}
+
+export async function createPaperTrade(payload: {
+  setupId: string;
+  accountBalance: number;
+  riskPercent: number;
+}): Promise<PaperTrade> {
+  const response = await fetch(`${apiBaseUrl}/api/v1/paper-trades`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!response.ok) {
+    throw await errorFromResponse(response, "A paper trade nem hozható létre.");
+  }
+  return response.json() as Promise<PaperTrade>;
+}
+
+export async function observePaperTradePrice(tradeId: string, price: number): Promise<PaperTrade> {
+  const response = await fetch(`${apiBaseUrl}/api/v1/paper-trades/${tradeId}/market-price`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ price }),
+  });
+  if (!response.ok) {
+    throw await errorFromResponse(response, "Az árfrissítés sikertelen.");
+  }
+  return response.json() as Promise<PaperTrade>;
+}
+
+export async function closePaperTrade(tradeId: string, exitPrice: number): Promise<PaperTrade> {
+  const response = await fetch(`${apiBaseUrl}/api/v1/paper-trades/${tradeId}/close`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ exitPrice }),
+  });
+  if (!response.ok) {
+    throw await errorFromResponse(response, "A paper trade lezárása sikertelen.");
+  }
+  return response.json() as Promise<PaperTrade>;
+}
+
+export async function cancelPaperTrade(tradeId: string): Promise<PaperTrade> {
+  const response = await fetch(`${apiBaseUrl}/api/v1/paper-trades/${tradeId}/cancel`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({}),
+  });
+  if (!response.ok) {
+    throw await errorFromResponse(response, "A paper trade visszavonása sikertelen.");
+  }
+  return response.json() as Promise<PaperTrade>;
 }

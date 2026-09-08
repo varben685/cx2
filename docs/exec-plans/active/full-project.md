@@ -155,6 +155,9 @@ ezért a Docker image build ebben a munkamenetben nem volt futtatható.
 
 ## Phase 7: Paper trading workflow
 
+- [x] Determinisztikus, konfigurálható risk policy.
+- [x] Paper trade állapotgép, persistence és append-only execution log.
+- [x] Paper trade REST API és frontend munkafolyamat.
 - [ ] Élő TradingView webhook flow.
 - [ ] Outcome frissítés.
 - [ ] Értesítési adapter.
@@ -412,3 +415,12 @@ ezért a Docker image build ebben a munkamenetben nem volt futtatható.
   táblákat jelenít meg. Kapuk: 238 backend teszt, 13 frontend teszt, Ruff,
   mypy, ESLint, typecheck és build sikeres; PostgreSQL HTTP smoke és desktop/
   mobil Playwright ellenőrzés kész. Következő lépés: Phase 7 paper trading.
+- 2026-09-08: Elkészült a Phase 7 első paper trading szelete. Az elfogadott
+  setupokból a `paper-risk-v1` policy után PENDING trade jön létre, amely kézi
+  ármegfigyeléssel OPEN, majd stop/target alapján CLOSED állapotba vihető;
+  manuális zárás és visszavonás is támogatott. Memory, SQLite és PostgreSQL
+  persistence, optimista revision és append-only execution log készült. A
+  dashboardon létrehozó, lista és részletező workflow érhető el. Kapuk: 255
+  backend teszt és 14 frontend teszt sikeres, Ruff, mypy, ESLint, typecheck,
+  build, PostgreSQL HTTP smoke és desktop/mobil Playwright ellenőrzés kész.
+  Következő lépés: élő webhook és automatikus outcome frissítés összekötése.

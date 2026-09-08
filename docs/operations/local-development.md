@@ -9,7 +9,24 @@ docker compose up --build
 
 Docker Compose alatt az API `WEBHOOK_EVENT_REPOSITORY=postgres` módban indul,
 így a valid TradingView webhook események a PostgreSQL `webhook_events`
-táblába kerülnek.
+táblába, a paper trade-ek pedig a `paper_trades` és `paper_trade_events`
+táblákba kerülnek. A gyökér `.dockerignore` kihagyja a lokális dependencyket és
+cache-eket a build contextből.
+
+## Paper risk beállítások
+
+A `.env.example` tartalmazza az összes `PAPER_*` változót. Docker Compose ezeket
+átadja az API-nak. A fontos alapértékek: maximum 1% kockázat trade-enként,
+3R napi veszteség, három egymást követő veszteség, minimum 2R terv, legfeljebb
+három aktív pozíció, 15 perc cooldown és 70-es minimum setup score.
+
+A `PAPER_CORRELATION_GROUPS` JSON tömbök tömbje, például:
+
+```bash
+PAPER_CORRELATION_GROUPS='[["BTCUSDT","ETHUSDT"],["EURUSD","GBPUSD"]]'
+```
+
+Az alapérték üres, ezért korrelációs tiltás csak explicit konfiguráció után él.
 
 ## Backend
 

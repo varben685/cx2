@@ -142,3 +142,43 @@ journal_entry_revisions = Table(
     Column("created_at", DateTime(timezone=True), nullable=False),
     Column("snapshot", JSON().with_variant(JSONB(), "postgresql"), nullable=False),
 )
+
+paper_trades = Table(
+    "paper_trades",
+    metadata,
+    Column("trade_id", Uuid, primary_key=True),
+    Column(
+        "setup_id",
+        String(length=200),
+        ForeignKey("setup_candidates.setup_id"),
+        nullable=False,
+        unique=True,
+    ),
+    Column("symbol", String(length=40), nullable=False),
+    Column("status", String(length=20), nullable=False),
+    Column("opened_at", DateTime(timezone=True), nullable=True),
+    Column("closed_at", DateTime(timezone=True), nullable=True),
+    Column("updated_at", DateTime(timezone=True), nullable=False),
+    Column("revision", Integer, nullable=False),
+    Column("snapshot", JSON().with_variant(JSONB(), "postgresql"), nullable=False),
+)
+
+Index("ix_paper_trades_updated_at", paper_trades.c.updated_at)
+Index("ix_paper_trades_symbol_status", paper_trades.c.symbol, paper_trades.c.status)
+
+paper_trade_events = Table(
+    "paper_trade_events",
+    metadata,
+    Column(
+        "trade_id",
+        Uuid,
+        ForeignKey("paper_trades.trade_id"),
+        primary_key=True,
+    ),
+    Column("sequence", Integer, primary_key=True),
+    Column("event_type", String(length=30), nullable=False),
+    Column("occurred_at", DateTime(timezone=True), nullable=False),
+    Column("snapshot", JSON().with_variant(JSONB(), "postgresql"), nullable=False),
+)
+
+Index("ix_paper_trade_events_occurred_at", paper_trade_events.c.occurred_at)

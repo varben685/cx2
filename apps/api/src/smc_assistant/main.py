@@ -8,6 +8,7 @@ from smc_assistant.api.errors import validation_exception_handler
 from smc_assistant.api.health import router as health_router
 from smc_assistant.api.journal import router as journal_router
 from smc_assistant.api.outcomes import router as outcomes_router
+from smc_assistant.api.paper_trades import router as paper_trades_router
 from smc_assistant.api.setups import router as setups_router
 from smc_assistant.api.webhooks import router as webhooks_router
 from smc_assistant.config import Settings
@@ -51,6 +52,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.state.outcome_repository = webhook_ingestion_services.outcome_repository
     app.state.backtest_repository = webhook_ingestion_services.backtest_repository
     app.state.journal_repository = webhook_ingestion_services.journal_repository
+    app.state.paper_trade_repository = webhook_ingestion_services.paper_trade_repository
+    app.state.paper_trading_service = webhook_ingestion_services.paper_trading_service
     app.add_exception_handler(RequestValidationError, validation_exception_handler)
     app.include_router(health_router)
     app.include_router(webhooks_router)
@@ -59,6 +62,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(backtests_router)
     app.include_router(outcomes_router)
     app.include_router(journal_router)
+    app.include_router(paper_trades_router)
     return app
 
 

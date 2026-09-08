@@ -46,7 +46,8 @@ body,
 .status-panel,
 .setups-panel,
 .backtests-panel,
-.journal-panel {
+.journal-panel,
+.paper-trading-panel {
   display: grid;
   gap: 24px;
   padding: 24px;
@@ -57,7 +58,8 @@ body,
 
 .setups-panel,
 .backtests-panel,
-.journal-panel {
+.journal-panel,
+.paper-trading-panel {
   margin-top: 24px;
 }
 
@@ -100,8 +102,50 @@ body,
 .setups-panel,
 .backtests-panel,
 .journal-panel,
+.paper-trading-panel,
 .ant-table-wrapper {
   min-width: 0;
+}
+
+.paper-heading,
+.paper-detail-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.paper-heading h2.ant-typography {
+  margin: 4px 0 0;
+  font-size: 24px;
+  line-height: 1.25;
+}
+
+.paper-create-row {
+  display: grid;
+  grid-template-columns: minmax(240px, 2fr) repeat(2, minmax(130px, 1fr)) auto;
+  align-items: end;
+  gap: 12px;
+}
+
+.paper-setup-select {
+  min-width: 0;
+}
+
+.paper-detail,
+.paper-actions {
+  display: grid;
+  gap: 16px;
+}
+
+.paper-detail-heading h3.ant-typography {
+  margin: 0;
+  font-size: 20px;
+}
+
+.paper-actions {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
 }
 
 .backtests-panel .ant-table-row {
@@ -360,7 +404,8 @@ body,
   }
 
   .status-heading,
-  .setups-heading {
+  .setups-heading,
+  .paper-heading {
     flex-direction: column;
   }
 
@@ -402,6 +447,14 @@ body,
     grid-template-columns: 1fr;
   }
 
+  .paper-create-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .paper-setup-select {
+    grid-column: 1 / -1;
+  }
+
   .analytics-heading,
   .decision-summary {
     flex-direction: column;
@@ -437,8 +490,14 @@ body,
 
   .metrics-grid,
   .config-grid,
-  .analytics-metrics-grid {
+  .analytics-metrics-grid,
+  .paper-create-row,
+  .paper-actions {
     grid-template-columns: 1fr;
+  }
+
+  .paper-setup-select {
+    grid-column: auto;
   }
 
   .metrics-grid .ant-statistic {

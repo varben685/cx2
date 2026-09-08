@@ -6,10 +6,11 @@ Design biztosítja. Az ikonok a Lucide készletből érkeznek.
 Az Ant Design 5 React 19 kompatibilitási csomagja az alkalmazás belépési
 pontján töltődik be; a későbbi Ant Design 6 migráció ezt szükségtelenné teszi.
 
-Az aktuális dashboard négy munkaterületből áll:
+Az aktuális dashboard öt munkaterületből áll:
 
 - backend kapcsolat és verzió;
 - pontozott setup lista, szűrés és részletező drawer;
+- paper trading létrehozó, pozíciólista és execution drawer;
 - backtest futáslista, összesítő mutatók, outcome lista és részletező drawer;
 - döntési journal lista, létrehozó/szerkesztő modal és revíziótörténetes drawer.
 
@@ -31,4 +32,9 @@ használ. Reszponzív SVG equity curve, stabil KPI-rács és tabokra bontott tá
 mutatják a kockázatot és a csoportokat. Backtest vagy journal mutation után az
 érintett analytics cache érvénytelenedik.
 
-Következő frontend területek: paper trading workflow és strategy settings.
+A paper trading panel az elfogadott, még nem használt setupokat kínálja fel. A
+mutationök után a trade- és eseménycache frissül; a részletező csak az aktuális
+állapotban engedélyezett árfrissítés, manuális zárás vagy visszavonás műveletet
+mutatja. Széles listák mobilon lokálisan görgethetők.
+
+Következő frontend területek: élő állapotfrissítés, összesítők és strategy settings.

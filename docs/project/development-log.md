@@ -777,3 +777,49 @@ rendszer javaslataival.
 
 Phase 7 paper trading workflow: élő setup-életciklus, automatikus outcome
 frissítés, értesítési adapter, napi és heti összesítő.
+
+## 2026-09-08 Phase 7: risk-gated paper trading alapok
+
+### Elkészült
+
+- Konfigurálható `paper-risk-v1` policy setup score, trade risk, minimum R:R,
+  session, aktív pozíció, napi veszteség, vesztes sorozat, cooldown és
+  korrelációs limitekkel.
+- Backend által számolt risk amount, quantity, PnL és realizált R.
+- `PENDING -> OPEN -> CLOSED`, illetve `PENDING -> CANCELLED` állapotgép LONG
+  és SHORT irányhoz, automatikus stop/target és manuális zárással.
+- Optimista revision, aktuális snapshot és append-only execution event memória,
+  SQLite és PostgreSQL adapterrel.
+- Létrehozó, lista, részletező, market-price, close, cancel és event REST API.
+- Reszponzív frontend létrehozó, lista, állapotfüggő műveletek és execution log.
+- Paper trade audit események, API contract, ADR-0006 és learning dokumentum.
+- `.dockerignore`; a Docker build context 227 MB-ról néhány KB-ra csökkent.
+
+### Ellenőrzés
+
+- `uv run pytest`: 255 sikeres, 2 környezet szerint kihagyott backend teszt.
+- Ruff és mypy sikeres, 67 típusellenőrzött forrásfájl.
+- Valódi PostgreSQL paper repository kör: 6 sikeres teszt.
+- `npm test -- --run`: 14 sikeres frontend teszt; lint, typecheck és production
+  build sikeres.
+- Docker HTTP/PostgreSQL smoke: webhook ACCEPTED, PENDING létrehozás, OPEN entry,
+  CLOSED target, `+2R` és `CREATED,OPENED,CLOSED` eseménysorrend sikeres.
+- Playwright + helyi Chrome 1440x1000 és 390x844 viewporton: konzol-/HTTP-hiba
+  és body overflow nincs, a drawer stabil szélessége 560 px.
+- Mindkét saját HTTP/vizuális próba setup-, trade- és event rekordja eltávolítva.
+
+### Korlátok
+
+- Az árfrissítés még manuális, nincs élő market-data stream vagy háttér-worker.
+- Nincs részleges fill, gap modell, commission, slippage vagy pending timeout.
+- A korrelációs csoportok alapértéke üres; instrumentumlistát üzemeltetéskor kell
+  megadni.
+- Több API worker esetén a portfóliószintű limithez adatbázisszintű lock kell;
+  a jelenlegi egyprocesszes deploymenten a létrehozás folyamaton belül sorosított.
+- A séma továbbra is `create_all` alapú, éles környezethez Alembic szükséges.
+- A production JavaScript bundle körülbelül 1,20 MB; code splitting indokolt.
+
+### Következő konkrét lépés
+
+Az élő TradingView webhook flow összekötése a paper trade állapotgéppel, majd
+automatikus outcome frissítés és első értesítési adapter.

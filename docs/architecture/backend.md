@@ -40,3 +40,15 @@ A service factory memory vagy PostgreSQL adaptert hoz létre a backtesthez
 is, az outcome repositoryval közös tárolón. A run lista/részletező és az
 outcome lista/részletező külön HTTP nézet, mindkettő camelCase modellekkel.
 API contract: `docs/contracts/backtests.md`. Tárolási döntés: ADR-0003.
+
+## Paper trading
+
+A `PaperTradingService` az elfogadott setupot az eredeti webhook execution
+tervével kapcsolja össze. A létrehozás előtt a konfigurálható `paper-risk-v1`
+policy a repository aktuális és lezárt trade-jeiből épít kockázati kontextust.
+A backend számolja a pozícióméretet, a PnL-t és az R eredményt.
+
+Memory módban az `InMemoryPaperTradeRepository`, PostgreSQL módban a közös
+engine-t használó `SQLPaperTradeRepository` tárolja az aktuális snapshotot és
+az append-only eseményeket. Minden transition revisionnel védett. Contract:
+`docs/contracts/paper-trading.md`, döntés: ADR-0006.
