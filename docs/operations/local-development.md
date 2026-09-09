@@ -28,6 +28,17 @@ PAPER_CORRELATION_GROUPS='[["BTCUSDT","ETHUSDT"],["EURUSD","GBPUSD"]]'
 
 Az alapérték üres, ezért korrelációs tiltás csak explicit konfiguráció után él.
 
+Az automatikus paper workflow alapértékei:
+
+```bash
+PAPER_AUTO_TRADE_ENABLED=true
+PAPER_ACCOUNT_BALANCE=10000
+PAPER_DEFAULT_RISK_PERCENT=1
+```
+
+A `PAPER_AUTO_TRADE_ENABLED=false` megtartja a manuális dashboard folyamatot,
+de a setup webhook nem hoz létre automatikusan trade-et.
+
 ## Backend
 
 ```bash

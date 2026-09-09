@@ -1,8 +1,10 @@
 from copy import deepcopy
+from datetime import datetime, timedelta
 
 from fastapi.testclient import TestClient
 
 from smc_assistant.application.audit import AuditEvent, AuditEventType
+from smc_assistant.config import Settings
 from smc_assistant.main import create_app
 
 
@@ -76,6 +78,9 @@ def test_tradingview_webhook_accepts_valid_payload() -> None:
     assert payload["setupScore"]["rejectionReasons"] == []
     assert len(payload["setupScore"]["components"]) == 7
     assert payload["message"] == "TradingView webhook payload accepted for processing."
+    assert payload["paperTradeAutomation"]["status"] == "CREATED"
+    assert payload["paperTradeAutomation"]["tradeStatus"] == "PENDING"
+    assert payload["paperTradeAutomation"]["tradeId"] is not None
 
 
 def test_tradingview_webhook_marks_repeated_event_id_as_duplicate() -> None:
@@ -93,6 +98,10 @@ def test_tradingview_webhook_marks_repeated_event_id_as_duplicate() -> None:
     assert payload["setupCandidateId"] == first_response.json()["setupCandidateId"]
     assert payload["setupScore"] == first_response.json()["setupScore"]
     assert payload["message"] == "TradingView webhook payload was already accepted."
+    assert payload["paperTradeAutomation"]["status"] == "EXISTING"
+    assert payload["paperTradeAutomation"]["tradeId"] == first_response.json()[
+        "paperTradeAutomation"
+    ]["tradeId"]
 
 
 def test_tradingview_webhook_rejects_invalid_payload() -> None:
@@ -124,3 +133,107 @@ def test_tradingview_webhook_validation_response_does_not_echo_raw_secret() -> N
     assert audit_logger.events[0].event_type == AuditEventType.WEBHOOK_VALIDATION_FAILED
     assert audit_logger.events[0].metadata["path"] == "/api/v1/webhooks/tradingview"
     assert "super-secret-value" not in str(audit_logger.events[0].metadata)
+
+
+def test_market_price_webhooks_open_and_close_automatic_paper_trade_idempotently() -> None:
+    client = TestClient(create_app())
+    setup_response = client.post("/api/v1/webhooks/tradingview", json=valid_payload())
+    setup_result = setup_response.json()
+    trade_id = setup_result["paperTradeAutomation"]["tradeId"]
+    first_received_at = datetime.fromisoformat(setup_result["receivedAt"])
+
+    open_event = {
+        "schemaVersion": "1.0",
+        "eventId": "BTCUSDT-1-live-open-PRICE",
+        "eventType": "MARKET_PRICE",
+        "source": "TRADINGVIEW",
+        "symbol": "BTCUSDT",
+        "exchange": "BINANCE",
+        "timeframe": "1",
+        "observedAt": (first_received_at + timedelta(seconds=1)).isoformat(),
+        "price": 65180,
+    }
+    opened = client.post("/api/v1/webhooks/tradingview", json=open_event)
+
+    assert opened.status_code == 202, opened.text
+    assert opened.json()["status"] == "ACCEPTED"
+    assert opened.json()["matchedTrades"] == 1
+    assert opened.json()["updatedTrades"] == [
+        {"tradeId": trade_id, "status": "OPEN", "revision": 2}
+    ]
+
+    duplicate = client.post("/api/v1/webhooks/tradingview", json=open_event)
+    assert duplicate.status_code == 202
+    assert duplicate.json()["status"] == "DUPLICATE"
+    assert duplicate.json()["matchedTrades"] == 0
+    assert client.get(f"/api/v1/paper-trades/{trade_id}").json()["revision"] == 2
+
+    close_event = {
+        **open_event,
+        "eventId": "BTCUSDT-1-live-close-PRICE",
+        "observedAt": (first_received_at + timedelta(seconds=2)).isoformat(),
+        "price": 65800,
+    }
+    closed = client.post("/api/v1/webhooks/tradingview", json=close_event)
+
+    assert closed.status_code == 202
+    assert closed.json()["updatedTrades"][0]["status"] == "CLOSED"
+    trade = client.get(f"/api/v1/paper-trades/{trade_id}").json()
+    assert trade["exitReason"] == "TAKE_PROFIT"
+    assert trade["realizedR"] == 3
+    events = client.get(f"/api/v1/paper-trades/{trade_id}/events").json()["items"]
+    assert [event["eventType"] for event in events] == ["CREATED", "OPENED", "CLOSED"]
+
+
+def test_market_price_webhook_rejects_event_id_owned_by_setup() -> None:
+    client = TestClient(create_app())
+    setup = valid_payload()
+    assert client.post("/api/v1/webhooks/tradingview", json=setup).status_code == 202
+    collision = {
+        "schemaVersion": "1.0",
+        "eventId": setup["eventId"],
+        "eventType": "MARKET_PRICE",
+        "source": "TRADINGVIEW",
+        "symbol": "BTCUSDT",
+        "exchange": "BINANCE",
+        "timeframe": "1",
+        "observedAt": "2026-09-09T12:00:00Z",
+        "price": 65180,
+    }
+
+    response = client.post("/api/v1/webhooks/tradingview", json=collision)
+
+    assert response.status_code == 409
+
+
+def test_setup_webhook_reports_disabled_and_risk_rejected_automation() -> None:
+    disabled_client = TestClient(
+        create_app(Settings(paper_auto_trade_enabled=False))
+    )
+    disabled = disabled_client.post(
+        "/api/v1/webhooks/tradingview", json=valid_payload()
+    )
+
+    assert disabled.status_code == 202
+    assert disabled.json()["paperTradeAutomation"]["status"] == "DISABLED"
+    assert disabled_client.get("/api/v1/paper-trades").json()["count"] == 0
+
+    risk_client = TestClient(
+        create_app(
+            Settings(
+                paper_default_risk_percent=2,
+                paper_max_risk_per_trade_percent=1,
+            )
+        )
+    )
+    rejected = risk_client.post(
+        "/api/v1/webhooks/tradingview", json=valid_payload()
+    )
+
+    assert rejected.status_code == 202
+    assert rejected.json()["status"] == "ACCEPTED"
+    assert rejected.json()["paperTradeAutomation"]["status"] == "RISK_REJECTED"
+    assert "RISK_PER_TRADE_EXCEEDED" in rejected.json()["paperTradeAutomation"][
+        "message"
+    ]
+    assert risk_client.get("/api/v1/paper-trades").json()["count"] == 0

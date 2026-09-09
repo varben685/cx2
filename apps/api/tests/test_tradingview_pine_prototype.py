@@ -36,6 +36,7 @@ def test_pine_prototype_uses_clean_defaults() -> None:
     assert 'showSweeps = input.bool(false, "Show liquidity sweeps")' in source
     assert 'showDisplacement = input.bool(false, "Show displacement")' in source
     assert 'maxVisibleFvgs = input.int(8, "Max visible FVGs"' in source
+    assert 'sendPaperPriceUpdates = input.bool(false, "Send paper price updates")' in source
 
 
 def test_pine_prototype_shows_latest_structure_context() -> None:
@@ -142,3 +143,13 @@ def test_pine_prototype_avoids_multiline_calls_that_break_tradingview() -> None:
 
     for fragile_call in fragile_multiline_calls:
         assert fragile_call not in source
+
+
+def test_pine_prototype_can_emit_idempotent_market_price_events() -> None:
+    source = PINE_PROTOTYPE.read_text(encoding="utf-8")
+
+    assert '"eventType":"MARKET_PRICE"' in source
+    assert '"observedAt":"\' + str.format_time(time_close' in source
+    assert '"price":\' + str.tostring(close)' in source
+    assert '"-PRICE"' in source
+    assert "else if sendPaperPriceUpdates and barstate.isconfirmed" in source

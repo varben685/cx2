@@ -52,3 +52,9 @@ Memory módban az `InMemoryPaperTradeRepository`, PostgreSQL módban a közös
 engine-t használó `SQLPaperTradeRepository` tárolja az aktuális snapshotot és
 az append-only eseményeket. Minden transition revisionnel védett. Contract:
 `docs/contracts/paper-trading.md`, döntés: ADR-0006.
+
+A `TradingViewLiveService` a setup ingestion és a paper trading közötti
+orchestration réteg. Új setupnál konfiguráció szerint trade-et hoz létre, a
+`MARKET_PRICE` payloadot pedig symbol, exchange és timeframe alapján továbbítja
+az aktív pozícióknak. A webhook repository adja az ár-esemény idempotenciáját;
+az azonos esemény újraküldése nem ismétli meg az állapotátmenetet.

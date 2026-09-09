@@ -1,7 +1,8 @@
 # TradingView webhook contract
 
-Az első verzió célja egy verziózott JSON payload, amely Pydantic modellel
-validálható és JSON Schema formában is exportálható.
+Az első verzió két, `eventType` alapján megkülönböztetett JSON payloadot kezel:
+`SETUP_CANDIDATE` és `MARKET_PRICE`. Mindkettő Pydantic modellel validálható,
+és közös JSON Schema formában exportálható.
 
 ```json
 {
@@ -113,6 +114,45 @@ A webhook flow három első audit eseményt ír:
 Az audit metadata nem tartalmaz nyers webhook payloadot. Hibás payloadnál csak
 HTTP metódus, útvonal, hibaszám és validációs hibatípusok kerülnek auditba.
 
+## Automatikus paper trade
+
+Új, elfogadott setupnál a live orchestration a `paper-risk-v1` policyval
+automatikusan megkísérli a `PENDING` trade létrehozását. A setup válasz
+`paperTradeAutomation` blokkja `CREATED`, `EXISTING`, `DISABLED`,
+`NOT_ELIGIBLE` vagy `RISK_REJECTED` állapotot, valamint opcionális trade
+azonosítót ad vissza. A webhook ettől függetlenül `202` választ kap, mert a
+setup befogadása és a risk döntés két külön eredmény.
+
+Régi vagy ismételt setup esemény új trade-et nem indít. Már létező trade esetén
+`EXISTING` tér vissza. Az automatika, az account balance és a risk százalék a
+`PAPER_AUTO_TRADE_ENABLED`, `PAPER_ACCOUNT_BALANCE` és
+`PAPER_DEFAULT_RISK_PERCENT` változókkal konfigurálható.
+
+## Market price esemény
+
+```json
+{
+  "schemaVersion": "1.0",
+  "eventId": "BTCUSDT-1-1788984000000-PRICE",
+  "eventType": "MARKET_PRICE",
+  "source": "TRADINGVIEW",
+  "symbol": "BTCUSDT",
+  "exchange": "BINANCE",
+  "timeframe": "1",
+  "observedAt": "2026-09-09T12:00:00Z",
+  "price": 65180.0
+}
+```
+
+Az esemény ugyanarra a `POST /api/v1/webhooks/tradingview` végpontra érkezik.
+Az API a symbol, exchange és timeframe szerint egyező aktív paper trade-eknek
+továbbítja az árat. A válasz `matchedTrades`, `updatedTrades` és
+`ignoredTradeIds` mezőkkel teszi követhetővé a feldolgozást.
+
+Az `eventId` globálisan egyedi. Ismételt market price esemény `DUPLICATE`, és
+nem növeli újra a trade revisiont. Más eseménytípus által már használt
+`eventId` `409 Conflict` választ eredményez.
+
 ## Teljes példa
 
 ```json
@@ -160,7 +200,8 @@ HTTP metódus, útvonal, hibaszám és validációs hibatípusok kerülnek audit
 ## Validációs szabályok
 
 - `schemaVersion` jelenleg csak `1.0` lehet.
-- `eventType` jelenleg `SETUP_CANDIDATE`.
+- `eventType` `SETUP_CANDIDATE` vagy `MARKET_PRICE` lehet; a további mezőket ez
+  választja ki.
 - `source` jelenleg `TRADINGVIEW`.
 - `eventId` kötelező, később ez lesz az idempotens deduplikáció kulcsa.
 - `timeframe` és `marketStructure.htfTimeframe` pozitív perces érték vagy `D`,
@@ -172,6 +213,7 @@ HTTP metódus, útvonal, hibaszám és validációs hibatípusok kerülnek audit
   `abs(takeProfit - entry) / abs(entry - stopLoss)` képlettel.
 - `fvg.lower < fvg.upper`, és az equilibrium a zónán belül van.
 - Extra mező nem engedélyezett, hogy a contract explicit maradjon.
+- A market price `price` értéke pozitív, az `observedAt` időpont timezone-aware.
 - A Pine prototípusból érkező payloadnál az `features.atr` lehet `null`, ha az
   ATR még nem számolható a chart adott pontján.
 - Ha a TradingView instrumentumhoz nincs exchange prefix, a Pine prototípus

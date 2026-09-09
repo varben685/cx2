@@ -23,6 +23,10 @@ class WebhookIngestionStatus(StrEnum):
     DUPLICATE = "DUPLICATE"
 
 
+class WebhookEventConflictError(ValueError):
+    pass
+
+
 @dataclass(frozen=True)
 class WebhookEventRecord:
     event_id: str
@@ -129,6 +133,10 @@ class WebhookIngestionService:
             )
 
         existing_record = save_result.record
+        if existing_record.event_type != payload.event_type.value:
+            raise WebhookEventConflictError(
+                "eventId already belongs to a different webhook event type."
+            )
         existing_payload = TradingViewWebhookPayload.model_validate(existing_record.payload)
         existing_setup_score = score_tradingview_payload(existing_payload, self._scoring_config)
         existing_setup_candidate = setup_candidate_from_tradingview_payload(

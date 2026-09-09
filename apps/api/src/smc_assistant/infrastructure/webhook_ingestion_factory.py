@@ -6,6 +6,7 @@ from smc_assistant.application.journal import JournalRepository
 from smc_assistant.application.outcome_records import OutcomeRepository
 from smc_assistant.application.paper_trading import PaperTradeRepository, PaperTradingService
 from smc_assistant.application.setup_candidates import SetupCandidateRepository
+from smc_assistant.application.tradingview_live import TradingViewLiveService
 from smc_assistant.application.webhook_ingestion import (
     WebhookEventRepository,
     WebhookIngestionService,
@@ -44,6 +45,7 @@ class WebhookIngestionServices:
     journal_repository: JournalRepository
     paper_trade_repository: PaperTradeRepository
     paper_trading_service: PaperTradingService
+    tradingview_live_service: TradingViewLiveService
 
 
 def create_webhook_ingestion_service(
@@ -67,24 +69,35 @@ def create_webhook_ingestion_services(
         webhook_event_repository: WebhookEventRepository = SQLWebhookEventRepository(engine)
         setup_candidate_repository: SetupCandidateRepository = SQLSetupCandidateRepository(engine)
         paper_trade_repository: PaperTradeRepository = SQLPaperTradeRepository(engine)
+        webhook_ingestion_service = WebhookIngestionService(
+            webhook_event_repository,
+            audit_logger,
+            setup_candidate_repository=setup_candidate_repository,
+        )
+        paper_trading_service = PaperTradingService(
+            setup_candidate_repository,
+            webhook_event_repository,
+            paper_trade_repository,
+            risk_config,
+            audit_logger,
+        )
         return WebhookIngestionServices(
-            webhook_ingestion_service=WebhookIngestionService(
-                webhook_event_repository,
-                audit_logger,
-                setup_candidate_repository=setup_candidate_repository,
-            ),
+            webhook_ingestion_service=webhook_ingestion_service,
             webhook_event_repository=webhook_event_repository,
             setup_candidate_repository=setup_candidate_repository,
             outcome_repository=SQLOutcomeRepository(engine),
             backtest_repository=SQLBacktestRepository(engine),
             journal_repository=SQLJournalRepository(engine),
             paper_trade_repository=paper_trade_repository,
-            paper_trading_service=PaperTradingService(
-                setup_candidate_repository,
+            paper_trading_service=paper_trading_service,
+            tradingview_live_service=TradingViewLiveService(
+                webhook_ingestion_service,
                 webhook_event_repository,
-                paper_trade_repository,
-                risk_config,
-                audit_logger,
+                paper_trading_service,
+                auto_trade_enabled=settings.paper_auto_trade_enabled,
+                account_balance=settings.paper_account_balance,
+                risk_percent=settings.paper_default_risk_percent,
+                audit_logger=audit_logger,
             ),
         )
 
@@ -92,24 +105,35 @@ def create_webhook_ingestion_services(
     setup_candidate_repository = InMemorySetupCandidateRepository()
     outcome_repository = InMemoryOutcomeRepository()
     paper_trade_repository = InMemoryPaperTradeRepository()
+    webhook_ingestion_service = WebhookIngestionService(
+        webhook_event_repository,
+        audit_logger,
+        setup_candidate_repository=setup_candidate_repository,
+    )
+    paper_trading_service = PaperTradingService(
+        setup_candidate_repository,
+        webhook_event_repository,
+        paper_trade_repository,
+        risk_config,
+        audit_logger,
+    )
     return WebhookIngestionServices(
-        webhook_ingestion_service=WebhookIngestionService(
-            webhook_event_repository,
-            audit_logger,
-            setup_candidate_repository=setup_candidate_repository,
-        ),
+        webhook_ingestion_service=webhook_ingestion_service,
         webhook_event_repository=webhook_event_repository,
         setup_candidate_repository=setup_candidate_repository,
         outcome_repository=outcome_repository,
         backtest_repository=InMemoryBacktestRepository(outcome_repository),
         journal_repository=InMemoryJournalRepository(),
         paper_trade_repository=paper_trade_repository,
-        paper_trading_service=PaperTradingService(
-            setup_candidate_repository,
+        paper_trading_service=paper_trading_service,
+        tradingview_live_service=TradingViewLiveService(
+            webhook_ingestion_service,
             webhook_event_repository,
-            paper_trade_repository,
-            risk_config,
-            audit_logger,
+            paper_trading_service,
+            auto_trade_enabled=settings.paper_auto_trade_enabled,
+            account_balance=settings.paper_account_balance,
+            risk_percent=settings.paper_default_risk_percent,
+            audit_logger=audit_logger,
         ),
     )
 

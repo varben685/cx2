@@ -9,6 +9,7 @@ from smc_assistant.domain.enums import TradeDirection
 
 class WebhookEventType(StrEnum):
     SETUP_CANDIDATE = "SETUP_CANDIDATE"
+    MARKET_PRICE = "MARKET_PRICE"
 
 
 class WebhookSource(StrEnum):
@@ -80,7 +81,7 @@ class FeaturePayload(StrictCamelModel):
 class TradingViewWebhookPayload(StrictCamelModel):
     schema_version: Literal["1.0"] = Field(alias="schemaVersion")
     event_id: Annotated[str, Field(alias="eventId", min_length=8, max_length=200)]
-    event_type: WebhookEventType = Field(alias="eventType")
+    event_type: Literal[WebhookEventType.SETUP_CANDIDATE] = Field(alias="eventType")
     source: WebhookSource
     strategy_version: Annotated[str, Field(alias="strategyVersion", min_length=1, max_length=80)]
     symbol: Annotated[str, Field(min_length=1, max_length=40)]
@@ -137,6 +138,36 @@ class TradingViewWebhookPayload(StrictCamelModel):
     @property
     def take_profit(self) -> float:
         return self.execution.take_profit
+
+
+class TradingViewMarketPricePayload(StrictCamelModel):
+    schema_version: Literal["1.0"] = Field(alias="schemaVersion")
+    event_id: Annotated[str, Field(alias="eventId", min_length=8, max_length=200)]
+    event_type: Literal[WebhookEventType.MARKET_PRICE] = Field(alias="eventType")
+    source: WebhookSource
+    symbol: Annotated[str, Field(min_length=1, max_length=40)]
+    exchange: Annotated[str, Field(min_length=1, max_length=40)]
+    timeframe: str
+    observed_at: datetime = Field(alias="observedAt")
+    price: PositiveFloat
+
+    @field_validator("timeframe")
+    @classmethod
+    def validate_payload_timeframe(cls, value: str) -> str:
+        return validate_timeframe(value)
+
+    @field_validator("observed_at")
+    @classmethod
+    def require_timezone_aware_datetime(cls, value: datetime) -> datetime:
+        if value.tzinfo is None or value.utcoffset() is None:
+            raise ValueError("observedAt must be timezone-aware.")
+        return value
+
+
+TradingViewIncomingPayload = Annotated[
+    TradingViewWebhookPayload | TradingViewMarketPricePayload,
+    Field(discriminator="event_type"),
+]
 
 
 def validate_timeframe(value: str) -> str:

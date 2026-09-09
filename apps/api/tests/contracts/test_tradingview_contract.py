@@ -3,7 +3,10 @@ from copy import deepcopy
 import pytest
 from pydantic import ValidationError
 
-from smc_assistant.contracts.tradingview import TradingViewWebhookPayload
+from smc_assistant.contracts.tradingview import (
+    TradingViewMarketPricePayload,
+    TradingViewWebhookPayload,
+)
 from smc_assistant.domain.enums import TradeDirection
 
 
@@ -49,6 +52,20 @@ def valid_payload() -> dict[str, object]:
     }
 
 
+def valid_market_price_payload() -> dict[str, object]:
+    return {
+        "schemaVersion": "1.0",
+        "eventId": "BTCUSDT-1-1788984000000-PRICE",
+        "eventType": "MARKET_PRICE",
+        "source": "TRADINGVIEW",
+        "symbol": "BTCUSDT",
+        "exchange": "BINANCE",
+        "timeframe": "1",
+        "observedAt": "2026-09-09T12:00:00Z",
+        "price": 65180.0,
+    }
+
+
 def test_accepts_valid_tradingview_setup_candidate_payload() -> None:
     payload = TradingViewWebhookPayload.model_validate(valid_payload())
 
@@ -59,6 +76,29 @@ def test_accepts_valid_tradingview_setup_candidate_payload() -> None:
     assert payload.market_structure.liquidity_sweep is True
     assert payload.execution.risk_reward == 3.0
     assert payload.features.displacement_score == 0.81
+
+
+def test_accepts_valid_tradingview_market_price_payload() -> None:
+    payload = TradingViewMarketPricePayload.model_validate(valid_market_price_payload())
+
+    assert payload.event_type == "MARKET_PRICE"
+    assert payload.symbol == "BTCUSDT"
+    assert payload.price == 65180.0
+    assert payload.observed_at.utcoffset() is not None
+
+
+def test_rejects_invalid_market_price_payload() -> None:
+    raw_payload = valid_market_price_payload()
+    raw_payload["price"] = 0
+
+    with pytest.raises(ValidationError, match="price"):
+        TradingViewMarketPricePayload.model_validate(raw_payload)
+
+    raw_payload = valid_market_price_payload()
+    raw_payload["observedAt"] = "2026-09-09T12:00:00"
+
+    with pytest.raises(ValidationError, match="timezone-aware"):
+        TradingViewMarketPricePayload.model_validate(raw_payload)
 
 
 def test_accepts_short_execution_order() -> None:

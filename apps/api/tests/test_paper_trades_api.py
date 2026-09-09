@@ -27,7 +27,11 @@ def create_trade(client: TestClient, setup_id: str) -> dict[str, object]:
 
 
 def test_creates_opens_and_closes_paper_trade_at_target() -> None:
-    client = TestClient(create_app(Settings(webhook_event_repository="memory")))
+    client = TestClient(
+        create_app(
+            Settings(webhook_event_repository="memory", paper_auto_trade_enabled=False)
+        )
+    )
     setup = create_setup(client)
     trade = create_trade(client, str(setup["eventId"]))
 
@@ -66,7 +70,11 @@ def test_creates_opens_and_closes_paper_trade_at_target() -> None:
 
 
 def test_supports_manual_close_cancel_filters_and_conflicts() -> None:
-    client = TestClient(create_app(Settings(webhook_event_repository="memory")))
+    client = TestClient(
+        create_app(
+            Settings(webhook_event_repository="memory", paper_auto_trade_enabled=False)
+        )
+    )
     first = create_setup(client)
     first_trade = create_trade(client, str(first["eventId"]))
     trade_id = first_trade["tradeId"]
@@ -104,7 +112,11 @@ def test_supports_manual_close_cancel_filters_and_conflicts() -> None:
 
 
 def test_rejects_duplicate_unsafe_invalid_and_unknown_paper_trades() -> None:
-    client = TestClient(create_app(Settings(webhook_event_repository="memory")))
+    client = TestClient(
+        create_app(
+            Settings(webhook_event_repository="memory", paper_auto_trade_enabled=False)
+        )
+    )
     setup = create_setup(client)
     setup_id = str(setup["eventId"])
     create_trade(client, setup_id)
@@ -142,7 +154,11 @@ def test_rejects_duplicate_unsafe_invalid_and_unknown_paper_trades() -> None:
 
 
 def test_short_trade_closes_at_stop_loss() -> None:
-    client = TestClient(create_app(Settings(webhook_event_repository="memory")))
+    client = TestClient(
+        create_app(
+            Settings(webhook_event_repository="memory", paper_auto_trade_enabled=False)
+        )
+    )
     payload = valid_payload(
         event_id="BTCUSDT-1-paper-short",
         htf_bias="BEARISH",
@@ -180,6 +196,7 @@ def test_concurrent_creations_respect_maximum_open_position_limit() -> None:
         Settings(
             webhook_event_repository="memory",
             paper_max_open_positions=1,
+            paper_auto_trade_enabled=False,
         )
     )
     with TestClient(app) as client:

@@ -51,6 +51,7 @@ export function PaperTradingPanel({ setups }: { setups: SetupCandidate[] }) {
     queryKey: ["paper-trades"],
     queryFn: () => fetchPaperTrades(),
     retry: 1,
+    refetchInterval: 5_000,
   });
   const selectedTrade = tradesQuery.data?.items.find(
     (trade) => trade.tradeId === selectedTradeId,
@@ -60,6 +61,7 @@ export function PaperTradingPanel({ setups }: { setups: SetupCandidate[] }) {
     queryFn: () => fetchPaperTradeEvents(selectedTradeId ?? ""),
     enabled: selectedTradeId !== null,
     retry: 1,
+    refetchInterval: 5_000,
   });
 
   const refreshTrades = async (trade?: PaperTrade) => {

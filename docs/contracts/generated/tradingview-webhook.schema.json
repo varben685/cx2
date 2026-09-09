@@ -180,12 +180,158 @@
       "title": "TradingSession",
       "type": "string"
     },
-    "WebhookEventType": {
-      "enum": [
-        "SETUP_CANDIDATE"
+    "TradingViewMarketPricePayload": {
+      "additionalProperties": false,
+      "properties": {
+        "eventId": {
+          "maxLength": 200,
+          "minLength": 8,
+          "title": "Eventid",
+          "type": "string"
+        },
+        "eventType": {
+          "const": "MARKET_PRICE",
+          "title": "Eventtype",
+          "type": "string"
+        },
+        "exchange": {
+          "maxLength": 40,
+          "minLength": 1,
+          "title": "Exchange",
+          "type": "string"
+        },
+        "observedAt": {
+          "format": "date-time",
+          "title": "Observedat",
+          "type": "string"
+        },
+        "price": {
+          "exclusiveMinimum": 0,
+          "title": "Price",
+          "type": "number"
+        },
+        "schemaVersion": {
+          "const": "1.0",
+          "title": "Schemaversion",
+          "type": "string"
+        },
+        "source": {
+          "$ref": "#/$defs/WebhookSource"
+        },
+        "symbol": {
+          "maxLength": 40,
+          "minLength": 1,
+          "title": "Symbol",
+          "type": "string"
+        },
+        "timeframe": {
+          "title": "Timeframe",
+          "type": "string"
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "eventId",
+        "eventType",
+        "source",
+        "symbol",
+        "exchange",
+        "timeframe",
+        "observedAt",
+        "price"
       ],
-      "title": "WebhookEventType",
-      "type": "string"
+      "title": "TradingViewMarketPricePayload",
+      "type": "object"
+    },
+    "TradingViewWebhookPayload": {
+      "additionalProperties": false,
+      "properties": {
+        "barCloseTime": {
+          "format": "date-time",
+          "title": "Barclosetime",
+          "type": "string"
+        },
+        "barOpenTime": {
+          "format": "date-time",
+          "title": "Baropentime",
+          "type": "string"
+        },
+        "direction": {
+          "$ref": "#/$defs/TradeDirection"
+        },
+        "eventId": {
+          "maxLength": 200,
+          "minLength": 8,
+          "title": "Eventid",
+          "type": "string"
+        },
+        "eventType": {
+          "const": "SETUP_CANDIDATE",
+          "title": "Eventtype",
+          "type": "string"
+        },
+        "exchange": {
+          "maxLength": 40,
+          "minLength": 1,
+          "title": "Exchange",
+          "type": "string"
+        },
+        "execution": {
+          "$ref": "#/$defs/ExecutionPayload"
+        },
+        "features": {
+          "$ref": "#/$defs/FeaturePayload"
+        },
+        "fvg": {
+          "$ref": "#/$defs/FairValueGapPayload"
+        },
+        "marketStructure": {
+          "$ref": "#/$defs/MarketStructurePayload"
+        },
+        "schemaVersion": {
+          "const": "1.0",
+          "title": "Schemaversion",
+          "type": "string"
+        },
+        "source": {
+          "$ref": "#/$defs/WebhookSource"
+        },
+        "strategyVersion": {
+          "maxLength": 80,
+          "minLength": 1,
+          "title": "Strategyversion",
+          "type": "string"
+        },
+        "symbol": {
+          "maxLength": 40,
+          "minLength": 1,
+          "title": "Symbol",
+          "type": "string"
+        },
+        "timeframe": {
+          "title": "Timeframe",
+          "type": "string"
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "eventId",
+        "eventType",
+        "source",
+        "strategyVersion",
+        "symbol",
+        "exchange",
+        "timeframe",
+        "barOpenTime",
+        "barCloseTime",
+        "direction",
+        "marketStructure",
+        "fvg",
+        "execution",
+        "features"
+      ],
+      "title": "TradingViewWebhookPayload",
+      "type": "object"
     },
     "WebhookSource": {
       "enum": [
@@ -195,90 +341,19 @@
       "type": "string"
     }
   },
-  "additionalProperties": false,
-  "properties": {
-    "barCloseTime": {
-      "format": "date-time",
-      "title": "Barclosetime",
-      "type": "string"
+  "discriminator": {
+    "mapping": {
+      "MARKET_PRICE": "#/$defs/TradingViewMarketPricePayload",
+      "SETUP_CANDIDATE": "#/$defs/TradingViewWebhookPayload"
     },
-    "barOpenTime": {
-      "format": "date-time",
-      "title": "Baropentime",
-      "type": "string"
-    },
-    "direction": {
-      "$ref": "#/$defs/TradeDirection"
-    },
-    "eventId": {
-      "maxLength": 200,
-      "minLength": 8,
-      "title": "Eventid",
-      "type": "string"
-    },
-    "eventType": {
-      "$ref": "#/$defs/WebhookEventType"
-    },
-    "exchange": {
-      "maxLength": 40,
-      "minLength": 1,
-      "title": "Exchange",
-      "type": "string"
-    },
-    "execution": {
-      "$ref": "#/$defs/ExecutionPayload"
-    },
-    "features": {
-      "$ref": "#/$defs/FeaturePayload"
-    },
-    "fvg": {
-      "$ref": "#/$defs/FairValueGapPayload"
-    },
-    "marketStructure": {
-      "$ref": "#/$defs/MarketStructurePayload"
-    },
-    "schemaVersion": {
-      "const": "1.0",
-      "title": "Schemaversion",
-      "type": "string"
-    },
-    "source": {
-      "$ref": "#/$defs/WebhookSource"
-    },
-    "strategyVersion": {
-      "maxLength": 80,
-      "minLength": 1,
-      "title": "Strategyversion",
-      "type": "string"
-    },
-    "symbol": {
-      "maxLength": 40,
-      "minLength": 1,
-      "title": "Symbol",
-      "type": "string"
-    },
-    "timeframe": {
-      "title": "Timeframe",
-      "type": "string"
-    }
+    "propertyName": "eventType"
   },
-  "required": [
-    "schemaVersion",
-    "eventId",
-    "eventType",
-    "source",
-    "strategyVersion",
-    "symbol",
-    "exchange",
-    "timeframe",
-    "barOpenTime",
-    "barCloseTime",
-    "direction",
-    "marketStructure",
-    "fvg",
-    "execution",
-    "features"
-  ],
-  "title": "TradingViewWebhookPayload",
-  "type": "object"
+  "oneOf": [
+    {
+      "$ref": "#/$defs/TradingViewWebhookPayload"
+    },
+    {
+      "$ref": "#/$defs/TradingViewMarketPricePayload"
+    }
+  ]
 }

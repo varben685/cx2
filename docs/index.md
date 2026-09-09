@@ -18,6 +18,7 @@ Ez a könyvtár az `smc-ai-trading-assistant` működésének hiteles forrása.
 - [Phase 06 journal](learning/phase-06-journal.md): verziózott döntési napló és frontend folyamat.
 - [Phase 06 analytics](learning/phase-06-analytics.md): equity, drawdown, bontások és döntési összevetés.
 - [Phase 07 paper trading](learning/phase-07-paper-trading.md): risk policy, pozícióállapot és execution log.
+- [Phase 07 live webhook](learning/phase-07-live-paper-webhooks.md): automatikus setup és idempotens árfrissítés.
 - [Backtest analytics API](contracts/backtest-analytics.md): mutatók és lekérdezési szabályok.
 - [Backtest futtatás](contracts/backtests.md): CSV-batch, mentés és outcome lekérdezés.
 - [Trading journal API](contracts/journal.md): journal létrehozás, szerkesztés és revíziók.

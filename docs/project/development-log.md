@@ -775,8 +775,8 @@ rendszer javaslataival.
 
 ### Következő konkrét lépés
 
-Phase 7 paper trading workflow: élő setup-életciklus, automatikus outcome
-frissítés, értesítési adapter, napi és heti összesítő.
+Phase 7 paper trading workflow: automatikus outcome frissítés, értesítési
+adapter, napi és heti összesítő.
 
 ## 2026-09-08 Phase 7: risk-gated paper trading alapok
 
@@ -823,3 +823,44 @@ frissítés, értesítési adapter, napi és heti összesítő.
 
 Az élő TradingView webhook flow összekötése a paper trade állapotgéppel, majd
 automatikus outcome frissítés és első értesítési adapter.
+
+## 2026-09-09 Phase 7: élő TradingView paper workflow
+
+### Elkészült
+
+- A közös TradingView végpont `SETUP_CANDIDATE` és `MARKET_PRICE` payloadot
+  fogad diszkriminált Pydantic contracttal és generált JSON Schemával.
+- Új, elfogadott setupból konfiguráció szerint automatikusan PENDING paper
+  trade készül, minden esetben a meglévő `paper-risk-v1` policy után.
+- A setup válasz követhető `paperTradeAutomation` státuszt és opcionális trade
+  azonosítót ad.
+- Az idempotens price event symbol, exchange és timeframe szerint frissíti az
+  aktív trade-eket; a duplikált esemény nem növeli újra a revisiont.
+- A Pine prototípus külön, alapértelmezésben kikapcsolt price alert módot kapott.
+- A dashboard trade listája és execution logja öt másodpercenként frissül.
+- Frissült a webhook contract, flow diagram, operation guide, learning anyag és
+  elkészült az ADR-0007.
+
+### Korlátok
+
+- A price alert lezárt gyertya close értéke, nem intrabar tick vagy OHLC.
+- A market event mentése és a trade fan-out nem közös adatbázis-tranzakció;
+  outbox/worker retry még nincs.
+- Automatikus élő `OutcomeRecord`, értesítés, pending timeout, commission és
+  slippage még nincs.
+
+### Ellenőrzés
+
+- `uv run pytest`: 262 sikeres, 2 környezet szerint kihagyott backend teszt.
+- Ruff és mypy sikeres, 68 típusellenőrzött forrásfájl.
+- `npm test`: 14 sikeres frontend teszt; lint, typecheck és production build
+  sikeres.
+- Docker HTTP/PostgreSQL smoke: setup `ACCEPTED/CREATED/PENDING`, price `OPEN`,
+  duplikált price nulla új update, target `CLOSED/TAKE_PROFIT`, `+2R` és
+  `CREATED,OPENED,CLOSED` eseménysorrend sikeres.
+- A saját smoke setup-, webhook-, trade- és event rekordok eltávolítva.
+
+### Következő konkrét lépés
+
+A CLOSED és CANCELLED paper trade-ek automatikus outcome rekordba vetítése,
+majd az első, cserélhető értesítési adapter.

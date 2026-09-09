@@ -158,7 +158,7 @@ ezért a Docker image build ebben a munkamenetben nem volt futtatható.
 - [x] Determinisztikus, konfigurálható risk policy.
 - [x] Paper trade állapotgép, persistence és append-only execution log.
 - [x] Paper trade REST API és frontend munkafolyamat.
-- [ ] Élő TradingView webhook flow.
+- [x] Élő TradingView webhook flow.
 - [ ] Outcome frissítés.
 - [ ] Értesítési adapter.
 - [ ] Napi és heti összesítő.
@@ -424,3 +424,12 @@ ezért a Docker image build ebben a munkamenetben nem volt futtatható.
   backend teszt és 14 frontend teszt sikeres, Ruff, mypy, ESLint, typecheck,
   build, PostgreSQL HTTP smoke és desktop/mobil Playwright ellenőrzés kész.
   Következő lépés: élő webhook és automatikus outcome frissítés összekötése.
+- 2026-09-09: Elkészült az idempotens élő TradingView paper workflow. Új,
+  elfogadott setup webhook konfiguráció szerint automatikus PENDING trade-et
+  hoz létre, a közös végpont új `MARKET_PRICE` eseménye pedig symbol, exchange
+  és timeframe alapján frissíti az aktív trade-eket. A Pine price alert külön
+  kapcsolható, a dashboard ötmásodpercenként frissül. Duplikált esemény nem
+  ismétel állapotátmenetet, event type ütközés 409. Ellenőrzés: 262 backend és
+  14 frontend teszt, teljes statikus kapuk, Docker/PostgreSQL setup-open-close
+  smoke. Következő lépés: lezárt paper trade automatikus outcome rekordja és
+  értesítési adapter.

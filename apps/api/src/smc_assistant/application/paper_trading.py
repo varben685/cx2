@@ -67,6 +67,13 @@ class PaperTradeCreation:
     risk_decision: RiskPolicyDecision
 
 
+@dataclass(frozen=True, slots=True)
+class PaperTradePriceBatch:
+    matched_trade_ids: tuple[UUID, ...]
+    updated_trades: tuple[PaperTrade, ...]
+    ignored_trade_ids: tuple[UUID, ...]
+
+
 class PaperTradeRepository(Protocol):
     def create(self, trade: PaperTrade, event: PaperTradeEvent) -> PaperTrade:
         pass
@@ -306,6 +313,45 @@ class PaperTradingService:
         )
         return self._save_transition(trade, updated, event)
 
+    def observe_market_price(
+        self,
+        *,
+        symbol: str,
+        exchange: str,
+        timeframe: str,
+        price: float,
+        occurred_at: datetime,
+    ) -> PaperTradePriceBatch:
+        active_trades = [
+            trade
+            for status in (PaperTradeStatus.PENDING, PaperTradeStatus.OPEN)
+            for trade in self._trades.list_recent(
+                limit=500,
+                status=status,
+            )
+            if trade.symbol.upper() == symbol.upper()
+            and trade.exchange.upper() == exchange.upper()
+            and trade.timeframe.upper() == timeframe.upper()
+        ]
+        updated: list[PaperTrade] = []
+        ignored: list[UUID] = []
+        for trade in active_trades:
+            try:
+                updated.append(
+                    self.observe_price(
+                        trade.trade_id,
+                        price=price,
+                        occurred_at=occurred_at,
+                    )
+                )
+            except (PaperTradeRevisionConflictError, PaperTradeTransitionError):
+                ignored.append(trade.trade_id)
+        return PaperTradePriceBatch(
+            matched_trade_ids=tuple(trade.trade_id for trade in active_trades),
+            updated_trades=tuple(updated),
+            ignored_trade_ids=tuple(ignored),
+        )
+
     def close_trade(
         self,
         trade_id: UUID,
@@ -364,6 +410,9 @@ class PaperTradingService:
         if trade is None:
             raise PaperTradeNotFoundError("Paper trade not found.")
         return trade
+
+    def get_trade_by_setup(self, setup_id: str) -> PaperTrade | None:
+        return self._trades.get_by_setup_id(setup_id)
 
     def _save_transition(
         self,

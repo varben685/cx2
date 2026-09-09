@@ -27,5 +27,8 @@ class Settings(BaseSettings):
     )
     paper_correlation_groups: list[list[str]] = Field(default_factory=list)
     paper_max_correlated_positions: int = Field(default=1, ge=1)
+    paper_auto_trade_enabled: bool = True
+    paper_account_balance: float = Field(default=10_000.0, gt=0)
+    paper_default_risk_percent: float = Field(default=1.0, gt=0, le=100)
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")

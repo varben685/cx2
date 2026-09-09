@@ -35,6 +35,8 @@ mutatják a kockázatot és a csoportokat. Backtest vagy journal mutation után 
 A paper trading panel az elfogadott, még nem használt setupokat kínálja fel. A
 mutationök után a trade- és eseménycache frissül; a részletező csak az aktuális
 állapotban engedélyezett árfrissítés, manuális zárás vagy visszavonás műveletet
-mutatja. Széles listák mobilon lokálisan görgethetők.
+mutatja. A trade lista és a megnyitott execution log öt másodpercenként frissül,
+így az élő webhook állapotváltozásai automatikusan megjelennek. Széles listák
+mobilon lokálisan görgethetők.
 
-Következő frontend területek: élő állapotfrissítés, összesítők és strategy settings.
+Következő frontend területek: összesítők és strategy settings.

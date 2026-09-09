@@ -1,8 +1,12 @@
 from copy import deepcopy
 from datetime import UTC, datetime, timedelta
 
+import pytest
+
 from smc_assistant.application.audit import AuditEvent, AuditEventType
 from smc_assistant.application.webhook_ingestion import (
+    WebhookEventConflictError,
+    WebhookEventRecord,
     WebhookIngestionService,
     WebhookIngestionStatus,
 )
@@ -145,3 +149,22 @@ def test_ingestion_uses_first_payload_for_duplicate_event_id() -> None:
     assert duplicate_result.status == WebhookIngestionStatus.DUPLICATE
     assert stored_record is not None
     assert stored_record.payload["symbol"] == "BTCUSDT"
+
+
+def test_ingestion_rejects_event_id_owned_by_another_event_type() -> None:
+    repository = InMemoryWebhookEventRepository()
+    payload = valid_payload()
+    received_at = datetime(2026, 9, 9, 12, 0, tzinfo=UTC)
+    repository.save_if_absent(
+        WebhookEventRecord(
+            event_id=payload.event_id,
+            event_type="MARKET_PRICE",
+            source="TRADINGVIEW",
+            schema_version="1.0",
+            payload={"eventType": "MARKET_PRICE"},
+            received_at=received_at,
+        )
+    )
+
+    with pytest.raises(WebhookEventConflictError, match="different webhook event type"):
+        WebhookIngestionService(repository).ingest_tradingview(payload)
