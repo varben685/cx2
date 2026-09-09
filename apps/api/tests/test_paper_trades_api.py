@@ -39,6 +39,8 @@ def test_creates_opens_and_closes_paper_trade_at_target() -> None:
     assert trade["riskAmount"] == 100
     assert trade["quantity"] == 0.5
     assert trade["riskDecision"]["approved"] is True
+    assert trade["outcomeId"] is None
+    assert trade["outcomeLabel"] is None
     trade_id = trade["tradeId"]
 
     pending = client.post(f"/api/v1/paper-trades/{trade_id}/market-price", json={"price": 65190})
@@ -57,6 +59,20 @@ def test_creates_opens_and_closes_paper_trade_at_target() -> None:
     assert result["exitPrice"] == 65580
     assert result["realizedPnl"] == 200
     assert result["realizedR"] == 2
+    assert result["outcomeId"] is not None
+    assert result["outcomeLabel"] == "WIN"
+
+    outcomes = client.get("/api/v1/outcomes/paper-trades").json()
+    assert outcomes["count"] == 1
+    outcome = outcomes["items"][0]
+    assert outcome["outcomeId"] == result["outcomeId"]
+    assert outcome["runId"] == "00000000-0000-0000-0000-000000000007"
+    assert outcome["engineVersion"] == "paper-execution-v1"
+    assert len(outcome["marketDataSha256"]) == 64
+    assert outcome["outcome"]["label"] == "WIN"
+    assert outcome["outcome"]["exitReason"] == "TAKE_PROFIT_HIT"
+    assert outcome["outcome"]["netRealizedR"] == 2
+    assert outcome["outcome"]["costs"]["totalAmount"] == 0
 
     events = client.get(f"/api/v1/paper-trades/{trade_id}/events").json()
     assert events["count"] == 4
@@ -67,6 +83,14 @@ def test_creates_opens_and_closes_paper_trade_at_target() -> None:
         "CLOSED",
     ]
     assert [item["sequence"] for item in events["items"]] == [1, 2, 3, 4]
+
+    reconciliation = client.post("/api/v1/outcomes/paper-trades/reconcile").json()
+    assert reconciliation == {
+        "runId": "00000000-0000-0000-0000-000000000007",
+        "scanned": 1,
+        "created": 0,
+        "existing": 1,
+    }
 
 
 def test_supports_manual_close_cancel_filters_and_conflicts() -> None:
@@ -87,6 +111,7 @@ def test_supports_manual_close_cancel_filters_and_conflicts() -> None:
     assert manually_closed.status_code == 200
     assert manually_closed.json()["exitReason"] == "MANUAL"
     assert manually_closed.json()["realizedR"] == 1
+    assert manually_closed.json()["outcomeLabel"] == "WIN"
     assert client.post(
         f"/api/v1/paper-trades/{trade_id}/close", json={"exitPrice": 65380}
     ).status_code == 409
@@ -102,6 +127,7 @@ def test_supports_manual_close_cancel_filters_and_conflicts() -> None:
     assert cancelled.status_code == 200
     assert cancelled.json()["status"] == "CANCELLED"
     assert cancelled.json()["exitReason"] == "CANCELLED"
+    assert cancelled.json()["outcomeLabel"] == "CANCELLED"
 
     closed_list = client.get("/api/v1/paper-trades", params={"status": "CLOSED"}).json()
     assert closed_list["count"] == 1
@@ -189,6 +215,99 @@ def test_short_trade_closes_at_stop_loss() -> None:
     last_event = client.get(f"/api/v1/paper-trades/{trade_id}/events").json()["items"][-1]
     assert last_event["details"]["marketPrice"] == 106
     assert last_event["details"]["exitReason"] == "STOP_LOSS"
+
+
+def test_terminal_paper_trade_updates_existing_journal() -> None:
+    client = TestClient(
+        create_app(
+            Settings(webhook_event_repository="memory", paper_auto_trade_enabled=False)
+        )
+    )
+    setup = create_setup(client, eventId="BTCUSDT-1-paper-journal")
+    setup_id = str(setup["eventId"])
+    trade = create_trade(client, setup_id)
+    journal_response = client.post(
+        f"/api/v1/setups/{setup_id}/journal",
+        json={"executionStatus": "TAKEN"},
+    )
+    assert journal_response.status_code == 201, journal_response.text
+    journal = journal_response.json()
+    assert journal["outcomeId"] is None
+
+    assert client.post(
+        f"/api/v1/paper-trades/{trade['tradeId']}/market-price",
+        json={"price": 65180},
+    ).json()["status"] == "OPEN"
+    closed = client.post(
+        f"/api/v1/paper-trades/{trade['tradeId']}/market-price",
+        json={"price": 65580},
+    ).json()
+
+    updated = client.get(f"/api/v1/journal/{journal['journalId']}").json()
+    assert updated["revision"] == 2
+    assert updated["outcomeId"] == closed["outcomeId"]
+    assert updated["outcomeLabel"] == "WIN"
+    assert updated["realizedR"] == 2
+    assert updated["outcomeSnapshot"]["engine_version"] == "paper-execution-v1"
+
+
+def test_paper_outcome_notification_is_emitted_only_once(caplog) -> None:
+    client = TestClient(
+        create_app(
+            Settings(webhook_event_repository="memory", paper_auto_trade_enabled=False)
+        )
+    )
+    setup = create_setup(client, eventId="BTCUSDT-1-paper-notification")
+    trade = create_trade(client, str(setup["eventId"]))
+
+    with caplog.at_level("INFO", logger="uvicorn.error"):
+        client.post(
+            f"/api/v1/paper-trades/{trade['tradeId']}/market-price",
+            json={"price": 65180},
+        )
+        closed = client.post(
+            f"/api/v1/paper-trades/{trade['tradeId']}/market-price",
+            json={"price": 65580},
+        )
+        assert closed.status_code == 200
+        assert client.post("/api/v1/outcomes/paper-trades/reconcile").status_code == 200
+
+    notifications = [
+        record for record in caplog.records if record.message == "paper_outcome_notification"
+    ]
+    assert len(notifications) == 1
+
+
+def test_notification_failure_does_not_fail_terminal_trade(caplog) -> None:
+    class FailingNotificationAdapter:
+        enabled = True
+
+        def send_paper_outcome(self, notification: object) -> None:
+            del notification
+            raise RuntimeError("notification unavailable")
+
+    app = create_app(
+        Settings(webhook_event_repository="memory", paper_auto_trade_enabled=False)
+    )
+    app.state.paper_trade_outcome_service._notifications = FailingNotificationAdapter()
+    client = TestClient(app)
+    setup = create_setup(client, eventId="BTCUSDT-1-paper-notification-failure")
+    trade = create_trade(client, str(setup["eventId"]))
+    client.post(
+        f"/api/v1/paper-trades/{trade['tradeId']}/market-price",
+        json={"price": 65180},
+    )
+
+    with caplog.at_level("ERROR", logger="smc_assistant.application.paper_trade_outcomes"):
+        closed = client.post(
+            f"/api/v1/paper-trades/{trade['tradeId']}/market-price",
+            json={"price": 65580},
+        )
+
+    assert closed.status_code == 200
+    assert closed.json()["status"] == "CLOSED"
+    assert closed.json()["outcomeLabel"] == "WIN"
+    assert "paper_outcome_notification_failed" in caplog.text
 
 
 def test_concurrent_creations_respect_maximum_open_position_limit() -> None:

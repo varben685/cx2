@@ -6,6 +6,9 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from pydantic import BaseModel, ConfigDict, Field
 
+from smc_assistant.api.analytics import get_outcome_repository
+from smc_assistant.application.outcome_records import OutcomeRecord, OutcomeRepository
+from smc_assistant.application.paper_trade_outcomes import LIVE_PAPER_RUN_ID
 from smc_assistant.application.paper_trading import (
     PaperTradeAlreadyExistsError,
     PaperTradeNotFoundError,
@@ -65,6 +68,8 @@ class PaperTradeResponse(CamelResponse):
     exit_reason: str | None = Field(alias="exitReason")
     realized_pnl: float | None = Field(alias="realizedPnl")
     realized_r: float | None = Field(alias="realizedR")
+    outcome_id: UUID | None = Field(alias="outcomeId")
+    outcome_label: str | None = Field(alias="outcomeLabel")
     risk_policy_version: str = Field(alias="riskPolicyVersion")
     created_at: datetime = Field(alias="createdAt")
     updated_at: datetime = Field(alias="updatedAt")
@@ -141,14 +146,27 @@ def create_paper_trade(
 @router.get("", response_model=PaperTradeListResponse, response_model_by_alias=True)
 def list_paper_trades(
     repository: Annotated[PaperTradeRepository, Depends(get_paper_trade_repository)],
+    outcome_repository: Annotated[
+        OutcomeRepository,
+        Depends(get_outcome_repository),
+    ],
     limit: Annotated[int, Query(ge=1, le=500)] = 100,
     trade_status: Annotated[PaperTradeStatus | None, Query(alias="status")] = None,
     symbol: str | None = None,
 ) -> PaperTradeListResponse:
     trades = repository.list_recent(limit=limit, status=trade_status, symbol=symbol)
+    outcomes = {
+        record.evaluation.event_id: record
+        for record in outcome_repository.list_for_run(LIVE_PAPER_RUN_ID)
+    }
     return PaperTradeListResponse(
         count=len(trades),
-        items=[PaperTradeResponse.model_validate(_trade_data(trade)) for trade in trades],
+        items=[
+            PaperTradeResponse.model_validate(
+                _trade_data(trade, outcomes.get(trade.event_id))
+            )
+            for trade in trades
+        ],
     )
 
 
@@ -156,11 +174,16 @@ def list_paper_trades(
 def get_paper_trade(
     trade_id: UUID,
     repository: Annotated[PaperTradeRepository, Depends(get_paper_trade_repository)],
+    outcome_repository: Annotated[
+        OutcomeRepository,
+        Depends(get_outcome_repository),
+    ],
 ) -> PaperTradeResponse:
     trade = repository.get(trade_id)
     if trade is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Paper trade not found.")
-    return PaperTradeResponse.model_validate(_trade_data(trade))
+    outcome = outcome_repository.get_by_run_event(LIVE_PAPER_RUN_ID, trade.event_id)
+    return PaperTradeResponse.model_validate(_trade_data(trade, outcome))
 
 
 @router.post(
@@ -172,13 +195,18 @@ def observe_market_price(
     trade_id: UUID,
     payload: PaperTradePriceRequest,
     service: Annotated[PaperTradingService, Depends(get_paper_trading_service)],
+    outcome_repository: Annotated[
+        OutcomeRepository,
+        Depends(get_outcome_repository),
+    ],
 ) -> PaperTradeResponse:
     return _transition_response(
         lambda: service.observe_price(
             trade_id,
             price=payload.price,
             occurred_at=payload.occurred_at,
-        )
+        ),
+        outcome_repository,
     )
 
 
@@ -191,13 +219,18 @@ def close_paper_trade(
     trade_id: UUID,
     payload: PaperTradeCloseRequest,
     service: Annotated[PaperTradingService, Depends(get_paper_trading_service)],
+    outcome_repository: Annotated[
+        OutcomeRepository,
+        Depends(get_outcome_repository),
+    ],
 ) -> PaperTradeResponse:
     return _transition_response(
         lambda: service.close_trade(
             trade_id,
             exit_price=payload.exit_price,
             closed_at=payload.closed_at,
-        )
+        ),
+        outcome_repository,
     )
 
 
@@ -210,9 +243,14 @@ def cancel_paper_trade(
     trade_id: UUID,
     payload: PaperTradeCancelRequest,
     service: Annotated[PaperTradingService, Depends(get_paper_trading_service)],
+    outcome_repository: Annotated[
+        OutcomeRepository,
+        Depends(get_outcome_repository),
+    ],
 ) -> PaperTradeResponse:
     return _transition_response(
-        lambda: service.cancel_trade(trade_id, cancelled_at=payload.cancelled_at)
+        lambda: service.cancel_trade(trade_id, cancelled_at=payload.cancelled_at),
+        outcome_repository,
     )
 
 
@@ -234,7 +272,10 @@ def list_paper_trade_events(
     )
 
 
-def _transition_response(operation: Callable[[], PaperTrade]) -> PaperTradeResponse:
+def _transition_response(
+    operation: Callable[[], PaperTrade],
+    outcome_repository: OutcomeRepository,
+) -> PaperTradeResponse:
     try:
         trade = operation()
     except PaperTradeNotFoundError as error:
@@ -243,10 +284,14 @@ def _transition_response(operation: Callable[[], PaperTrade]) -> PaperTradeRespo
         raise HTTPException(status.HTTP_409_CONFLICT, str(error)) from error
     except PaperTradeRevisionConflictError as error:
         raise HTTPException(status.HTTP_409_CONFLICT, str(error)) from error
-    return PaperTradeResponse.model_validate(_trade_data(trade))
+    outcome = outcome_repository.get_by_run_event(LIVE_PAPER_RUN_ID, trade.event_id)
+    return PaperTradeResponse.model_validate(_trade_data(trade, outcome))
 
 
-def _trade_data(trade: PaperTrade) -> dict[str, Any]:
+def _trade_data(
+    trade: PaperTrade,
+    outcome: OutcomeRecord | None = None,
+) -> dict[str, Any]:
     return {
         "tradeId": trade.trade_id,
         "setupId": trade.setup_id,
@@ -272,6 +317,10 @@ def _trade_data(trade: PaperTrade) -> dict[str, Any]:
         "exitReason": trade.exit_reason,
         "realizedPnl": trade.realized_pnl,
         "realizedR": trade.realized_r,
+        "outcomeId": outcome.outcome_id if outcome is not None else None,
+        "outcomeLabel": (
+            outcome.evaluation.outcome.label if outcome is not None else None
+        ),
         "riskPolicyVersion": trade.risk_policy_version,
         "createdAt": trade.created_at,
         "updatedAt": trade.updated_at,

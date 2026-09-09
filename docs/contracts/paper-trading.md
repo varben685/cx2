@@ -28,6 +28,8 @@ helyettesít valós tick- vagy gyertyaadat-szolgáltatót.
 - `POST /api/v1/paper-trades/{tradeId}/close`: manuális zárás.
 - `POST /api/v1/paper-trades/{tradeId}/cancel`: pending terv visszavonása.
 - `GET /api/v1/paper-trades/{tradeId}/events`: append-only execution log.
+- `GET /api/v1/outcomes/paper-trades`: lezárt paper trade outcome-ok.
+- `POST /api/v1/outcomes/paper-trades/reconcile`: hiányzó outcome-ok pótlása.
 
 Létrehozási példa:
 
@@ -84,6 +86,24 @@ limitje nem csonkolhatja a kockázati számítást.
 
 Elutasításkor nincs paper trade rekord, az API `422` választ és audit eseményt
 ad. Setup hiányra `404`, duplikációra vagy tiltott állapotátmenetre `409` jár.
+
+## Outcome és journal kapcsolat
+
+A `CLOSED` vagy `CANCELLED` állapotba kerülő trade automatikusan immutable
+`OutcomeRecord` rekordot kap. Az összes live paper outcome a stabil
+`00000000-0000-0000-0000-000000000007` run azonosító alatt található, így nem
+keveredik a backtest futásokkal. Egy setuphoz ezen a runon legfeljebb egy
+outcome tartozhat.
+
+A paper trade válasz `outcomeId` és `outcomeLabel` mezője terminális állapotban
+kitöltött. Ha a setuphoz már létezik journal bejegyzés, annak új revíziója
+automatikusan megkapja az outcome snapshotot és a realizált R-adatokat. A
+`reconcile` végpont idempotensen pótolja egy korábbi részleges hiba miatt
+hiányzó eredményeket.
+
+A live outcome MFE/MAE értéke csak a beérkezett price eventekből számolható,
+ezért gyertyán belüli szélsőértéket nem reprezentál. Commission és slippage
+jelenleg nulla; az engine verziója `paper-execution-v1`.
 
 ## Persistence
 

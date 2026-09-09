@@ -31,7 +31,7 @@ Az első tartósított entitás a beérkező TradingView webhook esemény.
 | Oszlop | Típus | Megjegyzés |
 | --- | --- | --- |
 | `event_id` | string(200) | Elsődleges kulcs és idempotencia kulcs. |
-| `event_type` | string(80) | Jelenleg `SETUP_CANDIDATE`. |
+| `event_type` | string(80) | `SETUP_CANDIDATE` vagy `MARKET_PRICE`. |
 | `source` | string(80) | Jelenleg `TRADINGVIEW`. |
 | `schema_version` | string(40) | Contract verzió, jelenleg `1.0`. |
 | `payload` | JSON/JSONB | A validált webhook payload camelCase JSON mezőkkel. |
@@ -94,6 +94,11 @@ Az `event_id` itt logikai kapcsolat, nem foreign key: az offline CSV-backtest
 webhook ingestion nélkül is használható. Ha az esemény már beérkezett, az
 azonosító összekapcsolható a meglévő setup rekorddal. A döntést az
 `ADR-0002-outcome-snapshots.md` dokumentálja.
+
+A live paper trade eredmények ugyanebbe a táblába kerülnek a fenntartott
+`00000000-0000-0000-0000-000000000007` run azonosítóval és
+`paper-execution-v1` engine verzióval. Így a közös eredménymodellt használják,
+de nem keverednek a backtest futásokkal.
 
 Az új tábla a meglévő `initialize_database_schema` / `metadata.create_all`
 útvonalon jön létre; a korábbi táblákat ez a változtatás nem alakítja át.

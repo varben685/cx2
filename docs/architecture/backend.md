@@ -58,3 +58,9 @@ orchestration réteg. Új setupnál konfiguráció szerint trade-et hoz létre, 
 `MARKET_PRICE` payloadot pedig symbol, exchange és timeframe alapján továbbítja
 az aktív pozícióknak. A webhook repository adja az ár-esemény idempotenciáját;
 az azonos esemény újraküldése nem ismétli meg az állapotátmenetet.
+
+A `PaperTradeOutcomeService` a terminális trade-et a közös outcome modellre
+vetíti, szükség esetén új journal revíziót készít, és a cserélhető notification
+portot hívja. A live eredmények fenntartott run azonosítója elválasztja őket a
+backtest futásoktól. A manuális reconcile use case idempotensen pótolja a
+részleges mentési hiba miatt hiányzó outcome-ot.

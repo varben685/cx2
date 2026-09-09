@@ -864,3 +864,45 @@ automatikus outcome frissítés és első értesítési adapter.
 
 A CLOSED és CANCELLED paper trade-ek automatikus outcome rekordba vetítése,
 majd az első, cserélhető értesítési adapter.
+
+## 2026-09-09 Phase 7: automatikus live outcome és értesítés
+
+### Elkészült
+
+- Minden `CLOSED` és `CANCELLED` paper trade automatikus, idempotens outcome
+  rekordot kap a fenntartott live paper run alatt.
+- A target, stop, manuális zárás és visszavonás külön outcome labelt és exit
+  reasont ad; a realizált R, időpontok és close-price alapú MFE/MAE mentésre kerül.
+- A paper trade API közvetlenül visszaadja az `outcomeId` és `outcomeLabel`
+  mezőt, a dashboard pedig megjeleníti az eredmény címkéjét.
+- A már létező journal automatikusan új revíziót kap outcome snapshottal.
+- Új live outcome lista és idempotens reconcile végpont készült.
+- Elkészült a cserélhető notification port és az első strukturált log adapter;
+  a küldési hiba külön audit esemény, és nem rontja el a sikeres lezárást.
+- Frissült a konfiguráció, API contract, operation guide, learning anyag és
+  elkészült az ADR-0008.
+
+### Ellenőrzés
+
+- `pytest`: 265 sikeres, 2 környezet szerint kihagyott backend teszt.
+- Ruff és mypy sikeres, 71 típusellenőrzött forrásfájl.
+- `npm test`: 15 sikeres frontend teszt; lint, typecheck és production build
+  sikeres.
+- Célzott teszt igazolja az egyszeri értesítést, a reconcile idempotenciáját és
+  a journal automatikus összekapcsolását.
+- Docker HTTP/PostgreSQL smoke: automatikus setup, OPEN, CLOSED, `+2R`, live
+  outcome, journal revision és konzolon látható notification log sikeres.
+- A saját smoke rekordok eltávolítva az adatbázisból.
+
+### Korlátok
+
+- Az értesítés best effort; nincs tartós outbox, retry vagy kézbesítési státusz.
+- A live MFE/MAE csak a beérkezett close price eseményekből számolható.
+- Commission és slippage a live outcome-ban egyelőre nulla.
+- A trade lezárása és az outcome mentése nem közös adatbázis-tranzakció; a
+  reconcile végpont biztosít kézi helyreállítást.
+
+### Következő konkrét lépés
+
+A helyi API biztonságos publikálása és tényleges összekötése a TradingView
+alerttel, majd egy valós setup és price webhook végigkövetése paper módban.

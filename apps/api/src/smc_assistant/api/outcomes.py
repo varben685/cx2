@@ -1,13 +1,17 @@
 from datetime import datetime
-from typing import Annotated
+from typing import Annotated, cast
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from pydantic import BaseModel, ConfigDict
 from pydantic.alias_generators import to_camel
 
 from smc_assistant.api.analytics import get_outcome_repository
 from smc_assistant.application.outcome_records import OutcomeRecord, OutcomeRepository
+from smc_assistant.application.paper_trade_outcomes import (
+    LIVE_PAPER_RUN_ID,
+    PaperTradeOutcomeService,
+)
 from smc_assistant.domain.enums import TradeDirection, TradeOutcomeLabel
 from smc_assistant.domain.outcomes import OutcomeExitReason
 
@@ -67,6 +71,20 @@ class OutcomeListResponse(CamelResponse):
     items: list[OutcomeResponse]
 
 
+class PaperOutcomeReconciliationResponse(CamelResponse):
+    run_id: UUID
+    scanned: int
+    created: int
+    existing: int
+
+
+def get_paper_trade_outcome_service(request: Request) -> PaperTradeOutcomeService:
+    return cast(
+        PaperTradeOutcomeService,
+        request.app.state.paper_trade_outcome_service,
+    )
+
+
 def outcome_response(record: OutcomeRecord) -> OutcomeResponse:
     evaluation = record.evaluation
     return OutcomeResponse(
@@ -95,6 +113,39 @@ def list_outcomes(
 ) -> OutcomeListResponse:
     records = repository.list_recent(run_id=run_id, symbol=symbol, limit=limit)
     return OutcomeListResponse(count=len(records), items=[outcome_response(r) for r in records])
+
+
+@router.get("/paper-trades", response_model=OutcomeListResponse)
+def list_paper_trade_outcomes(
+    repository: Annotated[OutcomeRepository, Depends(get_outcome_repository)],
+    symbol: Annotated[str | None, Query(min_length=1, max_length=40)] = None,
+    limit: Annotated[int, Query(ge=1, le=100)] = 50,
+) -> OutcomeListResponse:
+    records = repository.list_recent(
+        run_id=LIVE_PAPER_RUN_ID,
+        symbol=symbol,
+        limit=limit,
+    )
+    return OutcomeListResponse(count=len(records), items=[outcome_response(r) for r in records])
+
+
+@router.post(
+    "/paper-trades/reconcile",
+    response_model=PaperOutcomeReconciliationResponse,
+)
+def reconcile_paper_trade_outcomes(
+    service: Annotated[
+        PaperTradeOutcomeService,
+        Depends(get_paper_trade_outcome_service),
+    ],
+) -> PaperOutcomeReconciliationResponse:
+    reconciliation = service.reconcile()
+    return PaperOutcomeReconciliationResponse(
+        run_id=LIVE_PAPER_RUN_ID,
+        scanned=reconciliation.scanned,
+        created=reconciliation.created,
+        existing=reconciliation.existing,
+    )
 
 
 @router.get("/{outcome_id}", response_model=OutcomeResponse)

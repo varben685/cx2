@@ -159,8 +159,8 @@ ezért a Docker image build ebben a munkamenetben nem volt futtatható.
 - [x] Paper trade állapotgép, persistence és append-only execution log.
 - [x] Paper trade REST API és frontend munkafolyamat.
 - [x] Élő TradingView webhook flow.
-- [ ] Outcome frissítés.
-- [ ] Értesítési adapter.
+- [x] Outcome frissítés.
+- [x] Értesítési adapter.
 - [ ] Napi és heti összesítő.
 
 ## Phase 8: ML dataset és baseline

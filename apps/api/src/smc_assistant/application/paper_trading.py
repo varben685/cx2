@@ -109,6 +109,11 @@ class PaperTradeRepository(Protocol):
         pass
 
 
+class PaperTradeOutcomeRecorder(Protocol):
+    def record_terminal_trade(self, trade: PaperTrade) -> object:
+        pass
+
+
 class PaperTradingService:
     def __init__(
         self,
@@ -117,12 +122,14 @@ class PaperTradingService:
         paper_trade_repository: PaperTradeRepository,
         risk_config: RiskPolicyConfig | None = None,
         audit_logger: AuditLogger | None = None,
+        outcome_recorder: PaperTradeOutcomeRecorder | None = None,
     ) -> None:
         self._setups = setup_repository
         self._webhooks = webhook_repository
         self._trades = paper_trade_repository
         self._risk_config = risk_config or RiskPolicyConfig()
         self._audit_logger = audit_logger or NoopAuditLogger()
+        self._outcome_recorder = outcome_recorder
         self._creation_lock = Lock()
 
     def create_trade(
@@ -439,6 +446,8 @@ class PaperTradingService:
                 occurred_at=event.occurred_at,
             )
         )
+        if self._outcome_recorder is not None:
+            self._outcome_recorder.record_terminal_trade(saved)
         return saved
 
     @staticmethod

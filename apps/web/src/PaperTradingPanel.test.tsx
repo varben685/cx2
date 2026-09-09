@@ -28,6 +28,7 @@ const setup: SetupCandidate = {
 };
 
 function paperTrade(status: PaperTrade["status"]): PaperTrade {
+  const isClosed = status === "CLOSED";
   return {
     tradeId: "00000000-0000-4000-8000-000000000001",
     setupId: setup.setupId,
@@ -47,16 +48,18 @@ function paperTrade(status: PaperTrade["status"]): PaperTrade {
     riskPercent: 1,
     riskAmount: 100,
     quantity: 20,
-    openedAt: status === "OPEN" ? "2026-09-08T12:01:00Z" : null,
-    closedAt: null,
-    exitPrice: null,
-    exitReason: null,
-    realizedPnl: null,
-    realizedR: null,
+    openedAt: status === "OPEN" || isClosed ? "2026-09-08T12:01:00Z" : null,
+    closedAt: isClosed ? "2026-09-08T12:05:00Z" : null,
+    exitPrice: isClosed ? 110 : null,
+    exitReason: isClosed ? "TAKE_PROFIT" : null,
+    realizedPnl: isClosed ? 200 : null,
+    realizedR: isClosed ? 2 : null,
+    outcomeId: isClosed ? "00000000-0000-4000-8000-000000000002" : null,
+    outcomeLabel: isClosed ? "WIN" : null,
     riskPolicyVersion: "paper-risk-v1",
     createdAt: "2026-09-08T12:00:00Z",
     updatedAt: "2026-09-08T12:01:00Z",
-    revision: status === "OPEN" ? 2 : 1,
+    revision: status === "OPEN" ? 2 : isClosed ? 3 : 1,
   };
 }
 
@@ -138,5 +141,21 @@ describe("PaperTradingPanel", () => {
 
     await waitFor(() => expect(screen.getAllByText("OPEN").length).toBeGreaterThan(0));
     expect(await screen.findByText("OPENED")).toBeInTheDocument();
+  });
+
+  it("shows the stored outcome for a closed trade", async () => {
+    trades = [paperTrade("CLOSED")];
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+    });
+
+    render(
+      <QueryClientProvider client={queryClient}>
+        <PaperTradingPanel setups={[setup]} />
+      </QueryClientProvider>,
+    );
+
+    expect(await screen.findByText("WIN")).toBeInTheDocument();
+    expect(screen.getByText("2.00 R")).toBeInTheDocument();
   });
 });

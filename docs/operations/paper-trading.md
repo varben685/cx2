@@ -12,12 +12,20 @@ változók:
 PAPER_AUTO_TRADE_ENABLED=true
 PAPER_ACCOUNT_BALANCE=10000
 PAPER_DEFAULT_RISK_PERCENT=1
+PAPER_NOTIFICATION_ADAPTER=log
 ```
 
 Egy új, score és risk policy szerint elfogadott `SETUP_CANDIDATE` webhookból
 `PENDING` trade készül. A `MARKET_PRICE` webhook ugyanazon symbol, exchange és
 timeframe aktív trade-jeit frissíti. Entry elérésekor `OPEN`, stop vagy target
 elérésekor `CLOSED` állapot következik.
+
+Terminális állapotnál a backend automatikusan live outcome rekordot készít,
+frissíti a már létező journal bejegyzést, és a `log` adapterrel strukturált
+értesítési eseményt ír. Az adapter `PAPER_NOTIFICATION_ADAPTER=none` értékkel
+kikapcsolható. A lezárt eredmények a `GET /api/v1/outcomes/paper-trades`
+végponton ellenőrizhetők; hiányzó rekordok a
+`POST /api/v1/outcomes/paper-trades/reconcile` hívással pótolhatók.
 
 ## TradingView beállítás
 
@@ -39,3 +47,4 @@ létező alert snapshotját; ilyenkor az alertet újra létre kell hozni.
 - A market price esemény mentése megelőzi a trade-frissítést. Ritka belső hiba
   után automatikus retry/outbox még nincs.
 - Több API workerhez adatbázisszintű portfólió-lock szükséges.
+- Az értesítés best effort, nincs tartós outbox vagy automatikus újraküldés.

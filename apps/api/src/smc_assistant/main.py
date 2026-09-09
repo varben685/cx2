@@ -54,6 +54,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.state.journal_repository = webhook_ingestion_services.journal_repository
     app.state.paper_trade_repository = webhook_ingestion_services.paper_trade_repository
     app.state.paper_trading_service = webhook_ingestion_services.paper_trading_service
+    app.state.paper_trade_outcome_service = (
+        webhook_ingestion_services.paper_trade_outcome_service
+    )
     app.state.tradingview_live_service = webhook_ingestion_services.tradingview_live_service
     app.add_exception_handler(RequestValidationError, validation_exception_handler)
     app.include_router(health_router)

@@ -34,10 +34,13 @@ Az automatikus paper workflow alapértékei:
 PAPER_AUTO_TRADE_ENABLED=true
 PAPER_ACCOUNT_BALANCE=10000
 PAPER_DEFAULT_RISK_PERCENT=1
+PAPER_NOTIFICATION_ADAPTER=log
 ```
 
 A `PAPER_AUTO_TRADE_ENABLED=false` megtartja a manuális dashboard folyamatot,
 de a setup webhook nem hoz létre automatikusan trade-et.
+A `PAPER_NOTIFICATION_ADAPTER=none` kikapcsolja a terminális paper outcome-ok
+strukturált logértesítését.
 
 ## Backend
 

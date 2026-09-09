@@ -293,6 +293,8 @@ export type PaperTrade = {
   exitReason: string | null;
   realizedPnl: number | null;
   realizedR: number | null;
+  outcomeId: string | null;
+  outcomeLabel: string | null;
   riskPolicyVersion: string;
   createdAt: string;
   updatedAt: string;

@@ -151,7 +151,12 @@ export function PaperTradingPanel({ setups }: { setups: SetupCandidate[] }) {
         title: "Result",
         dataIndex: "realizedR",
         key: "realizedR",
-        render: (value: number | null) => (value === null ? "-" : `${value.toFixed(2)} R`),
+        render: (value: number | null, trade) => (
+          <Space direction="vertical" size={0}>
+            <Typography.Text>{value === null ? "-" : `${value.toFixed(2)} R`}</Typography.Text>
+            {trade.outcomeLabel ? <Tag>{trade.outcomeLabel}</Tag> : null}
+          </Space>
+        ),
       },
       {
         title: "Updated",
@@ -282,6 +287,9 @@ export function PaperTradingPanel({ setups }: { setups: SetupCandidate[] }) {
               </Descriptions.Item>
               <Descriptions.Item label="Result">
                 {selectedTrade.realizedR === null ? "-" : `${selectedTrade.realizedR.toFixed(2)} R`}
+              </Descriptions.Item>
+              <Descriptions.Item label="Outcome">
+                {selectedTrade.outcomeLabel ?? "-"}
               </Descriptions.Item>
               <Descriptions.Item label="Risk policy">
                 {selectedTrade.riskPolicyVersion}
